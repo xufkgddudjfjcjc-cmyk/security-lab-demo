@@ -257,42 +257,71 @@ function renderMessages(data){
 }
 async function loadMessages(){
  if(currentChannel!=="general")return;
- if(supabaseClient){
-  try{
-   const {data,error}=await supabaseClient.from("messages").select("id,username,message,created_at,avatar,image").order("created_at",{ascending:true}).limit(100);
-   if(!error && data){renderMessages(data);updateStats();return}
-  }catch(e){}
+ if(!supabaseClient){
+  $("serverStatus").textContent="云端未连接";
+  $("connectionText").textContent="离线";
+  $("messages").innerHTML='<div style="text-align:center;color:#ff9aaa;padding:55px">云端聊天未连接<br><small>请检查 Supabase 配置</small></div>';
+  return;
  }
- renderMessages(localMessages);updateStats();
+ try{
+  const {data,error}=await supabaseClient
+   .from("messages")
+   .select("id,username,message,created_at,avatar,image")
+   .order("created_at",{ascending:true})
+   .limit(100);
+  if(error) throw error;
+  $("serverStatus").textContent="云端连接";
+  $("connectionText").textContent="在线";
+  renderMessages(data||[]);
+  updateStats();
+ }catch(e){
+  console.error("云端消息读取失败",e);
+  $("serverStatus").textContent="云端读取失败";
+  $("connectionText").textContent="错误";
+  $("messages").innerHTML='<div style="text-align:center;color:#ff9aaa;padding:55px">无法读取云端消息<br><small>'+escapeHTML(e.message||"请检查 Supabase 表和 RLS")+'</small></div>';
+ }
 }
 async function deleteMessage(item){
  if(!confirm("确定删除这条消息吗？"))return;
- if(supabaseClient&&item.id){try{const {error}=await supabaseClient.from("messages").delete().eq("id",item.id);if(!error){loadMessages();showToast("已删除");return}}catch(e){}}
- localMessages=localMessages.filter(x=>x.created_at!==item.created_at||x.message!==item.message);
- localStorage.setItem("security_lab_messages",JSON.stringify(localMessages));loadMessages();showToast("已删除");
+ if(!supabaseClient||!item.id){showToast("云端未连接");return;}
+ try{
+  const {error}=await supabaseClient.from("messages").delete().eq("id",item.id);
+  if(error)throw error;
+  await loadMessages();showToast("已删除");
+ }catch(e){showToast("删除失败："+(e.message||"请检查 RLS"))}
 }
 async function sendMessage(){
  const input=$("messageInput"),text=input.value.trim();
  if(!text&&!attachment)return;
- const item={username:nickname||"游客",avatar:avatarURL,message:text,created_at:new Date().toISOString(),image:attachment?.data||""};
- if(supabaseClient){
-  try{
-   const payload={username:item.username,message:item.message};
-   if(item.avatar)payload.avatar=item.avatar;
-   if(item.image)payload.image=item.image;
-   const {error}=await supabaseClient.from("messages").insert([payload]);
-   if(!error){input.value="";removeAttachment();localStorage.removeItem("security_lab_message_draft");addNotification("消息已发送");loadMessages();return}
-  }catch(e){}
+ if(!supabaseClient){showToast("云端未连接，无法发送");return;}
+ const payload={username:nickname||"游客",message:text};
+ if(avatarURL)payload.avatar=avatarURL;
+ if(attachment?.data)payload.image=attachment.data;
+ try{
+  const {error}=await supabaseClient.from("messages").insert([payload]);
+  if(error)throw error;
+  input.value="";removeAttachment();localStorage.removeItem("security_lab_message_draft");
+  addNotification("消息已发送");
+  await loadMessages();
+ }catch(e){
+  console.error("云端消息发送失败",e);
+  showToast("发送失败："+(e.message||"请检查 messages 表/RLS"));
  }
- localMessages.push(item);if(localMessages.length>100)localMessages=localMessages.slice(-100);
- localStorage.setItem("security_lab_messages",JSON.stringify(localMessages));
- input.value="";removeAttachment();localStorage.removeItem("security_lab_message_draft");addNotification("消息已发送");loadMessages();
 }
 $("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
 $("sendButton").addEventListener("click",sendMessage);
 $("messageSearch").addEventListener("input",()=>{const q=$("messageSearch").value.trim().toLowerCase();document.querySelectorAll(".message").forEach(x=>x.style.display=!q||x.textContent.toLowerCase().includes(q)?"flex":"none")});
 $("messageInput").addEventListener("input",()=>{$("charCount").textContent=$("messageInput").value.length+" / 500";localStorage.setItem("security_lab_message_draft",$("messageInput").value)});
 const draft=localStorage.getItem("security_lab_message_draft");if(draft){$("messageInput").value=draft;$("charCount").textContent=draft.length+" / 500"}
+
+let realtimeChannel=null;
+function subscribeRealtime(){
+ if(!supabaseClient)return;
+ if(realtimeChannel)try{supabaseClient.removeChannel(realtimeChannel)}catch(e){}
+ realtimeChannel=supabaseClient.channel("security-lab-messages")
+  .on("postgres_changes",{event:"*",schema:"public",table:"messages"},()=>loadMessages())
+  .subscribe(status=>console.log("Realtime:",status));
+}
 
 $("fileInput").addEventListener("change",e=>{
  const f=e.target.files?.[0];if(!f)return;
@@ -366,7 +395,7 @@ resize();addEventListener("resize",resize);animate();
 updateProfile();applySettings();renderNotifications();loadWeather();
 setInterval(()=>{$("onlineCount").textContent=String(Math.max(1,Math.floor(1+Math.random()*6)));updateStats()},15000);
 setTimeout(()=>$("boot").classList.add("hide"),900);
-(async()=>{await initSupabase();await loadMessages()})();
+(async()=>{await initSupabase();subscribeRealtime();await loadMessages()})();
 </script>
 </body>
 </html>
