@@ -9,32 +9,41 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 * {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
 
 :root {
-    --bg: #f5f7fb;
-    --panel: rgba(255,255,255,.82);
-    --panel-solid: #ffffff;
+    --bg: #f4f7fb;
+    --panel: rgba(255,255,255,.86);
+    --white: #ffffff;
     --text: #15171b;
-    --muted: #777d87;
+    --muted: #7b818b;
     --line: rgba(0,0,0,.08);
+
     --blue: #1677ff;
     --blue-soft: #eaf3ff;
+
     --green: #22c55e;
-    --shadow: 0 12px 40px rgba(30,40,60,.08);
+    --green-dark: #16a34a;
+
+    --shadow:
+        0 18px 55px rgba(30,40,60,.10);
 }
 
 html,
 body {
     margin: 0;
     padding: 0;
+
     width: 100%;
     min-height: 100%;
+
     background: var(--bg);
     color: var(--text);
+
     font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -57,32 +66,49 @@ body {
 .background {
     position: fixed;
     inset: 0;
+
     z-index: 0;
+
     overflow: hidden;
+
     pointer-events: none;
 }
 
 .background::before {
     content: "";
+
     position: absolute;
-    width: 500px;
-    height: 500px;
-    left: -150px;
+
+    width: 520px;
+    height: 520px;
+
+    left: -180px;
     top: -180px;
-    background: rgba(22,119,255,.08);
-    filter: blur(100px);
+
+    background:
+        rgba(22,119,255,.09);
+
+    filter: blur(110px);
+
     border-radius: 50%;
 }
 
 .background::after {
     content: "";
+
     position: absolute;
-    width: 450px;
-    height: 450px;
-    right: -150px;
+
+    width: 480px;
+    height: 480px;
+
+    right: -180px;
     bottom: -180px;
-    background: rgba(120,80,255,.07);
-    filter: blur(100px);
+
+    background:
+        rgba(120,80,255,.08);
+
+    filter: blur(110px);
+
     border-radius: 50%;
 }
 
@@ -92,31 +118,46 @@ body {
 
 .app {
     position: relative;
+
     z-index: 1;
 
     width: 100vw;
     height: 100vh;
 
     display: grid;
-    grid-template-columns: 220px minmax(0, 1fr) 270px;
 
-    padding: 14px;
+    grid-template-columns:
+        220px
+        minmax(0,1fr)
+        290px;
 
     gap: 14px;
+
+    padding: 14px;
 }
 
 /* =========================
-   通用面板
+   面板
 ========================= */
 
 .sidebar,
 .chat,
 .profile {
-    background: var(--panel);
-    border: 1px solid rgba(255,255,255,.75);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
+
+    background:
+        var(--panel);
+
+    border:
+        1px solid rgba(255,255,255,.8);
+
+    box-shadow:
+        var(--shadow);
+
+    backdrop-filter:
+        blur(25px);
+
+    -webkit-backdrop-filter:
+        blur(25px);
 }
 
 /* =========================
@@ -124,64 +165,97 @@ body {
 ========================= */
 
 .sidebar {
+
     border-radius: 22px;
+
     padding: 18px 12px;
 
     display: flex;
+
     flex-direction: column;
 
     overflow: hidden;
 }
 
 .brand {
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
 
-    padding: 8px 10px 20px;
+    padding:
+        8px 10px 20px;
 }
 
 .brand-icon {
-    width: 38px;
-    height: 38px;
+
+    width: 40px;
+    height: 40px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    border-radius: 12px;
+    border-radius: 13px;
 
-    background: #111827;
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #374151
+        );
+
     color: white;
 
-    font-size: 19px;
+    font-size: 20px;
+
+    box-shadow:
+        0 8px 20px
+        rgba(0,0,0,.12);
 }
 
 .brand-name {
-    font-weight: 700;
+
+    font-weight: 750;
+
     font-size: 16px;
 }
 
 .brand-sub {
-    font-size: 11px;
+
     color: var(--muted);
+
+    font-size: 11px;
+
     margin-top: 2px;
 }
 
 .section-title {
+
     padding: 10px;
+
     color: #9aa0aa;
+
     font-size: 11px;
+
     font-weight: 700;
+
     letter-spacing: .08em;
 }
 
 .channel {
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
 
     padding: 11px 12px;
+
     margin: 2px 0;
 
     border-radius: 11px;
@@ -189,111 +263,158 @@ body {
     color: #555b65;
 
     cursor: pointer;
+
     transition: .18s;
 }
 
 .channel:hover {
-    background: #eef2f7;
+
+    background:
+        #eef2f7;
 }
 
 .channel.active {
-    background: var(--blue-soft);
-    color: var(--blue);
+
+    background:
+        var(--blue-soft);
+
+    color:
+        var(--blue);
+
     font-weight: 600;
 }
 
 .channel-icon {
+
     font-size: 17px;
 }
 
 .sidebar-bottom {
+
     margin-top: auto;
 }
 
 .mini-status {
+
     display: flex;
+
     align-items: center;
+
     gap: 8px;
 
     padding: 12px;
 
     color: var(--muted);
+
     font-size: 12px;
 }
 
 .green-dot {
+
     width: 8px;
     height: 8px;
 
     border-radius: 50%;
-    background: var(--green);
+
+    background:
+        var(--green);
+
+    box-shadow:
+        0 0 10px
+        rgba(34,197,94,.55);
 }
 
 /* =========================
-   聊天主体
+   聊天
 ========================= */
 
 .chat {
+
     min-width: 0;
 
     border-radius: 22px;
 
     display: flex;
+
     flex-direction: column;
 
     overflow: hidden;
 }
 
-/* 顶部 */
+/* =========================
+   Header
+========================= */
 
 .chat-header {
+
     height: 70px;
 
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 
     padding: 0 22px;
 
-    border-bottom: 1px solid var(--line);
+    border-bottom:
+        1px solid var(--line);
 
-    background: rgba(255,255,255,.58);
+    background:
+        rgba(255,255,255,.58);
 }
 
 .chat-title {
+
     display: flex;
+
     align-items: center;
+
     gap: 10px;
 }
 
 .hash {
-    font-size: 22px;
+
+    font-size: 23px;
+
     color: #9298a2;
 }
 
 .chat-name {
+
     font-size: 16px;
+
     font-weight: 700;
 }
 
 .chat-description {
+
     color: var(--muted);
+
     font-size: 11px;
+
     margin-top: 2px;
 }
 
 .connection {
+
     display: flex;
+
     align-items: center;
+
     gap: 7px;
 
     color: #6f7680;
+
     font-size: 12px;
 }
 
-/* 消息 */
+/* =========================
+   消息
+========================= */
 
 .messages {
+
     flex: 1;
 
     min-height: 0;
@@ -304,77 +425,120 @@ body {
 }
 
 .messages::-webkit-scrollbar {
+
     width: 5px;
 }
 
 .messages::-webkit-scrollbar-thumb {
-    background: #d6d9df;
+
+    background:
+        #d6d9df;
+
     border-radius: 10px;
 }
 
 .message {
+
     display: flex;
+
     gap: 11px;
 
-    margin-bottom: 20px;
+    margin-bottom: 21px;
 
-    animation: messageIn .2s ease;
+    animation:
+        messageIn .2s ease;
 }
 
 @keyframes messageIn {
+
     from {
+
         opacity: 0;
-        transform: translateY(4px);
+
+        transform:
+            translateY(5px);
     }
 
     to {
+
         opacity: 1;
-        transform: translateY(0);
+
+        transform:
+            translateY(0);
     }
 }
 
+/* =========================
+   头像
+========================= */
+
 .avatar {
+
     flex: 0 0 auto;
 
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    border-radius: 50%;
+    border-radius: 13px;
 
     background:
-        linear-gradient(135deg,#111827,#64748b);
+        linear-gradient(
+            135deg,
+            #111827,
+            #64748b
+        );
 
     color: white;
 
-    font-weight: 700;
+    font-weight: 750;
+
     font-size: 14px;
+
+    box-shadow:
+        0 5px 15px
+        rgba(0,0,0,.08);
 }
 
 .message-content {
+
     min-width: 0;
+
+    max-width:
+        min(700px, 100%);
 }
 
 .message-top {
+
     display: flex;
+
     align-items: baseline;
+
     gap: 8px;
+
+    flex-wrap: wrap;
 }
 
 .message-user {
+
     font-weight: 700;
+
     font-size: 14px;
 }
 
 .message-time {
+
     color: #a0a5ad;
+
     font-size: 10px;
 }
 
 .message-text {
+
     margin-top: 5px;
 
     color: #424750;
@@ -382,80 +546,204 @@ body {
     line-height: 1.55;
 
     word-break: break-word;
+
     white-space: pre-wrap;
 }
 
+/* =========================
+   表情
+========================= */
+
 .reactions {
+
     display: flex;
+
+    flex-wrap: wrap;
+
     gap: 5px;
+
     margin-top: 8px;
 }
 
 .reaction {
-    border: 1px solid #e3e6eb;
 
-    background: white;
+    border:
+        1px solid #e3e6eb;
+
+    background:
+        rgba(255,255,255,.9);
 
     border-radius: 12px;
 
-    padding: 4px 8px;
+    padding:
+        4px 8px;
 
     font-size: 12px;
 
     cursor: pointer;
 
     transition: .15s;
+
+    color: #555;
 }
 
 .reaction:hover {
-    border-color: #b9d5ff;
-    background: #f2f7ff;
+
+    border-color:
+        #b9d5ff;
+
+    background:
+        #f2f7ff;
 }
 
-/* 输入区 */
+.reaction.active {
+
+    background:
+        #eaf3ff;
+
+    border-color:
+        #9fc6ff;
+
+    color:
+        #1677ff;
+}
+
+/* =========================
+   正在输入
+========================= */
+
+.typing-area {
+
+    height: 28px;
+
+    padding:
+        0 22px;
+
+    display: flex;
+
+    align-items: center;
+
+    color: #8a919c;
+
+    font-size: 11px;
+}
+
+.typing-dots {
+
+    display: inline-flex;
+
+    gap: 3px;
+
+    margin-left: 5px;
+}
+
+.typing-dots span {
+
+    width: 4px;
+    height: 4px;
+
+    border-radius: 50%;
+
+    background:
+        #8a919c;
+
+    animation:
+        typingDot 1.2s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+
+    animation-delay:
+        .15s;
+}
+
+.typing-dots span:nth-child(3) {
+
+    animation-delay:
+        .3s;
+}
+
+@keyframes typingDot {
+
+    0%,60%,100% {
+
+        opacity: .3;
+
+        transform:
+            translateY(0);
+    }
+
+    30% {
+
+        opacity: 1;
+
+        transform:
+            translateY(-3px);
+    }
+}
+
+/* =========================
+   输入
+========================= */
 
 .input-area {
-    padding: 14px 18px 18px;
 
-    border-top: 1px solid var(--line);
+    padding:
+        8px 18px 18px;
 
-    background: rgba(255,255,255,.58);
+    border-top:
+        1px solid var(--line);
+
+    background:
+        rgba(255,255,255,.58);
 }
 
 .input-box {
+
     display: flex;
+
     align-items: center;
 
     gap: 8px;
 
-    padding: 6px 7px 6px 15px;
+    padding:
+        6px 7px 6px 15px;
 
-    border: 1px solid #e1e5ea;
+    border:
+        1px solid #e1e5ea;
 
     border-radius: 15px;
 
-    background: white;
+    background:
+        white;
 
     box-shadow:
-        0 5px 20px rgba(0,0,0,.04);
+        0 5px 20px
+        rgba(0,0,0,.04);
 }
 
 .input-box:focus-within {
-    border-color: #b7d4ff;
+
+    border-color:
+        #b7d4ff;
 
     box-shadow:
-        0 0 0 4px rgba(22,119,255,.08);
+        0 0 0 4px
+        rgba(22,119,255,.08);
 }
 
 .message-input {
+
     flex: 1;
 
     min-width: 0;
 
     border: 0;
+
     outline: 0;
 
-    background: transparent;
+    background:
+        transparent;
 
     font-size: 15px;
 
@@ -463,38 +751,53 @@ body {
 }
 
 .message-input::placeholder {
+
     color: #a5aab2;
 }
 
 .send {
-    width: 38px;
-    height: 38px;
+
+    width: 40px;
+    height: 40px;
 
     border: 0;
-    border-radius: 11px;
 
-    background: #111827;
+    border-radius: 12px;
+
+    background:
+        #111827;
+
     color: white;
 
     cursor: pointer;
+
+    font-size: 19px;
 
     transition: .18s;
 }
 
 .send:hover {
-    transform: scale(1.04);
-    background: #000;
+
+    transform:
+        scale(1.04);
+
+    background:
+        #000;
 }
 
 .send:disabled {
+
     opacity: .45;
+
+    cursor: default;
 }
 
 /* =========================
-   右侧
+   右侧 PROFILE
 ========================= */
 
 .profile {
+
     border-radius: 22px;
 
     padding: 18px;
@@ -503,6 +806,7 @@ body {
 }
 
 .profile-title {
+
     color: #9298a2;
 
     font-size: 11px;
@@ -511,12 +815,14 @@ body {
 
     letter-spacing: .08em;
 
-    margin: 5px 4px 14px;
+    margin:
+        5px 4px 14px;
 }
 
-/* 用户卡 */
+/* 用户 */
 
 .user-card {
+
     padding: 18px;
 
     border-radius: 18px;
@@ -528,24 +834,30 @@ body {
             #f5f7fa
         );
 
-    border: 1px solid #edf0f3;
+    border:
+        1px solid #edf0f3;
 }
 
 .user-main {
+
     display: flex;
+
     align-items: center;
+
     gap: 11px;
 }
 
 .big-avatar {
-    width: 52px;
-    height: 52px;
+
+    width: 54px;
+    height: 54px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
-    border-radius: 16px;
+    border-radius: 17px;
 
     background:
         linear-gradient(
@@ -556,17 +868,22 @@ body {
 
     color: white;
 
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 19px;
+
+    font-weight: 750;
 }
 
 .user-name {
+
     font-weight: 700;
 }
 
 .user-online {
+
     display: flex;
+
     align-items: center;
+
     gap: 5px;
 
     margin-top: 4px;
@@ -577,15 +894,20 @@ body {
 }
 
 .info-divider {
+
     height: 1px;
 
-    background: #eceff3;
+    background:
+        #eceff3;
 
-    margin: 16px 0;
+    margin:
+        16px 0;
 }
 
 .info-row {
+
     display: flex;
+
     align-items: center;
 
     gap: 9px;
@@ -598,6 +920,7 @@ body {
 }
 
 .info-icon {
+
     width: 25px;
 
     text-align: center;
@@ -605,7 +928,12 @@ body {
     font-size: 16px;
 }
 
+/* =========================
+   天气
+========================= */
+
 .weather {
+
     margin-top: 15px;
 
     padding: 16px;
@@ -619,26 +947,35 @@ body {
             #f7fbff
         );
 
-    border: 1px solid #dcecff;
+    border:
+        1px solid #dcecff;
 }
 
 .weather-top {
+
     display: flex;
+
     align-items: center;
+
     justify-content: space-between;
 }
 
 .weather-temp {
+
     font-size: 31px;
+
     font-weight: 700;
+
     color: #172033;
 }
 
 .weather-icon {
+
     font-size: 34px;
 }
 
 .weather-city {
+
     margin-top: 4px;
 
     color: #4e596b;
@@ -647,20 +984,25 @@ body {
 }
 
 .weather-detail {
+
     margin-top: 12px;
 
     display: grid;
-    grid-template-columns: 1fr 1fr;
+
+    grid-template-columns:
+        1fr 1fr;
 
     gap: 8px;
 }
 
 .weather-small {
+
     padding: 9px;
 
     border-radius: 10px;
 
-    background: rgba(255,255,255,.7);
+    background:
+        rgba(255,255,255,.7);
 
     color: #687282;
 
@@ -668,6 +1010,7 @@ body {
 }
 
 .weather-small strong {
+
     display: block;
 
     margin-top: 3px;
@@ -678,6 +1021,7 @@ body {
 }
 
 .status-message {
+
     margin-top: 12px;
 
     color: #858b95;
@@ -688,20 +1032,98 @@ body {
 }
 
 /* =========================
-   Mobile
+   通知按钮
 ========================= */
 
-.mobile-profile-button {
-    display: none;
+.notify-button {
+
+    width: 100%;
+
+    margin-top: 14px;
+
+    padding: 11px;
+
+    border:
+        1px solid #e1e5ea;
+
+    border-radius: 12px;
+
+    background:
+        white;
+
+    color: #444;
+
+    font-size: 12px;
+
+    cursor: pointer;
 }
+
+.notify-button:hover {
+
+    background:
+        #f5f7fa;
+}
+
+/* =========================
+   Toast
+========================= */
+
+.toast {
+
+    position: fixed;
+
+    z-index: 9999;
+
+    left: 50%;
+
+    bottom: 25px;
+
+    transform:
+        translate(-50%, 20px);
+
+    padding:
+        11px 17px;
+
+    border-radius: 13px;
+
+    background:
+        rgba(17,24,39,.94);
+
+    color: white;
+
+    font-size: 12px;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        .25s ease;
+}
+
+.toast.show {
+
+    opacity: 1;
+
+    transform:
+        translate(-50%, 0);
+}
+
+/* =========================
+   Mobile
+========================= */
 
 @media (max-width: 900px) {
 
     .app {
-        grid-template-columns: 190px minmax(0,1fr);
+
+        grid-template-columns:
+            190px
+            minmax(0,1fr);
     }
 
     .profile {
+
         display: none;
     }
 }
@@ -709,13 +1131,16 @@ body {
 @media (max-width: 650px) {
 
     body {
+
         overflow: auto;
     }
 
     .app {
+
         display: block;
 
         width: 100%;
+
         height: auto;
 
         min-height: 100vh;
@@ -724,9 +1149,11 @@ body {
     }
 
     .sidebar {
+
         height: 58px;
 
-        padding: 8px 10px;
+        padding:
+            8px 10px;
 
         border-radius: 17px;
 
@@ -738,39 +1165,48 @@ body {
     }
 
     .brand {
+
         padding: 0;
 
         margin-right: 8px;
     }
 
     .brand-icon {
+
         width: 40px;
         height: 40px;
     }
 
     .brand-text {
+
         display: none;
     }
 
     .section-title,
     .sidebar-bottom {
+
         display: none;
     }
 
     .channel {
+
         display: none;
     }
 
     .channel.active {
+
         display: flex;
 
         margin: 0;
 
-        padding: 9px 12px;
+        padding:
+            9px 12px;
     }
 
     .chat {
-        height: calc(100vh - 74px);
+
+        height:
+            calc(100vh - 74px);
 
         min-height: 600px;
 
@@ -778,23 +1214,43 @@ body {
     }
 
     .chat-header {
+
         height: 62px;
 
-        padding: 0 15px;
+        padding:
+            0 15px;
     }
 
     .messages {
-        padding: 16px 13px;
+
+        padding:
+            16px 13px;
     }
 
     .input-area {
-        padding: 10px;
+
+        padding:
+            8px 10px 10px;
+    }
+
+    .typing-area {
+
+        padding:
+            0 13px;
     }
 
     .chat-description {
+
         display: none;
     }
+
+    .message-content {
+
+        max-width:
+            calc(100vw - 85px);
+    }
 }
+
 </style>
 </head>
 
@@ -805,7 +1261,7 @@ body {
 <div class="app">
 
     <!-- =========================
-         左侧频道
+         左侧
     ========================== -->
 
     <aside class="sidebar">
@@ -830,29 +1286,24 @@ body {
 
         </div>
 
-
         <div class="section-title">
             CHANNELS
         </div>
-
 
         <div class="channel active">
             <span class="channel-icon">#</span>
             <span>总聊天室</span>
         </div>
 
-
         <div class="channel">
             <span class="channel-icon">#</span>
             <span>技术交流</span>
         </div>
 
-
         <div class="channel">
             <span class="channel-icon">#</span>
             <span>随便聊聊</span>
         </div>
-
 
         <div class="sidebar-bottom">
 
@@ -899,7 +1350,6 @@ body {
 
             </div>
 
-
             <div class="connection">
 
                 <span class="green-dot"></span>
@@ -921,11 +1371,23 @@ body {
                 color:#9aa0aa;
                 padding:40px;
             ">
+
                 正在加载聊天...
+
             </div>
 
         </section>
 
+
+        <!-- 正在输入 -->
+
+        <div
+            id="typingArea"
+            class="typing-area"
+        ></div>
+
+
+        <!-- 输入 -->
 
         <div class="input-area">
 
@@ -956,7 +1418,7 @@ body {
 
 
     <!-- =========================
-         右侧用户
+         用户资料
     ========================== -->
 
     <aside class="profile">
@@ -964,7 +1426,6 @@ body {
         <div class="profile-title">
             PROFILE
         </div>
-
 
         <div class="user-card">
 
@@ -1027,16 +1488,23 @@ body {
 
             </div>
 
+
+            <button
+                id="notifyButton"
+                class="notify-button"
+                type="button"
+            >
+                🔔 开启消息通知
+            </button>
+
         </div>
 
 
-        <!-- 天气 -->
-
-        <div class="profile-title"
-             style="margin-top:22px">
-
+        <div
+            class="profile-title"
+            style="margin-top:22px"
+        >
             WEATHER
-
         </div>
 
 
@@ -1109,11 +1577,16 @@ body {
 </div>
 
 
+<div
+    id="toast"
+    class="toast"
+></div>
+
+
 <script>
 
 /* =====================================================
    Supabase
-   不修改你的 Supabase 配置
 ===================================================== */
 
 const SUPABASE_URL =
@@ -1122,7 +1595,9 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
     "sb_publishable_aukve7aK4EQCniOtCSy8uQ_raK8MH0j";
 
+
 let supabaseClient = null;
+
 
 try {
 
@@ -1134,13 +1609,16 @@ try {
 
 } catch (error) {
 
-    console.error(error);
+    console.error(
+        "Supabase 初始化失败:",
+        error
+    );
 
 }
 
 
 /* =====================================================
-   昵称
+   用户昵称
 ===================================================== */
 
 let nickname =
@@ -1154,16 +1632,33 @@ function updateProfile() {
     const name =
         nickname || "游客";
 
-    document
-        .getElementById("profileName")
-        .textContent = name;
-
 
     document
-        .getElementById("bigAvatar")
+        .getElementById(
+            "profileName"
+        )
         .textContent =
-        name.charAt(0).toUpperCase();
+        name;
 
+
+    document
+        .getElementById(
+            "bigAvatar"
+        )
+        .textContent =
+        getAvatarLetter(name);
+
+}
+
+
+function getAvatarLetter(name) {
+
+    const value =
+        String(name || "游").trim();
+
+    return value
+        ? value.charAt(0).toUpperCase()
+        : "游";
 }
 
 
@@ -1171,10 +1666,46 @@ updateProfile();
 
 
 /* =====================================================
-   聊天
-   使用你现在已有的 messages 表
-   username / message / created_at
+   Toast
 ===================================================== */
+
+function showToast(message) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+    toast.textContent =
+        message;
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        function() {
+
+            toast.classList.remove(
+                "show"
+            );
+
+        },
+        2200
+    );
+}
+
+
+/* =====================================================
+   聊天加载
+===================================================== */
+
+let firstMessageLoad = true;
+
+let previousLatestMessageId =
+    null;
+
 
 async function loadMessages() {
 
@@ -1221,17 +1752,65 @@ async function loadMessages() {
         }
 
 
+        const list =
+            result.data || [];
+
+
+        /*
+         * 新消息通知
+         */
+
+        if (
+            !firstMessageLoad &&
+            list.length > 0
+        ) {
+
+            const latest =
+                list[list.length - 1];
+
+
+            if (
+                latest.id !==
+                previousLatestMessageId &&
+                latest.username !==
+                nickname
+            ) {
+
+                notifyNewMessage(
+                    latest
+                );
+
+            }
+
+        }
+
+
+        if (list.length > 0) {
+
+            previousLatestMessageId =
+                list[list.length - 1].id;
+
+        }
+
+
         renderMessages(
-            result.data || []
+            list
         );
+
+
+        firstMessageLoad =
+            false;
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            "加载消息失败:",
+            error
+        );
 
         showChatError(
-            "暂时无法连接聊天服务器"
+            "TypeError: Load failed"
         );
 
     }
@@ -1239,20 +1818,24 @@ async function loadMessages() {
 }
 
 
-/* 显示错误 */
+/* =====================================================
+   错误
+===================================================== */
 
 function showChatError(
     message
 ) {
 
     document
-        .getElementById("messages")
+        .getElementById(
+            "messages"
+        )
         .innerHTML = `
 
             <div style="
                 text-align:center;
                 color:#9aa0aa;
-                padding:40px 20px;
+                padding:50px 20px;
             ">
 
                 <div style="
@@ -1271,7 +1854,7 @@ function showChatError(
 
 
 /* =====================================================
-   显示消息
+   渲染消息
 ===================================================== */
 
 function renderMessages(
@@ -1305,6 +1888,7 @@ function renderMessages(
                 </span>
 
             </div>
+
         `;
 
         return;
@@ -1322,20 +1906,23 @@ function renderMessages(
                 item.username ||
                 "匿名";
 
+
             const text =
                 item.message ||
                 "";
 
+
             const avatar =
-                username
-                    .charAt(0)
-                    .toUpperCase();
+                getAvatarLetter(
+                    username
+                );
 
 
             const message =
                 document.createElement(
                     "div"
                 );
+
 
             message.className =
                 "message";
@@ -1371,28 +1958,48 @@ function renderMessages(
 
                         <button
                             class="reaction"
-                            onclick="fakeReaction(this)"
+                            type="button"
+                            onclick="toggleReaction(this)"
                         >
                             ❤️ 0
                         </button>
 
                         <button
                             class="reaction"
-                            onclick="fakeReaction(this)"
+                            type="button"
+                            onclick="toggleReaction(this)"
                         >
                             👍 0
                         </button>
 
                         <button
                             class="reaction"
-                            onclick="fakeReaction(this)"
+                            type="button"
+                            onclick="toggleReaction(this)"
                         >
                             😂 0
+                        </button>
+
+                        <button
+                            class="reaction"
+                            type="button"
+                            onclick="toggleReaction(this)"
+                        >
+                            😮 0
+                        </button>
+
+                        <button
+                            class="reaction"
+                            type="button"
+                            onclick="toggleReaction(this)"
+                        >
+                            😢 0
                         </button>
 
                     </div>
 
                 </div>
+
             `;
 
 
@@ -1411,11 +2018,12 @@ function renderMessages(
 
 
 /* =====================================================
-   表情演示
-   第一步只做 UI，不修改 Supabase
+   表情反应
+   目前只做前端 UI
+   不修改 Supabase
 ===================================================== */
 
-function fakeReaction(
+function toggleReaction(
     button
 ) {
 
@@ -1426,18 +2034,47 @@ function fakeReaction(
 
 
     if (!match) {
+
         return;
+
     }
 
 
-    const number =
-        Number(match[1]) + 1;
+    let number =
+        Number(match[1]);
+
+
+    if (
+        button.classList.contains(
+            "active"
+        )
+    ) {
+
+        number =
+            Math.max(
+                0,
+                number - 1
+            );
+
+        button.classList.remove(
+            "active"
+        );
+
+    } else {
+
+        number++;
+
+        button.classList.add(
+            "active"
+        );
+
+    }
 
 
     button.textContent =
         button.textContent.replace(
             /\d+$/,
-            number
+            String(number)
         );
 
 }
@@ -1453,6 +2090,7 @@ async function sendMessage() {
         document.getElementById(
             "messageInput"
         );
+
 
     const button =
         document.getElementById(
@@ -1471,9 +2109,13 @@ async function sendMessage() {
     }
 
 
-    if (!nickname) {
+    if (!supabaseClient) {
 
-        nickname = "游客";
+        showToast(
+            "聊天服务器未连接"
+        );
+
+        return;
 
     }
 
@@ -1484,13 +2126,18 @@ async function sendMessage() {
 
     try {
 
+        /*
+         * 这里必须使用 message
+         * 因为你的数据库字段就是 message
+         */
+
         const result =
             await supabaseClient
                 .from("messages")
                 .insert([
                     {
                         username:
-                            nickname,
+                            nickname || "游客",
 
                         message:
                             text
@@ -1501,11 +2148,13 @@ async function sendMessage() {
         if (result.error) {
 
             console.error(
+                "发送错误:",
                 result.error
             );
 
-            alert(
-                "发送失败：\n" +
+
+            showToast(
+                "发送失败：" +
                 result.error.message
             );
 
@@ -1517,15 +2166,23 @@ async function sendMessage() {
         input.value = "";
 
 
+        updateTypingState(
+            false
+        );
+
+
         await loadMessages();
 
 
     } catch (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
-        alert(
-            "发送失败，请稍后再试"
+
+        showToast(
+            "发送失败：Load failed"
         );
 
     } finally {
@@ -1539,7 +2196,7 @@ async function sendMessage() {
 
 
 /* =====================================================
-   回车发送
+   回车
 ===================================================== */
 
 document
@@ -1575,6 +2232,475 @@ document
 
 
 /* =====================================================
+   正在输入
+   使用 Supabase Realtime Presence
+   不修改数据库
+===================================================== */
+
+let presenceChannel =
+    null;
+
+
+let typingTimer =
+    null;
+
+
+let isTyping =
+    false;
+
+
+const presenceKey =
+    "user-" +
+    Math.random()
+        .toString(36)
+        .slice(2);
+
+
+async function setupPresence() {
+
+    if (!supabaseClient) {
+
+        return;
+
+    }
+
+
+    try {
+
+        presenceChannel =
+            supabaseClient.channel(
+                "security-lab-presence",
+                {
+                    config: {
+                        presence: {
+                            key: presenceKey
+                        }
+                    }
+                }
+            );
+
+
+        presenceChannel
+            .on(
+                "presence",
+                {
+                    event: "sync"
+                },
+                function() {
+
+                    updateTypingUsers();
+
+                }
+            )
+            .on(
+                "presence",
+                {
+                    event: "join"
+                },
+                function() {
+
+                    updateTypingUsers();
+
+                }
+            )
+            .on(
+                "presence",
+                {
+                    event: "leave"
+                },
+                function() {
+
+                    updateTypingUsers();
+
+                }
+            );
+
+
+        await presenceChannel.subscribe(
+            async function(status) {
+
+                if (
+                    status ===
+                    "SUBSCRIBED"
+                ) {
+
+                    await presenceChannel.track(
+                        {
+                            nickname:
+                                nickname,
+                            typing:
+                                false
+                        }
+                    );
+
+                }
+
+            }
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Presence 不可用:",
+            error
+        );
+
+    }
+
+}
+
+
+async function updateTypingState(
+    typing
+) {
+
+    isTyping =
+        typing;
+
+
+    if (
+        !presenceChannel
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        await presenceChannel.track(
+            {
+                nickname:
+                    nickname,
+                typing:
+                    typing
+            }
+        );
+
+    } catch (error) {
+
+        console.warn(
+            error
+        );
+
+    }
+
+}
+
+
+function updateTypingUsers() {
+
+    if (
+        !presenceChannel
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const state =
+            presenceChannel.presenceState();
+
+
+        const users = [];
+
+
+        Object.keys(state)
+            .forEach(
+                function(key) {
+
+                    const entries =
+                        state[key];
+
+
+                    entries.forEach(
+                        function(entry) {
+
+                            if (
+                                entry.typing &&
+                                entry.nickname !==
+                                nickname
+                            ) {
+
+                                users.push(
+                                    entry.nickname ||
+                                    "有人"
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+
+        const typingArea =
+            document.getElementById(
+                "typingArea"
+            );
+
+
+        if (!users.length) {
+
+            typingArea.innerHTML =
+                "";
+
+            return;
+
+        }
+
+
+        let text;
+
+
+        if (
+            users.length === 1
+        ) {
+
+            text =
+                escapeHTML(
+                    users[0]
+                ) +
+                " 正在输入";
+
+        } else {
+
+            text =
+                users.length +
+                " 人正在输入";
+
+        }
+
+
+        typingArea.innerHTML = `
+
+            ${text}
+
+            <span class="typing-dots">
+
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </span>
+
+        `;
+
+    } catch (error) {
+
+        console.warn(
+            error
+        );
+
+    }
+
+}
+
+
+/*
+ * 输入时发送 typing 状态
+ */
+
+document
+    .getElementById(
+        "messageInput"
+    )
+    .addEventListener(
+        "input",
+        function() {
+
+            const hasText =
+                this.value.trim().length > 0;
+
+
+            updateTypingState(
+                hasText
+            );
+
+
+            clearTimeout(
+                typingTimer
+            );
+
+
+            if (hasText) {
+
+                typingTimer =
+                    setTimeout(
+                        function() {
+
+                            updateTypingState(
+                                false
+                            );
+
+                        },
+                        1800
+                    );
+
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   通知
+===================================================== */
+
+let notificationEnabled =
+    false;
+
+
+async function enableNotifications() {
+
+    if (
+        !("Notification" in window)
+    ) {
+
+        showToast(
+            "当前浏览器不支持通知"
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const permission =
+            await Notification.requestPermission();
+
+
+        if (
+            permission ===
+            "granted"
+        ) {
+
+            notificationEnabled =
+                true;
+
+
+            showToast(
+                "消息通知已开启"
+            );
+
+
+            document
+                .getElementById(
+                    "notifyButton"
+                )
+                .textContent =
+                "🔔 消息通知已开启";
+
+        } else {
+
+            showToast(
+                "通知权限没有开启"
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+document
+    .getElementById(
+        "notifyButton"
+    )
+    .addEventListener(
+        "click",
+        enableNotifications
+    );
+
+
+function notifyNewMessage(
+    item
+) {
+
+    const username =
+        item.username ||
+        "有人";
+
+
+    const text =
+        item.message ||
+        "新消息";
+
+
+    /*
+     * 页面标题
+     */
+
+    document.title =
+        "🔔 新消息 · Security Lab";
+
+
+    setTimeout(
+        function() {
+
+            document.title =
+                "Security Lab";
+
+        },
+        4000
+    );
+
+
+    /*
+     * 浏览器通知
+     */
+
+    if (
+        notificationEnabled &&
+        "Notification" in window &&
+        Notification.permission ===
+        "granted"
+    ) {
+
+        try {
+
+            new Notification(
+                username,
+                {
+                    body:
+                        text.slice(
+                            0,
+                            100
+                        ),
+                    tag:
+                        "security-lab-message"
+                }
+            );
+
+        } catch (error) {
+
+            console.warn(
+                error
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =====================================================
    时间
 ===================================================== */
 
@@ -1583,7 +2709,9 @@ function formatTime(
 ) {
 
     if (!value) {
+
         return "";
+
     }
 
 
@@ -1615,9 +2743,42 @@ function formatTime(
 }
 
 
+function updateTime() {
+
+    document
+        .getElementById(
+            "localTime"
+        )
+        .textContent =
+        new Date()
+            .toLocaleTimeString(
+                "zh-CN",
+                {
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit",
+
+                    second:
+                        "2-digit"
+                }
+            );
+
+}
+
+
+updateTime();
+
+
+setInterval(
+    updateTime,
+    1000
+);
+
+
 /* =====================================================
    IP → 城市 → 天气
-   不把 IP 保存到 Supabase
 ===================================================== */
 
 async function loadWeather() {
@@ -1629,11 +2790,6 @@ async function loadWeather() {
 
 
     try {
-
-        /*
-         * 只用于获取大概城市。
-         * 不保存 IP。
-         */
 
         const ipResponse =
             await fetch(
@@ -1667,6 +2823,7 @@ async function loadWeather() {
             ipData.city ||
             "未知城市";
 
+
         const country =
             ipData.country ||
             "";
@@ -1674,6 +2831,7 @@ async function loadWeather() {
 
         const latitude =
             ipData.latitude;
+
 
         const longitude =
             ipData.longitude;
@@ -1711,11 +2869,6 @@ async function loadWeather() {
 
         }
 
-
-        /*
-         * Open-Meteo
-         * 不需要 API Key
-         */
 
         const weatherURL =
             "https://api.open-meteo.com/v1/forecast" +
@@ -1814,11 +2967,10 @@ async function loadWeather() {
         status.textContent =
             weatherInfo.text;
 
-
     } catch (error) {
 
         console.error(
-            "天气:",
+            "天气错误:",
             error
         );
 
@@ -1924,9 +3076,7 @@ function getWeatherInfo(
     }
 
 
-    if (
-        code >= 95
-    ) {
+    if (code >= 95) {
 
         return {
             icon: "⛈️",
@@ -1945,40 +3095,7 @@ function getWeatherInfo(
 
 
 /* =====================================================
-   当地时间
-===================================================== */
-
-function updateTime() {
-
-    document
-        .getElementById(
-            "localTime"
-        )
-        .textContent =
-        new Date()
-            .toLocaleTimeString(
-                "zh-CN",
-                {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit"
-                }
-            );
-
-}
-
-
-updateTime();
-
-
-setInterval(
-    updateTime,
-    1000
-);
-
-
-/* =====================================================
-   自动刷新聊天
+   自动刷新
 ===================================================== */
 
 setInterval(
@@ -2027,6 +3144,8 @@ function escapeHTML(
 loadMessages();
 
 loadWeather();
+
+setupPresence();
 
 </script>
 
