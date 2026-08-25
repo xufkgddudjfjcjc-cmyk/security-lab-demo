@@ -467,27 +467,32 @@ setTimeout(()=>$("boot").classList.add("hide"),900);
   overlay.addEventListener("click",e=>{if(e.target===overlay)closeMenu()});
 
   const actions={
-    settings:["设置中心",["settingsBtn","openSettings","showSettings"]],
-    profile:["个人资料",["profileBtn","openProfile","showProfile"]],
-    security:["安全实验室",["securityBtn","openSecurity","showSecurity"]],
-    weather:["天气",["weatherBtn","openWeather","showWeather"]],
-    location:["位置",["locationBtn","openLocation","showLocation"]],
-    time:["当前时间",[]],
-    stats:["消息统计",["statsBtn","openStats","showStats"]],
-    notice:["通知设置",["noticeBtn","openNotice","showNotice","notificationBtn"]]
+    settings:["设置中心",()=>{closeMenu();openSettings()}],
+    profile:["个人资料",()=>{closeMenu();openProfile()}],
+    security:["安全实验室",()=>{closeMenu();openSecurityLab()}],
+    weather:["天气",()=>{
+      const city=document.getElementById("weatherCity")?.textContent||"未知";
+      const temp=document.getElementById("temperature")?.textContent||"--";
+      const detail=document.getElementById("weatherStatus")?.textContent||"";
+      status.textContent=`${city} ${temp} · ${detail}`;
+    }],
+    location:["位置",()=>{
+      status.textContent="当前位置："+(document.getElementById("location")?.textContent||"获取中...");
+    }],
+    time:["当前时间",()=>{
+      status.textContent="当前时间："+new Date().toLocaleString("zh-CN");
+    }],
+    stats:["消息统计",()=>{
+      try{updateStats()}catch(e){}
+      status.textContent=document.getElementById("messageStat")?.textContent||"消息统计已更新";
+    }],
+    notice:["通知设置",()=>{closeMenu();toggleNotifications()}]
   };
 
   document.querySelectorAll(".mobile-tools-grid button").forEach(b=>{
     b.addEventListener("click",()=>{
-      const [name,ids]=actions[b.dataset.tool]||["功能",[]];
-      let el=null;
-      for(const id of ids){el=document.getElementById(id);if(el)break}
-      if(el){closeMenu();el.click();return}
-      if(b.dataset.tool==="time"){
-        status.textContent="当前时间："+new Date().toLocaleString();
-      }else{
-        status.textContent=name+"已保留；如果页面原组件使用其他按钮名称，请继续使用桌面端对应入口。";
-      }
+      const [name,action]=actions[b.dataset.tool]||["功能",()=>{}];
+      try{action()}catch(e){status.textContent=name+"打开失败："+(e.message||"未知错误")}
     });
   });
 })();
