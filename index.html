@@ -478,7 +478,7 @@ resize();addEventListener("resize",resize);animate();
 
 updateProfile();applySettings();renderNotifications();loadWeather();
 setInterval(()=>{$("onlineCount").textContent=String(Math.max(1,Math.floor(1+Math.random()*6)));updateStats()},15000);
-setTimeout(()=>$("boot").classList.add("hide"),900);
+setTimeout(()=>$("boot").classList.add("hide"),3200);
 (async()=>{await initSupabase();subscribeRealtime();await loadMessages()})();
 
 // 手机端功能菜单
