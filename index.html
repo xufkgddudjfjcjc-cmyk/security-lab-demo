@@ -6,12 +6,17 @@
 
 <title>安全实验室</title>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
+
 * {
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -21,7 +26,14 @@ html, body {
     color: #00ff66;
 }
 
-/* 动态背景 */
+body {
+    overflow-x: hidden;
+}
+
+/* =========================
+   Matrix 背景
+========================= */
+
 #matrix {
     position: fixed;
     inset: 0;
@@ -31,32 +43,45 @@ html, body {
     background: #020b06;
 }
 
-/* 页面内容 */
+/* =========================
+   页面
+========================= */
+
 .page {
     position: relative;
     z-index: 1;
     min-height: 100vh;
-    padding: 30px 20px;
+    padding: 25px 15px;
 }
 
-/* 顶部 */
+/* =========================
+   顶部
+========================= */
+
 .header {
     max-width: 1100px;
     margin: auto;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     padding: 15px 20px;
+
     border: 1px solid rgba(0,255,102,.35);
     border-radius: 14px;
-    background: rgba(0,15,8,.82);
+
+    background: rgba(0,15,8,.88);
+
     backdrop-filter: blur(8px);
 }
 
 .logo {
     font-size: 22px;
     font-weight: bold;
-    text-shadow: 0 0 12px #00ff66;
+
+    text-shadow:
+        0 0 12px #00ff66;
 }
 
 .status {
@@ -65,28 +90,44 @@ html, body {
 
 .status-dot {
     display: inline-block;
+
     width: 9px;
     height: 9px;
+
     background: #00ff66;
+
     border-radius: 50%;
-    box-shadow: 0 0 12px #00ff66;
+
+    box-shadow:
+        0 0 12px #00ff66;
+
     margin-right: 6px;
 }
 
-/* 主区域 */
+/* =========================
+   主区域
+========================= */
+
 .container {
     max-width: 1100px;
-    margin: 45px auto;
+    margin: 35px auto;
 }
 
-/* 登录框 */
+/* =========================
+   登录 / 用户
+========================= */
+
 .login-box {
-    max-width: 550px;
+    max-width: 600px;
+
     margin: auto;
-    padding: 40px;
+    padding: 35px;
+
     border: 1px solid #00ff66;
     border-radius: 20px;
-    background: rgba(0,15,8,.88);
+
+    background: rgba(0,15,8,.9);
+
     box-shadow:
         0 0 25px rgba(0,255,102,.25),
         inset 0 0 25px rgba(0,255,102,.05);
@@ -94,480 +135,84 @@ html, body {
 
 .title {
     text-align: center;
-    font-size: 42px;
-    margin-bottom: 10px;
-    text-shadow: 0 0 20px #00ff66;
+
+    font-size: 40px;
+
+    margin:
+        0 0 8px;
+
+    text-shadow:
+        0 0 20px #00ff66;
 }
 
 .subtitle {
     text-align: center;
+
     color: #72ffad;
+
     margin-bottom: 30px;
 }
 
-/* 输入框 */
+/* =========================
+   输入框
+========================= */
+
 .input {
     width: 100%;
-    padding: 15px;
-    margin: 8px 0;
-    border: 1px solid #00aa44;
+
+    padding: 14px;
+
+    margin: 7px 0;
+
+    border:
+        1px solid #00aa44;
+
     border-radius: 8px;
+
     outline: none;
-    background: rgba(0,0,0,.55);
+
+    background:
+        rgba(0,0,0,.6);
+
     color: #00ff66;
+
     font-size: 16px;
+}
+
+.input::placeholder {
+    color: #4d996b;
 }
 
 .input:focus {
     border-color: #00ff66;
-    box-shadow: 0 0 12px rgba(0,255,102,.35);
+
+    box-shadow:
+        0 0 12px
+        rgba(0,255,102,.35);
 }
 
-/* 按钮 */
+/* =========================
+   按钮
+========================= */
+
 .btn {
     width: 100%;
-    padding: 14px;
-    margin-top: 12px;
+
+    padding: 13px;
+
+    margin-top: 10px;
+
     border: none;
+
     border-radius: 8px;
-    background: #00b84f;
+
+    background:
+        #00b84f;
+
     color: white;
-    font-size: 17px;
+
+    font-size: 16px;
+
     cursor: pointer;
-    transition: .2s;
-}
 
-.btn:hover {
-    background: #00e861;
-    box-shadow: 0 0 20px rgba(0,255,102,.5);
-    transform: translateY(-2px);
-}
-
-/* 功能卡片 */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-    margin-top: 30px;
-}
-
-.card {
-    padding: 25px;
-    border: 1px solid rgba(0,255,102,.35);
-    border-radius: 14px;
-    background: rgba(0,15,8,.82);
-    transition: .2s;
-}
-
-.card:hover {
-    transform: translateY(-4px);
-    border-color: #00ff66;
-    box-shadow: 0 0 20px rgba(0,255,102,.2);
-}
-
-.card h3 {
-    margin-top: 0;
-}
-
-.card p {
-    color: #8ed9aa;
-    line-height: 1.6;
-}
-
-/* 终端 */
-.terminal {
-    display: none;
-    margin-top: 25px;
-    padding: 20px;
-    min-height: 220px;
-    border: 1px solid #00ff66;
-    border-radius: 12px;
-    background: #000904;
-    color: #00ff66;
-    font-family: monospace;
-    box-shadow: 0 0 20px rgba(0,255,102,.2);
-}
-
-.terminal-line {
-    margin: 7px 0;
-}
-
-/* 状态 */
-.panel {
-    max-width: 1100px;
-    margin: 30px auto;
-    padding: 25px;
-    border: 1px solid rgba(0,255,102,.3);
-    border-radius: 14px;
-    background: rgba(0,15,8,.82);
-}
-
-.stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-}
-
-.stat {
-    padding: 18px;
-    text-align: center;
-    border-radius: 10px;
-    background: rgba(0,255,102,.05);
-}
-
-.stat-number {
-    font-size: 26px;
-    font-weight: bold;
-    margin-top: 8px;
-}
-
-/* 页脚 */
-.footer {
-    text-align: center;
-    margin-top: 40px;
-    color: #579b70;
-}
-
-/* 手机 */
-@media (max-width: 700px) {
-
-    .page {
-        padding: 15px;
-    }
-
-    .header {
-        padding: 12px;
-    }
-
-    .title {
-        font-size: 32px;
-    }
-
-    .login-box {
-        padding: 25px;
-    }
-
-    .cards {
-        grid-template-columns: 1fr;
-    }
-
-    .stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-</style>
-</head>
-
-<body>
-
-<!-- 动态背景 -->
-<canvas id="matrix"></canvas>
-
-<div class="page">
-
-    <!-- 顶部 -->
-    <header class="header">
-        <div class="logo">🛡 SECURITY LAB</div>
-
-        <div class="status">
-            <span class="status-dot"></span>
-            系统在线
-        </div>
-    </header>
-
-
-    <main class="container">
-
-        <!-- 登录演示 -->
-        <section class="login-box">
-
-            <h1 class="title">安全实验室</h1>
-
-            <div class="subtitle">
-                SECURITY LAB DEMO
-            </div>
-
-            <input
-                id="username"
-                class="input"
-                type="text"
-                placeholder="测试用户名"
-            >
-
-            <input
-                id="password"
-                class="input"
-                type="password"
-                placeholder="测试密码"
-            >
-
-            <button class="btn" onclick="demoLogin()">
-                登录演示
-            </button>
-
-            <button class="btn" onclick="openTerminal()">
-                打开安全终端
-            </button>
-
-            <!-- 终端 -->
-            <div id="terminal" class="terminal">
-
-                <div class="terminal-line">
-                    root@security-lab:~# ./start
-                </div>
-
-                <div class="terminal-line">
-                    [OK] Security Lab started
-                </div>
-
-                <div class="terminal-line">
-                    [OK] Matrix background loaded
-                </div>
-
-                <div class="terminal-line">
-                    [OK] Demo environment ready
-                </div>
-
-                <div class="terminal-line">
-                    status: ONLINE
-                </div>
-
-                <button class="btn" onclick="closeTerminal()">
-                    关闭终端
-                </button>
-
-            </div>
-
-        </section>
-
-
-        <!-- 系统状态 -->
-        <section class="panel">
-
-            <h2>系统状态</h2>
-
-            <div class="stats">
-
-                <div class="stat">
-                    CPU
-                    <div class="stat-number">正常</div>
-                </div>
-
-                <div class="stat">
-                    网络
-                    <div class="stat-number">在线</div>
-                </div>
-
-                <div class="stat">
-                    防护
-                    <div class="stat-number">启用</div>
-                </div>
-
-                <div class="stat">
-                    时间
-                    <div id="clock" class="stat-number">--:--:--</div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- 实验模块 -->
-        <section class="cards">
-
-            <div class="card">
-                <h3>🔐 身份验证</h3>
-                <p>
-                    用于演示登录页面、表单验证以及安全提示。
-                </p>
-
-                <button class="btn" onclick="showMessage('身份验证模块已启动')">
-                    启动
-                </button>
-            </div>
-
-
-            <div class="card">
-                <h3>🖥 安全终端</h3>
-                <p>
-                    模拟一个安全实验环境中的命令终端。
-                </p>
-
-                <button class="btn" onclick="openTerminal()">
-                    打开
-                </button>
-            </div>
-
-
-            <div class="card">
-                <h3>📊 系统监控</h3>
-                <p>
-                    查看实验环境的模拟运行状态。
-                </p>
-
-                <button class="btn" onclick="showMessage('所有系统运行正常')">
-                    检查
-                </button>
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <footer class="footer">
-        SECURITY LAB DEMO · 仅用于合法安全实验
-    </footer>
-
-</div>
-
-
-<script>
-
-/* =========================
-   Matrix 动态背景
-========================= */
-
-const canvas = document.getElementById("matrix");
-const ctx = canvas.getContext("2d");
-
-let width;
-let height;
-let columns;
-let drops;
-
-const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}[]<>/\\$#@%";
-
-function resizeMatrix() {
-
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-
-    columns = Math.floor(width / 18);
-
-    drops = [];
-
-    for (let i = 0; i < columns; i++) {
-        drops[i] = Math.random() * -50;
-    }
-}
-
-resizeMatrix();
-
-window.addEventListener("resize", resizeMatrix);
-
-
-function drawMatrix() {
-
-    ctx.fillStyle = "rgba(2, 11, 6, 0.08)";
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.font = "16px monospace";
-
-    for (let i = 0; i < drops.length; i++) {
-
-        const text =
-            characters[
-                Math.floor(Math.random() * characters.length)
-            ];
-
-        ctx.fillStyle = "#00ff66";
-
-        ctx.fillText(
-            text,
-            i * 18,
-            drops[i] * 18
-        );
-
-        if (
-            drops[i] * 18 > height &&
-            Math.random() > 0.975
-        ) {
-            drops[i] = 0;
-        }
-
-        drops[i]++;
-    }
-}
-
-setInterval(drawMatrix, 50);
-
-
-/* =========================
-   登录演示
-========================= */
-
-function demoLogin() {
-
-    const username =
-        document.getElementById("username").value;
-
-    if (username.trim() === "") {
-
-        alert("请输入测试用户名");
-
-        return;
-    }
-
-    alert(
-        "这是安全实验演示页面。\n\n" +
-        "不会发送或保存真实账号密码。\n\n" +
-        "用户名：" + username
-    );
-}
-
-
-/* =========================
-   打开终端
-========================= */
-
-function openTerminal() {
-
-    document.getElementById("terminal").style.display = "block";
-}
-
-
-/* =========================
-   关闭终端
-========================= */
-
-function closeTerminal() {
-
-    document.getElementById("terminal").style.display = "none";
-}
-
-
-/* =========================
-   信息提示
-========================= */
-
-function showMessage(message) {
-
-    alert(message);
-}
-
-
-/* =========================
-   实时时钟
-========================= */
-
-function updateClock() {
-
-    const now = new Date();
-
-    const time =
-        now.toLocaleTimeString("zh-CN");
-
-    document.getElementById("clock").textContent = time;
-}
-
-updateClock();
-
-setInterval(updateClock, 1000);
-
-</script>
-
-</body>
-</html>
+    transition: .
