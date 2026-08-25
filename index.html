@@ -244,10 +244,9 @@ function renderMessages(data){
  data.forEach(item=>{
   const row=document.createElement("div");row.className="message";
   const av=document.createElement("div");av.className="avatar";
-  if(item.avatar){const img=new Image();img.src=item.avatar;img.onerror=()=>av.textContent=(item.username||"游")[0];av.appendChild(img)}else av.textContent=(item.username||"游")[0];
+   av.textContent=(item.username||"游")[0];
   const c=document.createElement("div");c.className="message-content";
-  let media=item.image?`<img class="message-image" src="${escapeHTML(item.image)}" alt="图片">`:"";
-  c.innerHTML=`<div class="top"><span class="user">${escapeHTML(item.username||"游客")}</span><span class="time">${formatTime(item.created_at)}</span></div><div class="text">${escapeHTML(item.message||"")}</div>${media}<div class="actions"><button class="action copy">📋 复制</button><button class="action reply">↩️ 回复</button>${item.username===nickname?'<button class="action delete">🗑️ 删除</button>':''}</div>`;
+  c.innerHTML=`<div class="top"><span class="user">${escapeHTML(item.username||"游客")}</span><span class="time">${formatTime(item.created_at)}</span></div><div class="text">${escapeHTML(item.message||"")}</div><div class="actions"><button class="action copy">📋 复制</button><button class="action reply">↩️ 回复</button>${item.username===nickname?'<button class="action delete">🗑️ 删除</button>':''}</div>`;
   c.querySelector(".copy").onclick=()=>{navigator.clipboard?.writeText(item.message||"");showToast("消息已复制")};
   c.querySelector(".reply").onclick=()=>{$("messageInput").value="@"+(item.username||"游客")+" ";$("messageInput").focus()};
   const del=c.querySelector(".delete");if(del)del.onclick=()=>deleteMessage(item);
@@ -266,7 +265,7 @@ async function loadMessages(){
  try{
   const {data,error}=await supabaseClient
    .from("messages")
-   .select("id,username,message,created_at,avatar,image")
+   .select("id,username,message,created_at")
    .order("created_at",{ascending:true})
    .limit(100);
   if(error) throw error;
@@ -292,11 +291,9 @@ async function deleteMessage(item){
 }
 async function sendMessage(){
  const input=$("messageInput"),text=input.value.trim();
- if(!text&&!attachment)return;
+ if(!text)return;
  if(!supabaseClient){showToast("云端未连接，无法发送");return;}
  const payload={username:nickname||"游客",message:text};
- if(avatarURL)payload.avatar=avatarURL;
- if(attachment?.data)payload.image=attachment.data;
  try{
   const {error}=await supabaseClient.from("messages").insert([payload]);
   if(error)throw error;
