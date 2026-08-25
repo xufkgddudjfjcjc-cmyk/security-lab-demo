@@ -80,9 +80,67 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
  .messages{padding:16px 13px}.input-area{padding:9px;padding-bottom:calc(9px + env(safe-area-inset-bottom))}
  .notification-panel{right:9px;top:65px;width:calc(100vw - 18px)}
 }
+
+/* 手机端功能菜单：桌面端不影响 */
+.mobile-tools-btn{
+  display:none;
+  position:fixed;right:16px;top:16px;z-index:9998;
+  width:46px;height:46px;border:1px solid rgba(120,170,255,.35);
+  border-radius:14px;background:rgba(8,20,42,.92);color:#fff;
+  font-size:22px;box-shadow:0 8px 30px rgba(0,0,0,.28)
+}
+.mobile-tools-overlay{
+  position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.58);
+  backdrop-filter:blur(7px);display:flex;align-items:flex-start;justify-content:flex-end
+}
+.mobile-tools-panel{
+  width:min(390px,92vw);margin:72px 14px 0;padding:16px;
+  border:1px solid rgba(100,160,255,.35);border-radius:22px;
+  background:linear-gradient(180deg,rgba(8,24,52,.98),rgba(5,16,35,.98));
+  box-shadow:0 18px 60px rgba(0,0,0,.45)
+}
+.mobile-tools-head{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:20px;margin-bottom:14px}
+.mobile-tools-close{width:38px;height:38px;border:0;border-radius:12px;background:rgba(255,255,255,.09);color:#fff;font-size:26px}
+.mobile-tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.mobile-tools-grid button{
+  min-height:82px;border:1px solid rgba(100,160,255,.25);border-radius:16px;
+  background:rgba(30,65,120,.28);color:#eef6ff;font-size:25px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px
+}
+.mobile-tools-grid button span{font-size:14px}
+.mobile-tools-grid button:active{transform:scale(.98);background:rgba(70,120,210,.38)}
+.mobile-tool-status{
+  margin-top:13px;padding:11px;border-radius:12px;background:rgba(255,255,255,.06);
+  color:#a9c4e8;font-size:13px;text-align:center
+}
+@media (max-width:800px){
+  .mobile-tools-btn{display:block}
+}
 </style>
 </head>
 <body>
+<!-- 移动端功能菜单 -->
+<button id="mobileToolsBtn" class="mobile-tools-btn" aria-label="打开功能菜单">☰</button>
+<div id="mobileToolsOverlay" class="mobile-tools-overlay" hidden>
+  <div class="mobile-tools-panel">
+    <div class="mobile-tools-head">
+      <strong>功能中心</strong>
+      <button id="mobileToolsClose" class="mobile-tools-close">×</button>
+    </div>
+    <div class="mobile-tools-grid">
+      <button data-tool="settings">⚙️<span>设置中心</span></button>
+      <button data-tool="profile">✏️<span>个人资料</span></button>
+      <button data-tool="security">🛡️<span>安全实验室</span></button>
+      <button data-tool="weather">🌤️<span>天气</span></button>
+      <button data-tool="location">📍<span>位置</span></button>
+      <button data-tool="time">🕐<span>当前时间</span></button>
+      <button data-tool="stats">💬<span>消息统计</span></button>
+      <button data-tool="notice">🔔<span>通知设置</span></button>
+    </div>
+    <div id="mobileToolStatus" class="mobile-tool-status">选择一个功能</div>
+  </div>
+</div>
+
 <canvas id="space"></canvas><div class="ambient one"></div><div class="ambient two"></div><div class="ambient three"></div>
 
 <div id="boot"><div class="boot"><div class="logo"></div><div class="boot-name">SECURITY LAB</div><div class="boot-line"></div></div></div>
@@ -393,6 +451,45 @@ updateProfile();applySettings();renderNotifications();loadWeather();
 setInterval(()=>{$("onlineCount").textContent=String(Math.max(1,Math.floor(1+Math.random()*6)));updateStats()},15000);
 setTimeout(()=>$("boot").classList.add("hide"),900);
 (async()=>{await initSupabase();subscribeRealtime();await loadMessages()})();
+
+// 手机端功能菜单
+(function(){
+  const btn=document.getElementById("mobileToolsBtn");
+  const overlay=document.getElementById("mobileToolsOverlay");
+  const close=document.getElementById("mobileToolsClose");
+  const status=document.getElementById("mobileToolStatus");
+  if(!btn||!overlay)return;
+  function openMenu(){overlay.hidden=false;document.body.style.overflow="hidden"}
+  function closeMenu(){overlay.hidden=true;document.body.style.overflow=""}
+  btn.addEventListener("click",openMenu);
+  close.addEventListener("click",closeMenu);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)closeMenu()});
+
+  const actions={
+    settings:["设置中心",["settingsBtn","openSettings","showSettings"]],
+    profile:["个人资料",["profileBtn","openProfile","showProfile"]],
+    security:["安全实验室",["securityBtn","openSecurity","showSecurity"]],
+    weather:["天气",["weatherBtn","openWeather","showWeather"]],
+    location:["位置",["locationBtn","openLocation","showLocation"]],
+    time:["当前时间",[]],
+    stats:["消息统计",["statsBtn","openStats","showStats"]],
+    notice:["通知设置",["noticeBtn","openNotice","showNotice","notificationBtn"]]
+  };
+
+  document.querySelectorAll(".mobile-tools-grid button").forEach(b=>{
+    b.addEventListener("click",()=>{
+      const [name,ids]=actions[b.dataset.tool]||["功能",[]];
+      let el=null;
+      for(const id of ids){el=document.getElementById(id);if(el)break}
+      if(el){closeMenu();el.click();return}
+      if(b.dataset.tool==="time"){
+        status.textContent="当前时间："+new Date().toLocaleString();
+      }else{
+        status.textContent=name+"已保留；如果页面原组件使用其他按钮名称，请继续使用桌面端对应入口。";
+      }
+    });
+  });
+})();
 </script>
 </body>
 </html>
