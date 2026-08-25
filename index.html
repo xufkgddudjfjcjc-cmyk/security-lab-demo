@@ -16,9 +16,8 @@
 
 :root{
     --bg:#020817;
-    --bg2:#06142d;
-    --panel:rgba(5,22,50,.72);
-    --panel2:rgba(8,31,65,.72);
+    --panel:rgba(5,22,50,.78);
+    --panel2:rgba(8,31,65,.76);
     --line:rgba(78,166,255,.28);
     --accent:#3b82f6;
     --accent2:#22d3ee;
@@ -36,14 +35,8 @@ html,body{
     min-height:100%;
     background:var(--bg);
     color:var(--text);
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "SF Pro Display",
-        "Helvetica Neue",
-        Arial,
-        "Microsoft YaHei",
-        sans-serif;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",
+    "Helvetica Neue",Arial,"Microsoft YaHei",sans-serif;
 }
 
 body{
@@ -51,7 +44,7 @@ body{
 }
 
 /* =========================
-   背景
+   动态背景
 ========================= */
 
 #space{
@@ -61,13 +54,11 @@ body{
     height:100%;
     z-index:0;
     background:
-        radial-gradient(
-            circle at 50% 50%,
-            #09265c 0%,
-            #031637 42%,
-            #010817 78%,
-            #00030a 100%
-        );
+        radial-gradient(circle at 50% 50%,
+        #09265c 0%,
+        #031637 42%,
+        #010817 78%,
+        #00030a 100%);
 }
 
 .ambient{
@@ -145,25 +136,17 @@ body{
     width:100vw;
     height:100vh;
     display:grid;
-    grid-template-columns:230px minmax(0,1fr) 285px;
+    grid-template-columns:230px minmax(0,1fr) 300px;
     gap:14px;
     padding:14px;
 }
-
-/* =========================
-   通用面板
-========================= */
 
 .sidebar,
 .chat,
 .profile{
     position:relative;
     background:
-        linear-gradient(
-            145deg,
-            var(--panel2),
-            var(--panel)
-        );
+        linear-gradient(145deg,var(--panel2),var(--panel));
     border:1px solid var(--line);
     box-shadow:
         inset 0 0 40px rgba(37,99,235,.06),
@@ -210,12 +193,7 @@ body{
     align-items:center;
     justify-content:center;
     border-radius:13px;
-    background:
-        linear-gradient(
-            135deg,
-            var(--accent),
-            var(--purple)
-        );
+    background:linear-gradient(135deg,var(--accent),var(--purple));
     box-shadow:0 0 25px rgba(79,70,229,.55);
     font-size:20px;
 }
@@ -259,11 +237,9 @@ body{
 .channel.active{
     color:white;
     background:
-        linear-gradient(
-            90deg,
-            rgba(37,99,235,.42),
-            rgba(79,70,229,.22)
-        );
+        linear-gradient(90deg,
+        rgba(37,99,235,.42),
+        rgba(79,70,229,.22));
     border:1px solid rgba(70,150,255,.35);
     box-shadow:0 0 20px rgba(37,99,235,.15);
 }
@@ -301,7 +277,7 @@ body{
 }
 
 /* =========================
-   CHAT
+   聊天
 ========================= */
 
 .chat{
@@ -317,7 +293,7 @@ body{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 22px;
+    padding:0 18px 0 22px;
     border-bottom:1px solid rgba(80,150,220,.18);
     background:rgba(3,18,45,.4);
 }
@@ -326,6 +302,7 @@ body{
     display:flex;
     align-items:center;
     gap:11px;
+    min-width:0;
 }
 
 .hash{
@@ -342,6 +319,47 @@ body{
     color:#7795b8;
     font-size:10px;
     margin-top:3px;
+}
+
+.header-actions{
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+
+.header-btn{
+    position:relative;
+    width:37px;
+    height:37px;
+    border:1px solid rgba(80,150,220,.25);
+    border-radius:11px;
+    background:rgba(11,38,76,.6);
+    color:#bdd4ee;
+    cursor:pointer;
+    transition:.18s;
+}
+
+.header-btn:hover{
+    background:rgba(37,99,235,.28);
+    border-color:#4b9cff;
+}
+
+.notification-badge{
+    position:absolute;
+    top:-4px;
+    right:-4px;
+    min-width:16px;
+    height:16px;
+    padding:0 4px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:99px;
+    background:#ef4444;
+    color:white;
+    font-size:9px;
+    font-weight:800;
+    border:2px solid #071a36;
 }
 
 .connection{
@@ -400,15 +418,17 @@ body{
     align-items:center;
     justify-content:center;
     border-radius:13px;
-    background:
-        linear-gradient(
-            135deg,
-            var(--accent),
-            var(--purple)
-        );
+    background:linear-gradient(135deg,var(--accent),var(--purple));
     border:1px solid rgba(120,190,255,.3);
     box-shadow:0 0 18px rgba(59,130,246,.2);
     font-weight:800;
+    overflow:hidden;
+}
+
+.avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
 .message-content{
@@ -461,6 +481,45 @@ body{
 .reaction:hover{
     background:rgba(37,99,235,.3);
     border-color:#4b9cff;
+}
+
+/* =========================
+   搜索
+========================= */
+
+.search-bar{
+    display:none;
+    padding:10px 18px;
+    border-bottom:1px solid rgba(80,150,220,.18);
+    background:rgba(2,15,38,.48);
+}
+
+.search-bar.show{
+    display:flex;
+    gap:8px;
+}
+
+.search-input{
+    flex:1;
+    min-width:0;
+    padding:10px 12px;
+    border-radius:11px;
+    border:1px solid rgba(80,150,220,.3);
+    outline:none;
+    background:rgba(5,28,62,.8);
+    color:white;
+}
+
+.search-input::placeholder{
+    color:#6784a5;
+}
+
+.search-close{
+    width:38px;
+    border:1px solid rgba(80,150,220,.3);
+    border-radius:11px;
+    background:rgba(5,28,62,.8);
+    color:#aac3df;
 }
 
 /* =========================
@@ -553,12 +612,7 @@ body{
     height:40px;
     border:0;
     border-radius:12px;
-    background:
-        linear-gradient(
-            135deg,
-            var(--accent),
-            var(--purple)
-        );
+    background:linear-gradient(135deg,var(--accent),var(--purple));
     color:white;
     font-size:19px;
     cursor:pointer;
@@ -575,7 +629,7 @@ body{
 }
 
 /* =========================
-   PROFILE
+   右侧 Profile
 ========================= */
 
 .profile{
@@ -596,11 +650,9 @@ body{
     padding:17px;
     border-radius:18px;
     background:
-        linear-gradient(
-            145deg,
-            rgba(23,56,104,.7),
-            rgba(6,25,58,.68)
-        );
+        linear-gradient(145deg,
+        rgba(23,56,104,.7),
+        rgba(6,25,58,.68));
     border:1px solid rgba(80,155,235,.3);
 }
 
@@ -611,25 +663,38 @@ body{
 }
 
 .big-avatar{
+    position:relative;
     width:53px;
     height:53px;
     display:flex;
     align-items:center;
     justify-content:center;
     border-radius:16px;
-    background:
-        linear-gradient(
-            135deg,
-            var(--accent),
-            var(--purple)
-        );
+    background:linear-gradient(135deg,var(--accent),var(--purple));
     font-size:18px;
     font-weight:800;
     box-shadow:0 0 25px rgba(79,70,229,.28);
+    overflow:hidden;
+}
+
+.big-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
 .user-name{
     font-weight:800;
+}
+
+.user-signature{
+    margin-top:3px;
+    color:#7896b7;
+    font-size:10px;
+    max-width:175px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
 }
 
 .user-online{
@@ -639,6 +704,17 @@ body{
     margin-top:5px;
     color:#54e29a;
     font-size:10px;
+}
+
+.edit-profile-btn{
+    width:100%;
+    margin-top:14px;
+    padding:9px;
+    border:1px solid rgba(80,150,220,.25);
+    border-radius:11px;
+    background:rgba(20,56,100,.5);
+    color:#bcd4ee;
+    cursor:pointer;
 }
 
 .info-divider{
@@ -662,18 +738,16 @@ body{
 }
 
 /* =========================
-   WEATHER
+   Weather
 ========================= */
 
 .weather{
     padding:17px;
     border-radius:18px;
     background:
-        linear-gradient(
-            145deg,
-            rgba(22,86,160,.65),
-            rgba(8,37,78,.72)
-        );
+        linear-gradient(145deg,
+        rgba(22,86,160,.65),
+        rgba(8,37,78,.72));
     border:1px solid rgba(82,173,255,.35);
 }
 
@@ -732,16 +806,11 @@ body{
     font-size:10px;
 }
 
-/* =========================
-   7天预报
-========================= */
-
 .forecast{
     margin-top:10px;
     display:flex;
     gap:6px;
     overflow-x:auto;
-    padding-bottom:2px;
 }
 
 .forecast::-webkit-scrollbar{
@@ -773,39 +842,286 @@ body{
 }
 
 /* =========================
-   设置
+   用户资料弹窗
 ========================= */
 
-.settings-panel{
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:80;
     display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,5,15,.65);
+    backdrop-filter:blur(10px);
 }
 
-.settings-panel.show{
-    display:block;
+.modal.show{
+    display:flex;
 }
 
-.setting-row{
+.modal-card{
+    width:min(430px,100%);
+    padding:22px;
+    border-radius:22px;
+    border:1px solid rgba(80,160,240,.35);
+    background:
+        linear-gradient(145deg,
+        rgba(8,34,70,.97),
+        rgba(3,16,37,.97));
+    box-shadow:0 30px 100px rgba(0,0,0,.55);
+}
+
+.modal-title{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    gap:10px;
-    padding:11px 0;
-    color:#b7cce4;
-    font-size:12px;
+    font-size:18px;
+    font-weight:800;
+    margin-bottom:18px;
 }
 
-.theme-select{
-    width:130px;
-    padding:8px 9px;
+.modal-close{
+    width:34px;
+    height:34px;
+    border:0;
     border-radius:10px;
-    border:1px solid rgba(80,150,220,.3);
-    background:#061b3c;
-    color:#dcecff;
+    background:rgba(80,140,210,.14);
+    color:#9fb8d3;
+    cursor:pointer;
+}
+
+.profile-preview{
+    display:flex;
+    justify-content:center;
+    margin:8px 0 18px;
+}
+
+.profile-preview-avatar{
+    width:80px;
+    height:80px;
+    border-radius:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    background:linear-gradient(135deg,var(--accent),var(--purple));
+    font-size:28px;
+    font-weight:800;
+}
+
+.profile-preview-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.form-label{
+    display:block;
+    margin:12px 0 6px;
+    color:#86a4c5;
+    font-size:11px;
+}
+
+.form-input,
+.form-textarea{
+    width:100%;
+    border:1px solid rgba(80,150,220,.28);
+    border-radius:11px;
     outline:none;
+    background:rgba(2,18,42,.75);
+    color:white;
+    padding:11px 12px;
+    font-size:13px;
+}
+
+.form-textarea{
+    min-height:80px;
+    resize:vertical;
+}
+
+.form-input:focus,
+.form-textarea:focus{
+    border-color:#479cff;
+    box-shadow:0 0 0 3px rgba(59,130,246,.08);
+}
+
+.modal-actions{
+    display:flex;
+    gap:8px;
+    margin-top:18px;
+}
+
+.modal-action{
+    flex:1;
+    padding:11px;
+    border-radius:11px;
+    border:1px solid rgba(80,150,220,.25);
+    cursor:pointer;
+}
+
+.modal-action.cancel{
+    background:rgba(60,90,130,.16);
+    color:#9db5d0;
+}
+
+.modal-action.save{
+    background:linear-gradient(135deg,var(--accent),var(--purple));
+    color:white;
+    border:0;
 }
 
 /* =========================
-   手机底部导航
+   通知中心
+========================= */
+
+.notification-panel{
+    position:fixed;
+    top:70px;
+    right:24px;
+    width:min(360px,calc(100vw - 30px));
+    z-index:70;
+    display:none;
+    border:1px solid rgba(80,160,240,.32);
+    border-radius:18px;
+    background:
+        linear-gradient(145deg,
+        rgba(8,34,70,.97),
+        rgba(3,16,37,.97));
+    box-shadow:0 25px 80px rgba(0,0,0,.5);
+    backdrop-filter:blur(20px);
+    overflow:hidden;
+}
+
+.notification-panel.show{
+    display:block;
+}
+
+.notification-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 16px;
+    border-bottom:1px solid rgba(80,150,220,.18);
+}
+
+.notification-title{
+    font-weight:800;
+}
+
+.clear-notifications{
+    border:0;
+    background:transparent;
+    color:#6ca8e9;
+    font-size:10px;
+    cursor:pointer;
+}
+
+.notifications{
+    max-height:390px;
+    overflow-y:auto;
+}
+
+.notification-item{
+    display:flex;
+    gap:10px;
+    padding:13px 15px;
+    border-bottom:1px solid rgba(80,150,220,.1);
+}
+
+.notification-icon{
+    width:34px;
+    height:34px;
+    flex:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:rgba(37,99,235,.18);
+}
+
+.notification-text{
+    color:#bdd0e5;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.notification-time{
+    color:#5f7d9f;
+    font-size:9px;
+    margin-top:3px;
+}
+
+.no-notifications{
+    padding:35px 15px;
+    text-align:center;
+    color:#6985a5;
+    font-size:11px;
+}
+
+/* =========================
+   搜索结果
+========================= */
+
+.search-results{
+    position:fixed;
+    top:116px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(650px,calc(100vw - 30px));
+    max-height:60vh;
+    overflow-y:auto;
+    z-index:60;
+    display:none;
+    border:1px solid rgba(80,160,240,.3);
+    border-radius:17px;
+    background:rgba(4,20,45,.96);
+    box-shadow:0 25px 80px rgba(0,0,0,.5);
+    backdrop-filter:blur(20px);
+}
+
+.search-results.show{
+    display:block;
+}
+
+.search-result{
+    padding:13px 15px;
+    border-bottom:1px solid rgba(80,150,220,.12);
+    cursor:pointer;
+}
+
+.search-result:hover{
+    background:rgba(37,99,235,.12);
+}
+
+.search-result-user{
+    font-weight:800;
+    font-size:12px;
+}
+
+.search-result-time{
+    color:#5f7d9f;
+    font-size:9px;
+    margin-left:6px;
+}
+
+.search-result-text{
+    margin-top:4px;
+    color:#abc1d9;
+    font-size:11px;
+    line-height:1.5;
+}
+
+.search-empty{
+    padding:35px;
+    text-align:center;
+    color:#6e89a8;
+    font-size:11px;
+}
+
+/* =========================
+   手机
 ========================= */
 
 .mobile-nav{
@@ -841,6 +1157,115 @@ body{
 .toast.show{
     opacity:1;
     transform:translate(-50%,0);
+}
+
+/* =========================
+   Light
+========================= */
+
+body.light-theme{
+    --bg:#eef4fb;
+    --panel:rgba(255,255,255,.82);
+    --panel2:rgba(255,255,255,.76);
+    --line:rgba(50,110,180,.18);
+    --text:#142033;
+    --text2:#475b73;
+    --muted:#70839a;
+}
+
+body.light-theme #space{
+    background:
+        radial-gradient(circle at 50% 40%,
+        #dcecff,
+        #f5f9ff 60%,
+        #e8f0fa);
+}
+
+body.light-theme .message-user{
+    color:#162235;
+}
+
+body.light-theme .message-text{
+    color:#42556b;
+}
+
+body.light-theme .chat-header,
+body.light-theme .input-area{
+    background:rgba(255,255,255,.62);
+}
+
+body.light-theme .message-input{
+    color:#152033;
+}
+
+/* =========================
+   Matrix
+========================= */
+
+body.matrix-theme{
+    --accent:#00ff66;
+    --accent2:#00ffcc;
+    --purple:#00aa55;
+    --green:#00ff66;
+    --line:rgba(0,255,100,.25);
+    --bg:#000800;
+    --panel:rgba(0,20,8,.78);
+    --panel2:rgba(0,30,12,.72);
+}
+
+body.matrix-theme #space{
+    background:
+        radial-gradient(circle at 50% 50%,
+        #003b16,
+        #001a08 45%,
+        #000500 100%);
+}
+
+body.matrix-theme #globe{
+    filter:
+        hue-rotate(70deg)
+        drop-shadow(0 0 35px rgba(0,255,80,.3));
+}
+
+/* =========================
+   Purple
+========================= */
+
+body.purple-theme{
+    --accent:#8b5cf6;
+    --accent2:#c084fc;
+    --purple:#ec4899;
+    --line:rgba(167,100,255,.28);
+}
+
+body.purple-theme #space{
+    background:
+        radial-gradient(circle at 50% 50%,
+        #24105c,
+        #100626 48%,
+        #04020b 100%);
+}
+
+/* =========================
+   Midnight
+========================= */
+
+body.midnight-theme{
+    --accent:#64748b;
+    --accent2:#94a3b8;
+    --purple:#475569;
+    --line:rgba(148,163,184,.2);
+    --bg:#02040a;
+    --panel:rgba(9,12,20,.8);
+    --panel2:rgba(15,18,28,.78);
+}
+
+body.midnight-theme #space{
+    background:
+        radial-gradient(circle at 50% 50%,
+        #18202f,
+        #070a10 50%,
+        #010204 100%);
 }
 
 /* =========================
@@ -917,7 +1342,15 @@ body{
 
     .chat-header{
         height:62px;
-        padding:0 15px;
+        padding:0 12px;
+    }
+
+    .chat-description{
+        display:none;
+    }
+
+    .connection{
+        display:none;
     }
 
     .messages{
@@ -926,10 +1359,6 @@ body{
 
     .input-area{
         padding:9px;
-    }
-
-    .chat-description{
-        display:none;
     }
 
     #globe{
@@ -988,8 +1417,7 @@ body{
         display:none;
         padding:12px;
         padding-bottom:76px;
-        background:
-            rgba(1,8,22,.92);
+        background:rgba(1,8,22,.92);
         backdrop-filter:blur(20px);
         overflow-y:auto;
     }
@@ -1021,162 +1449,19 @@ body{
         border:1px solid rgba(80,150,220,.15);
     }
 
-    .mobile-weather-card{
-        max-width:500px;
+    .header-btn{
+        width:35px;
+        height:35px;
     }
 
-    .mobile-theme-card{
-        max-width:500px;
+    .notification-panel{
+        top:72px;
+        right:12px;
     }
-}
 
-/* =========================
-   Light theme
-========================= */
-
-body.light-theme{
-    --bg:#eef4fb;
-    --bg2:#ffffff;
-    --panel:rgba(255,255,255,.82);
-    --panel2:rgba(255,255,255,.76);
-    --line:rgba(50,110,180,.18);
-    --text:#142033;
-    --text2:#475b73;
-    --muted:#70839a;
-}
-
-body.light-theme #space{
-    background:
-        radial-gradient(
-            circle at 50% 40%,
-            #dcecff,
-            #f5f9ff 60%,
-            #e8f0fa
-        );
-}
-
-body.light-theme .message-user{
-    color:#162235;
-}
-
-body.light-theme .message-text{
-    color:#42556b;
-}
-
-body.light-theme .chat-header,
-body.light-theme .input-area{
-    background:rgba(255,255,255,.62);
-}
-
-body.light-theme .message-input{
-    color:#152033;
-}
-
-body.light-theme .mobile-nav{
-    background:rgba(255,255,255,.92);
-}
-
-body.light-theme .mobile-page{
-    background:rgba(240,246,253,.95);
-}
-
-body.light-theme .theme-select{
-    background:white;
-    color:#172033;
-}
-
-/* =========================
-   Matrix
-========================= */
-
-body.matrix-theme{
-    --accent:#00ff66;
-    --accent2:#00ffcc;
-    --purple:#00aa55;
-    --green:#00ff66;
-    --line:rgba(0,255,100,.25);
-    --bg:#000800;
-    --panel:rgba(0,20,8,.78);
-    --panel2:rgba(0,30,12,.72);
-}
-
-body.matrix-theme #space{
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            #003b16,
-            #001a08 45%,
-            #000500 100%
-        );
-}
-
-body.matrix-theme #globe{
-    filter:
-        hue-rotate(70deg)
-        drop-shadow(0 0 35px rgba(0,255,80,.3));
-}
-
-body.matrix-theme .ambient.one{
-    background:#00ff66;
-}
-
-body.matrix-theme .ambient.two{
-    background:#00aa44;
-}
-
-body.matrix-theme .ambient.three{
-    background:#00ffcc;
-}
-
-/* =========================
-   Purple
-========================= */
-
-body.purple-theme{
-    --accent:#8b5cf6;
-    --accent2:#c084fc;
-    --purple:#ec4899;
-    --line:rgba(167,100,255,.28);
-}
-
-body.purple-theme #space{
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            #24105c,
-            #100626 48%,
-            #04020b 100%
-        );
-}
-
-body.purple-theme #globe{
-    filter:
-        hue-rotate(45deg)
-        drop-shadow(0 0 40px rgba(168,85,247,.3));
-}
-
-/* =========================
-   Midnight
-========================= */
-
-body.midnight-theme{
-    --accent:#64748b;
-    --accent2:#94a3b8;
-    --purple:#475569;
-    --line:rgba(148,163,184,.2);
-    --bg:#02040a;
-    --panel:rgba(9,12,20,.8);
-    --panel2:rgba(15,18,28,.78);
-}
-
-body.midnight-theme #space{
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            #18202f,
-            #070a10 50%,
-            #010204 100%
-        );
+    .search-results{
+        top:105px;
+    }
 }
 </style>
 </head>
@@ -1197,15 +1482,19 @@ body.midnight-theme #space{
 <div class="app">
 
 <!-- =========================
-     左侧频道
+     左侧
 ========================= -->
 
 <aside class="sidebar">
 
     <div class="brand">
-        <div class="brand-icon">◇</div>
+
+        <div class="brand-icon">
+            ◇
+        </div>
 
         <div class="brand-text">
+
             <div class="brand-name">
                 Security Lab
             </div>
@@ -1213,12 +1502,16 @@ body.midnight-theme #space{
             <div class="brand-sub">
                 Community
             </div>
+
         </div>
+
     </div>
+
 
     <div class="section-title">
         CHANNELS
     </div>
+
 
     <div
         class="channel active"
@@ -1229,6 +1522,7 @@ body.midnight-theme #space{
         <span>总聊天室</span>
     </div>
 
+
     <div
         class="channel"
         data-channel="tech"
@@ -1237,6 +1531,7 @@ body.midnight-theme #space{
         <span class="channel-icon">#</span>
         <span>技术交流</span>
     </div>
+
 
     <div
         class="channel"
@@ -1247,6 +1542,7 @@ body.midnight-theme #space{
         <span>随便聊聊</span>
     </div>
 
+
     <div
         class="channel"
         data-channel="security"
@@ -1255,6 +1551,7 @@ body.midnight-theme #space{
         <span class="channel-icon">#</span>
         <span>安全公告</span>
     </div>
+
 
     <div
         class="channel"
@@ -1265,6 +1562,7 @@ body.midnight-theme #space{
         <span>分享区</span>
     </div>
 
+
     <div
         class="channel"
         data-channel="resource"
@@ -1274,20 +1572,26 @@ body.midnight-theme #space{
         <span>资源站</span>
     </div>
 
+
     <div class="sidebar-bottom">
+
         <div class="mini-status">
+
             <span class="green-dot"></span>
+
             <span id="serverStatus">
                 服务器连接中
             </span>
+
         </div>
+
     </div>
 
 </aside>
 
 
 <!-- =========================
-     聊天
+     CHAT
 ========================= -->
 
 <main class="chat">
@@ -1296,7 +1600,9 @@ body.midnight-theme #space{
 
         <div class="chat-title">
 
-            <div class="hash">#</div>
+            <div class="hash">
+                #
+            </div>
 
             <div>
 
@@ -1318,15 +1624,70 @@ body.midnight-theme #space{
 
         </div>
 
-        <div class="connection">
 
-            <span class="green-dot"></span>
+        <div class="header-actions">
 
-            在线
+            <button
+                class="header-btn"
+                onclick="toggleSearch()"
+                title="搜索"
+            >
+                🔍
+            </button>
+
+
+            <button
+                id="notificationButton"
+                class="header-btn"
+                onclick="toggleNotifications()"
+                title="通知"
+            >
+                🔔
+
+                <span
+                    id="notificationBadge"
+                    class="notification-badge"
+                    style="display:none"
+                >
+                    0
+                </span>
+
+            </button>
+
+
+            <div class="connection">
+
+                <span class="green-dot"></span>
+
+                在线
+
+            </div>
 
         </div>
 
     </header>
+
+
+    <div
+        id="searchBar"
+        class="search-bar"
+    >
+
+        <input
+            id="searchInput"
+            class="search-input"
+            placeholder="搜索消息或用户名..."
+            autocomplete="off"
+        >
+
+        <button
+            class="search-close"
+            onclick="closeSearch()"
+        >
+            ✕
+        </button>
+
+    </div>
 
 
     <section
@@ -1373,7 +1734,7 @@ body.midnight-theme #space{
 
 
 <!-- =========================
-     右侧
+     PROFILE
 ========================= -->
 
 <aside class="profile">
@@ -1381,6 +1742,7 @@ body.midnight-theme #space{
     <div class="profile-title">
         PROFILE
     </div>
+
 
     <div class="user-card">
 
@@ -1402,14 +1764,32 @@ body.midnight-theme #space{
                     游客
                 </div>
 
+                <div
+                    id="profileSignature"
+                    class="user-signature"
+                >
+                    还没有个性签名
+                </div>
+
                 <div class="user-online">
+
                     <span class="green-dot"></span>
+
                     在线
+
                 </div>
 
             </div>
 
         </div>
+
+
+        <button
+            class="edit-profile-btn"
+            onclick="openProfileModal()"
+        >
+            ✏️ 编辑个人资料
+        </button>
 
 
         <div class="info-divider"></div>
@@ -1494,17 +1874,24 @@ body.midnight-theme #space{
         <div class="weather-detail">
 
             <div class="weather-small">
+
                 💧 湿度
+
                 <strong id="humidity">
                     --%
                 </strong>
+
             </div>
 
+
             <div class="weather-small">
+
                 💨 风速
+
                 <strong id="wind">
                     -- km/h
                 </strong>
+
             </div>
 
         </div>
@@ -1575,6 +1962,147 @@ body.midnight-theme #space{
 
 
 <!-- =========================
+     搜索结果
+========================= -->
+
+<div
+    id="searchResults"
+    class="search-results"
+></div>
+
+
+<!-- =========================
+     通知
+========================= -->
+
+<div
+    id="notificationPanel"
+    class="notification-panel"
+>
+
+    <div class="notification-header">
+
+        <div class="notification-title">
+            🔔 通知中心
+        </div>
+
+        <button
+            class="clear-notifications"
+            onclick="clearNotifications()"
+        >
+            全部清除
+        </button>
+
+    </div>
+
+
+    <div
+        id="notifications"
+        class="notifications"
+    ></div>
+
+</div>
+
+
+<!-- =========================
+     用户资料 Modal
+========================= -->
+
+<div
+    id="profileModal"
+    class="modal"
+    onclick="modalOutside(event)"
+>
+
+    <div class="modal-card">
+
+        <div class="modal-title">
+
+            <span>
+                👤 个人资料
+            </span>
+
+            <button
+                class="modal-close"
+                onclick="closeProfileModal()"
+            >
+                ✕
+            </button>
+
+        </div>
+
+
+        <div class="profile-preview">
+
+            <div
+                id="previewAvatar"
+                class="profile-preview-avatar"
+            >
+                游
+            </div>
+
+        </div>
+
+
+        <label class="form-label">
+            昵称
+        </label>
+
+        <input
+            id="nicknameInput"
+            class="form-input"
+            maxlength="30"
+            placeholder="输入昵称"
+        >
+
+
+        <label class="form-label">
+            个性签名
+        </label>
+
+        <textarea
+            id="signatureInput"
+            class="form-textarea"
+            maxlength="100"
+            placeholder="写一句介绍自己..."
+        ></textarea>
+
+
+        <label class="form-label">
+            头像图片 URL（可选）
+        </label>
+
+        <input
+            id="avatarInput"
+            class="form-input"
+            placeholder="https://..."
+        >
+
+
+        <div class="modal-actions">
+
+            <button
+                class="modal-action cancel"
+                onclick="closeProfileModal()"
+            >
+                取消
+            </button>
+
+            <button
+                class="modal-action save"
+                onclick="saveProfile()"
+            >
+                保存资料
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
      手机页面
 ========================= -->
 
@@ -1589,12 +2117,14 @@ body.midnight-theme #space{
             💬 频道
         </div>
 
+
         <div
             class="mobile-channel"
             onclick="mobileChooseChannel('general','总聊天室')"
         >
             # 总聊天室
         </div>
+
 
         <div
             class="mobile-channel"
@@ -1603,12 +2133,14 @@ body.midnight-theme #space{
             # 技术交流
         </div>
 
+
         <div
             class="mobile-channel"
             onclick="mobileChooseChannel('chat','随便聊聊')"
         >
             # 随便聊聊
         </div>
+
 
         <div
             class="mobile-channel"
@@ -1617,12 +2149,14 @@ body.midnight-theme #space{
             # 安全公告
         </div>
 
+
         <div
             class="mobile-channel"
             onclick="mobileChooseChannel('share','分享区')"
         >
             # 分享区
         </div>
+
 
         <div
             class="mobile-channel"
@@ -1641,7 +2175,7 @@ body.midnight-theme #space{
     class="mobile-page"
 >
 
-    <div class="mobile-page-card mobile-weather-card">
+    <div class="mobile-page-card">
 
         <div class="mobile-page-title">
             🌦️ 天气
@@ -1661,16 +2195,17 @@ body.midnight-theme #space{
     class="mobile-page"
 >
 
-    <div class="mobile-page-card mobile-theme-card">
+    <div class="mobile-page-card">
 
         <div class="mobile-page-title">
-            🎨 外观
+            ⚙️ 设置
         </div>
+
 
         <div class="setting-row">
 
             <span>
-                选择主题
+                🎨 主题
             </span>
 
             <select
@@ -1702,27 +2237,35 @@ body.midnight-theme #space{
 
         </div>
 
+
         <div class="setting-row">
 
             <span>
-                🌍 动态地球
+                👤 编辑资料
             </span>
 
-            <span>
-                已开启
-            </span>
+            <button
+                class="clear-notifications"
+                onclick="openProfileModal();closeMobilePages()"
+            >
+                打开
+            </button>
 
         </div>
 
+
         <div class="setting-row">
 
             <span>
-                ☄️ 流星
+                🔔 通知
             </span>
 
-            <span>
-                已开启
-            </span>
+            <button
+                class="clear-notifications"
+                onclick="toggleNotifications();closeMobilePages()"
+            >
+                查看
+            </button>
 
         </div>
 
@@ -1746,6 +2289,7 @@ body.midnight-theme #space{
         聊天
     </button>
 
+
     <button
         id="navChannels"
         onclick="mobileNav('channels')"
@@ -1754,6 +2298,7 @@ body.midnight-theme #space{
         频道
     </button>
 
+
     <button
         id="navWeather"
         onclick="mobileNav('weather')"
@@ -1761,6 +2306,7 @@ body.midnight-theme #space{
         <span>🌦️</span>
         天气
     </button>
+
 
     <button
         id="navSettings"
@@ -1783,7 +2329,6 @@ body.midnight-theme #space{
 
 /* =========================================================
    SUPABASE
-   不修改数据库
 ========================================================= */
 
 const SUPABASE_URL =
@@ -1821,13 +2366,23 @@ try{
 
 
 /* =========================================================
-   用户
+   用户资料
 ========================================================= */
 
 let nickname =
     localStorage.getItem(
         "security_lab_nickname"
     ) || "游客";
+
+let signature =
+    localStorage.getItem(
+        "security_lab_signature"
+    ) || "还没有个性签名";
+
+let avatarURL =
+    localStorage.getItem(
+        "security_lab_avatar"
+    ) || "";
 
 
 function updateProfile(){
@@ -1837,14 +2392,56 @@ function updateProfile(){
 
     document.getElementById(
         "profileName"
-    ).textContent = name;
+    ).textContent =
+        name;
 
     document.getElementById(
-        "bigAvatar"
+        "profileSignature"
     ).textContent =
-        name.charAt(0).toUpperCase();
+        signature ||
+        "还没有个性签名";
+
+
+    const bigAvatar =
+        document.getElementById(
+            "bigAvatar"
+        );
+
+    if(avatarURL){
+
+        bigAvatar.innerHTML = `
+            <img
+                src="${escapeAttribute(
+                    avatarURL
+                )}"
+                onerror="this.parentElement.textContent='${escapeAttribute(
+                    name.charAt(0).toUpperCase()
+                )}'"
+            >
+        `;
+
+    }else{
+
+        bigAvatar.textContent =
+            name
+                .charAt(0)
+                .toUpperCase();
+
+    }
 
 }
+
+
+function escapeAttribute(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/"/g,"&quot;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;");
+
+}
+
 
 updateProfile();
 
@@ -1902,6 +2499,182 @@ function escapeHTML(value){
     .replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   用户资料 Modal
+========================================================= */
+
+function openProfileModal(){
+
+    document.getElementById(
+        "nicknameInput"
+    ).value =
+        nickname;
+
+    document.getElementById(
+        "signatureInput"
+    ).value =
+        signature ===
+        "还没有个性签名"
+            ? ""
+            : signature;
+
+    document.getElementById(
+        "avatarInput"
+    ).value =
+        avatarURL;
+
+
+    updatePreview();
+
+
+    document.getElementById(
+        "profileModal"
+    ).classList.add(
+        "show"
+    );
+
+}
+
+
+function closeProfileModal(){
+
+    document.getElementById(
+        "profileModal"
+    ).classList.remove(
+        "show"
+    );
+
+}
+
+
+function modalOutside(event){
+
+    if(
+        event.target.id ===
+        "profileModal"
+    ){
+
+        closeProfileModal();
+
+    }
+
+}
+
+
+function updatePreview(){
+
+    const name =
+        document.getElementById(
+            "nicknameInput"
+        ).value.trim() ||
+        "游客";
+
+    const url =
+        document.getElementById(
+            "avatarInput"
+        ).value.trim();
+
+    const preview =
+        document.getElementById(
+            "previewAvatar"
+        );
+
+    if(url){
+
+        preview.innerHTML = `
+            <img
+                src="${escapeAttribute(url)}"
+                onerror="this.parentElement.textContent='${escapeAttribute(
+                    name.charAt(0).toUpperCase()
+                )}'"
+            >
+        `;
+
+    }else{
+
+        preview.textContent =
+            name
+                .charAt(0)
+                .toUpperCase();
+
+    }
+
+}
+
+
+document.getElementById(
+    "nicknameInput"
+).addEventListener(
+    "input",
+    updatePreview
+);
+
+
+document.getElementById(
+    "avatarInput"
+).addEventListener(
+    "input",
+    updatePreview
+);
+
+
+function saveProfile(){
+
+    const newName =
+        document.getElementById(
+            "nicknameInput"
+        ).value.trim();
+
+    const newSignature =
+        document.getElementById(
+            "signatureInput"
+        ).value.trim();
+
+    const newAvatar =
+        document.getElementById(
+            "avatarInput"
+        ).value.trim();
+
+
+    nickname =
+        newName ||
+        "游客";
+
+    signature =
+        newSignature ||
+        "还没有个性签名";
+
+    avatarURL =
+        newAvatar;
+
+
+    localStorage.setItem(
+        "security_lab_nickname",
+        nickname
+    );
+
+    localStorage.setItem(
+        "security_lab_signature",
+        signature
+    );
+
+    localStorage.setItem(
+        "security_lab_avatar",
+        avatarURL
+    );
+
+
+    updateProfile();
+
+    closeProfileModal();
+
+    showToast(
+        "个人资料已保存"
+    );
 
 }
 
@@ -2055,10 +2828,6 @@ function saveLocalChannels(){
 }
 
 
-/* =========================================================
-   切换频道
-========================================================= */
-
 function switchChannel(
     channelId,
     channelName
@@ -2066,6 +2835,7 @@ function switchChannel(
 
     currentChannel =
         channelId;
+
 
     document
         .querySelectorAll(
@@ -2081,12 +2851,14 @@ function switchChannel(
             }
         );
 
+
     const selected =
         document.querySelector(
             '.channel[data-channel="' +
             channelId +
             '"]'
         );
+
 
     if(selected){
 
@@ -2096,10 +2868,12 @@ function switchChannel(
 
     }
 
+
     document.getElementById(
         "chatName"
     ).textContent =
         channelName;
+
 
     document.getElementById(
         "chatDescription"
@@ -2107,10 +2881,13 @@ function switchChannel(
         "Security Lab · #" +
         channelName;
 
+
     closeMobilePages();
 
+
     if(
-        channelId === "general"
+        channelId ===
+        "general"
     ){
 
         loadMessages();
@@ -2129,8 +2906,33 @@ function switchChannel(
 
 
 /* =========================================================
-   消息
+   消息渲染
 ========================================================= */
+
+function getAvatarHTML(username){
+
+    if(
+        username === nickname &&
+        avatarURL
+    ){
+
+        return `
+            <img
+                src="${escapeAttribute(avatarURL)}"
+                onerror="this.style.display='none'"
+            >
+        `;
+
+    }
+
+    return escapeHTML(
+        String(username || "匿")
+            .charAt(0)
+            .toUpperCase()
+    );
+
+}
+
 
 function renderMessages(list){
 
@@ -2140,6 +2942,7 @@ function renderMessages(list){
         );
 
     box.innerHTML = "";
+
 
     if(!list.length){
 
@@ -2155,7 +2958,9 @@ function renderMessages(list){
                 ">
                     #
                 </div>
+
                 还没有消息
+
                 <div style="
                     font-size:11px;
                     margin-top:6px;
@@ -2178,11 +2983,6 @@ function renderMessages(list){
                     item.message ||
                     "";
 
-                const avatar =
-                    username
-                        .charAt(0)
-                        .toUpperCase();
-
                 const message =
                     document.createElement(
                         "div"
@@ -2191,9 +2991,13 @@ function renderMessages(list){
                 message.className =
                     "message";
 
+
                 message.innerHTML = `
+
                     <div class="avatar">
-                        ${escapeHTML(avatar)}
+                        ${getAvatarHTML(
+                            username
+                        )}
                     </div>
 
                     <div class="message-content">
@@ -2201,7 +3005,9 @@ function renderMessages(list){
                         <div class="message-top">
 
                             <span class="message-user">
-                                ${escapeHTML(username)}
+                                ${escapeHTML(
+                                    username
+                                )}
                             </span>
 
                             <span class="message-time">
@@ -2212,36 +3018,40 @@ function renderMessages(list){
 
                         </div>
 
+
                         <div class="message-text">
-                            ${escapeHTML(text)}
+                            ${escapeHTML(
+                                text
+                            )}
                         </div>
+
 
                         <div class="reactions">
 
                             <button
                                 class="reaction"
-                                onclick="fakeReaction(this)"
+                                onclick="fakeReaction(this,'❤️')"
                             >
                                 ❤️ 0
                             </button>
 
                             <button
                                 class="reaction"
-                                onclick="fakeReaction(this)"
+                                onclick="fakeReaction(this,'👍')"
                             >
                                 👍 0
                             </button>
 
                             <button
                                 class="reaction"
-                                onclick="fakeReaction(this)"
+                                onclick="fakeReaction(this,'😂')"
                             >
                                 😂 0
                             </button>
 
                             <button
                                 class="reaction"
-                                onclick="fakeReaction(this)"
+                                onclick="fakeReaction(this,'😮')"
                             >
                                 😮 0
                             </button>
@@ -2251,6 +3061,7 @@ function renderMessages(list){
                     </div>
                 `;
 
+
                 box.appendChild(
                     message
                 );
@@ -2259,6 +3070,7 @@ function renderMessages(list){
         );
 
     }
+
 
     const typing =
         document.createElement(
@@ -2284,6 +3096,7 @@ function renderMessages(list){
         typing
     );
 
+
     box.scrollTop =
         box.scrollHeight;
 
@@ -2291,10 +3104,13 @@ function renderMessages(list){
 
 
 /* =========================================================
-   表情
+   点赞 / 表情
 ========================================================= */
 
-function fakeReaction(button){
+function fakeReaction(
+    button,
+    emoji
+){
 
     const match =
         button.textContent.match(
@@ -2314,11 +3130,341 @@ function fakeReaction(button){
             number
         );
 
+
+    addNotification(
+        "reaction",
+        emoji +
+        " 有人给你的消息添加了反应"
+    );
+
 }
 
 
 /* =========================================================
-   加载总聊天室
+   通知系统
+========================================================= */
+
+let notifications = [];
+
+
+try{
+
+    const saved =
+        localStorage.getItem(
+            "security_lab_notifications"
+        );
+
+    if(saved){
+
+        const parsed =
+            JSON.parse(saved);
+
+        if(
+            Array.isArray(parsed)
+        ){
+
+            notifications =
+                parsed;
+
+        }
+
+    }
+
+}catch(error){
+
+    console.error(error);
+
+}
+
+
+function saveNotifications(){
+
+    localStorage.setItem(
+        "security_lab_notifications",
+        JSON.stringify(
+            notifications
+        )
+    );
+
+}
+
+
+function addNotification(
+    type,
+    text
+){
+
+    const icons = {
+
+        message:"💬",
+
+        reaction:"❤️",
+
+        system:"🔔",
+
+        user:"👤"
+
+    };
+
+
+    notifications.unshift({
+
+        id:
+            Date.now(),
+
+        icon:
+            icons[type] ||
+            "🔔",
+
+        text:
+            text,
+
+        time:
+            new Date().toISOString(),
+
+        read:false
+
+    });
+
+
+    notifications =
+        notifications.slice(
+            0,
+            30
+        );
+
+
+    saveNotifications();
+
+    renderNotifications();
+
+}
+
+
+function renderNotifications(){
+
+    const box =
+        document.getElementById(
+            "notifications"
+        );
+
+    const unread =
+        notifications.filter(
+            function(item){
+
+                return !item.read;
+
+            }
+        ).length;
+
+
+    const badge =
+        document.getElementById(
+            "notificationBadge"
+        );
+
+
+    if(unread){
+
+        badge.style.display =
+            "flex";
+
+        badge.textContent =
+            unread > 99
+                ? "99+"
+                : unread;
+
+    }else{
+
+        badge.style.display =
+            "none";
+
+    }
+
+
+    if(!notifications.length){
+
+        box.innerHTML = `
+            <div class="no-notifications">
+                🔔
+                <br><br>
+                暂时没有新通知
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        notifications
+            .map(
+                function(item){
+
+                    return `
+                        <div
+                            class="notification-item"
+                            onclick="readNotification(${item.id})"
+                        >
+
+                            <div class="notification-icon">
+                                ${escapeHTML(
+                                    item.icon
+                                )}
+                            </div>
+
+                            <div>
+
+                                <div class="notification-text">
+                                    ${escapeHTML(
+                                        item.text
+                                    )}
+                                </div>
+
+                                <div class="notification-time">
+                                    ${formatTime(
+                                        item.time
+                                    )}
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+function readNotification(id){
+
+    const item =
+        notifications.find(
+            function(notification){
+
+                return notification.id === id;
+
+            }
+        );
+
+    if(item){
+
+        item.read =
+            true;
+
+        saveNotifications();
+
+        renderNotifications();
+
+    }
+
+}
+
+
+function clearNotifications(){
+
+    notifications =
+        [];
+
+    saveNotifications();
+
+    renderNotifications();
+
+    showToast(
+        "通知已清空"
+    );
+
+}
+
+
+function toggleNotifications(){
+
+    const panel =
+        document.getElementById(
+            "notificationPanel"
+        );
+
+
+    const isOpen =
+        panel.classList.contains(
+            "show"
+        );
+
+
+    if(isOpen){
+
+        panel.classList.remove(
+            "show"
+        );
+
+    }else{
+
+        panel.classList.add(
+            "show"
+        );
+
+
+        notifications.forEach(
+            function(item){
+
+                item.read =
+                    true;
+
+            }
+        );
+
+
+        saveNotifications();
+
+        renderNotifications();
+
+    }
+
+}
+
+
+document.addEventListener(
+    "click",
+    function(event){
+
+        const panel =
+            document.getElementById(
+                "notificationPanel"
+            );
+
+        const button =
+            document.getElementById(
+                "notificationButton"
+            );
+
+
+        if(
+            panel.classList.contains(
+                "show"
+            ) &&
+            !panel.contains(event.target) &&
+            !button.contains(event.target)
+        ){
+
+            panel.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+);
+
+
+renderNotifications();
+
+
+/* =========================================================
+   Supabase 聊天
 ========================================================= */
 
 async function loadMessages(){
@@ -2327,8 +3473,11 @@ async function loadMessages(){
         currentChannel !==
         "general"
     ){
+
         return;
+
     }
+
 
     if(!supabaseClient){
 
@@ -2339,7 +3488,9 @@ async function loadMessages(){
         );
 
         return;
+
     }
+
 
     try{
 
@@ -2357,6 +3508,7 @@ async function loadMessages(){
                 )
                 .limit(100);
 
+
         if(result.error){
 
             console.error(
@@ -2370,7 +3522,9 @@ async function loadMessages(){
             );
 
             return;
+
         }
+
 
         setServerStatus(true);
 
@@ -2378,9 +3532,67 @@ async function loadMessages(){
             result.data || []
         );
 
+
+        /* 有新消息时做本机通知 */
+
+        const newest =
+            result.data &&
+            result.data.length
+                ? result.data[
+                    result.data.length-1
+                ]
+                : null;
+
+
+        if(
+            newest &&
+            newest.username !==
+            nickname
+        ){
+
+            const lastSeen =
+                Number(
+                    localStorage.getItem(
+                        "security_lab_last_message"
+                    ) || 0
+                );
+
+
+            const newestTime =
+                new Date(
+                    newest.created_at
+                ).getTime();
+
+
+            if(
+                lastSeen &&
+                newestTime >
+                lastSeen
+            ){
+
+                addNotification(
+                    "message",
+                    newest.username +
+                    " 发来了一条新消息"
+                );
+
+            }
+
+
+            localStorage.setItem(
+                "security_lab_last_message",
+                String(
+                    newestTime
+                )
+            );
+
+        }
+
     }catch(error){
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         setServerStatus(false);
 
@@ -2393,14 +3605,13 @@ async function loadMessages(){
 }
 
 
-function setServerStatus(online){
+function setServerStatus(
+    online
+){
 
-    const status =
-        document.getElementById(
-            "serverStatus"
-        );
-
-    status.textContent =
+    document.getElementById(
+        "serverStatus"
+    ).textContent =
         online
             ? "聊天服务器已连接"
             : "聊天服务器暂时不可用";
@@ -2427,17 +3638,21 @@ async function sendMessage(){
     const text =
         input.value.trim();
 
+
     if(!text){
         return;
     }
 
+
     button.disabled =
         true;
+
 
     const newMessage = {
 
         username:
-            nickname || "游客",
+            nickname ||
+            "游客",
 
         message:
             text,
@@ -2469,11 +3684,13 @@ async function sendMessage(){
 
         input.value = "";
 
-        button.disabled = false;
+        button.disabled =
+            false;
 
         input.focus();
 
         return;
+
     }
 
 
@@ -2483,9 +3700,11 @@ async function sendMessage(){
             "聊天服务器暂时不可用"
         );
 
-        button.disabled = false;
+        button.disabled =
+            false;
 
         return;
+
     }
 
 
@@ -2505,6 +3724,7 @@ async function sendMessage(){
                     }
                 ]);
 
+
         if(result.error){
 
             console.error(
@@ -2517,7 +3737,9 @@ async function sendMessage(){
             );
 
             return;
+
         }
+
 
         input.value = "";
 
@@ -2527,7 +3749,9 @@ async function sendMessage(){
 
     }catch(error){
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         showToast(
             "发送失败"
@@ -2544,7 +3768,7 @@ async function sendMessage(){
 
 
 /* =========================================================
-   输入
+   输入框
 ========================================================= */
 
 const messageInput =
@@ -2585,71 +3809,269 @@ messageInput.addEventListener(
             return;
         }
 
-        if(
-            messageInput.value.length
-        ){
-
-            typing.classList.add(
-                "show"
-            );
-
-        }else{
-
-            typing.classList.remove(
-                "show"
-            );
-
-        }
+        typing.classList.toggle(
+            "show",
+            messageInput.value.length > 0
+        );
 
     }
 );
 
 
-document
-    .getElementById(
-        "sendButton"
-    )
-    .addEventListener(
-        "click",
-        sendMessage
-    );
-
-
-/* =========================================================
-   时间
-========================================================= */
-
-function updateTime(){
-
-    document.getElementById(
-        "localTime"
-    ).textContent =
-        new Date()
-            .toLocaleTimeString(
-                "zh-CN",
-                {
-                    hour:"2-digit",
-                    minute:"2-digit",
-                    second:"2-digit"
-                }
-            );
-
-}
-
-updateTime();
-
-setInterval(
-    updateTime,
-    1000
+document.getElementById(
+    "sendButton"
+).addEventListener(
+    "click",
+    sendMessage
 );
 
 
 /* =========================================================
-   天气
+   搜索
 ========================================================= */
 
-let weatherData = null;
+let allSearchMessages = [];
 
+
+function toggleSearch(){
+
+    const bar =
+        document.getElementById(
+            "searchBar"
+        );
+
+    const input =
+        document.getElementById(
+            "searchInput"
+        );
+
+
+    const show =
+        !bar.classList.contains(
+            "show"
+        );
+
+
+    if(show){
+
+        bar.classList.add(
+            "show"
+        );
+
+        input.focus();
+
+    }else{
+
+        closeSearch();
+
+    }
+
+}
+
+
+function closeSearch(){
+
+    document.getElementById(
+        "searchBar"
+    ).classList.remove(
+        "show"
+    );
+
+    document.getElementById(
+        "searchResults"
+    ).classList.remove(
+        "show"
+    );
+
+    document.getElementById(
+        "searchInput"
+    ).value = "";
+
+}
+
+
+async function searchMessages(query){
+
+    query =
+        query.trim()
+            .toLowerCase();
+
+
+    const results =
+        document.getElementById(
+            "searchResults"
+        );
+
+
+    if(!query){
+
+        results.classList.remove(
+            "show"
+        );
+
+        return;
+
+    }
+
+
+    let source = [];
+
+
+    if(
+        currentChannel ===
+        "general" &&
+        supabaseClient
+    ){
+
+        try{
+
+            const response =
+                await supabaseClient
+                    .from("messages")
+                    .select(
+                        "id,username,message,created_at"
+                    )
+                    .order(
+                        "created_at",
+                        {
+                            ascending:false
+                        }
+                    )
+                    .limit(200);
+
+
+            if(
+                !response.error
+            ){
+
+                source =
+                    response.data || [];
+
+            }
+
+        }catch(error){
+
+            console.error(
+                error
+            );
+
+        }
+
+    }else{
+
+        source =
+            localChannelMessages[
+                currentChannel
+            ] || [];
+
+    }
+
+
+    const filtered =
+        source.filter(
+            function(item){
+
+                const user =
+                    String(
+                        item.username ||
+                        ""
+                    )
+                    .toLowerCase();
+
+                const text =
+                    String(
+                        item.message ||
+                        ""
+                    )
+                    .toLowerCase();
+
+                return (
+                    user.includes(query) ||
+                    text.includes(query)
+                );
+
+            }
+        );
+
+
+    results.classList.add(
+        "show"
+    );
+
+
+    if(!filtered.length){
+
+        results.innerHTML = `
+            <div class="search-empty">
+                🔍 没找到相关消息
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    results.innerHTML =
+        filtered
+            .slice(0,50)
+            .map(
+                function(item){
+
+                    return `
+                        <div class="search-result">
+
+                            <div>
+
+                                <span class="search-result-user">
+                                    ${escapeHTML(
+                                        item.username ||
+                                        "匿名"
+                                    )}
+                                </span>
+
+                                <span class="search-result-time">
+                                    ${formatTime(
+                                        item.created_at
+                                    )}
+                                </span>
+
+                            </div>
+
+                            <div class="search-result-text">
+                                ${escapeHTML(
+                                    item.message ||
+                                    ""
+                                )}
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
+            .join("");
+
+}
+
+
+document.getElementById(
+    "searchInput"
+).addEventListener(
+    "input",
+    function(){
+
+        searchMessages(
+            this.value
+        );
+
+    }
+);
+
+
+/* =========================================================
+   Weather
+========================================================= */
 
 async function loadWeather(){
 
@@ -2657,6 +4079,7 @@ async function loadWeather(){
         document.getElementById(
             "weatherStatus"
         );
+
 
     try{
 
@@ -2668,33 +4091,44 @@ async function loadWeather(){
                 }
             );
 
+
         if(!response.ok){
+
             throw new Error(
                 "IP服务不可用"
             );
+
         }
+
 
         const ip =
             await response.json();
 
+
         if(!ip.success){
+
             throw new Error(
                 "IP定位失败"
             );
+
         }
+
 
         const city =
             ip.city ||
             "未知城市";
 
+
         const country =
             ip.country ||
             "";
+
 
         document.getElementById(
             "location"
         ).textContent =
             city;
+
 
         document.getElementById(
             "weatherCity"
@@ -2705,6 +4139,7 @@ async function loadWeather(){
                     ? " · " + country
                     : ""
             );
+
 
         if(
             ip.latitude == null ||
@@ -2739,6 +4174,7 @@ async function loadWeather(){
                 weatherURL
             );
 
+
         if(!weatherResponse.ok){
 
             throw new Error(
@@ -2747,11 +4183,9 @@ async function loadWeather(){
 
         }
 
+
         const weather =
             await weatherResponse.json();
-
-        weatherData =
-            weather;
 
 
         const current =
@@ -2815,8 +4249,7 @@ async function loadWeather(){
 
         renderMobileWeather(
             weather,
-            city,
-            country
+            city
         );
 
 
@@ -2843,74 +4276,90 @@ async function loadWeather(){
 function getWeatherInfo(code){
 
     if(code === 0){
+
         return {
             icon:"☀️",
             text:"晴朗"
         };
+
     }
 
     if(
         code === 1 ||
         code === 2
     ){
+
         return {
             icon:"🌤️",
             text:"晴间多云"
         };
+
     }
 
     if(code === 3){
+
         return {
             icon:"☁️",
             text:"多云"
         };
+
     }
 
     if(
-        code >= 45 &&
-        code <= 48
+        code >=45 &&
+        code <=48
     ){
+
         return {
             icon:"🌫️",
             text:"雾"
         };
+
     }
 
     if(
-        code >= 51 &&
-        code <= 67
+        code >=51 &&
+        code <=67
     ){
+
         return {
             icon:"🌧️",
             text:"降雨"
         };
+
     }
 
     if(
-        code >= 71 &&
-        code <= 77
+        code >=71 &&
+        code <=77
     ){
+
         return {
             icon:"❄️",
             text:"降雪"
         };
+
     }
 
     if(
-        code >= 80 &&
-        code <= 82
+        code >=80 &&
+        code <=82
     ){
+
         return {
             icon:"🌦️",
             text:"阵雨"
         };
+
     }
 
-    if(code >= 95){
+    if(code >=95){
+
         return {
             icon:"⛈️",
             text:"雷暴"
         };
+
     }
 
     return {
@@ -2921,10 +4370,6 @@ function getWeatherInfo(code){
 }
 
 
-/* =========================================================
-   7天预报
-========================================================= */
-
 function renderForecast(daily){
 
     const box =
@@ -2934,12 +4379,16 @@ function renderForecast(daily){
 
     box.innerHTML = "";
 
+
     if(
         !daily ||
         !daily.time
     ){
+
         return;
+
     }
+
 
     for(
         let i=0;
@@ -2953,6 +4402,7 @@ function renderForecast(daily){
                 "T00:00:00"
             );
 
+
         const day =
             i === 0
                 ? "今天"
@@ -2963,20 +4413,25 @@ function renderForecast(daily){
                     }
                 );
 
+
         const info =
             getWeatherInfo(
                 daily.weather_code[i]
             );
+
 
         const item =
             document.createElement(
                 "div"
             );
 
+
         item.className =
             "forecast-day";
 
+
         item.innerHTML = `
+
             <div class="forecast-date">
                 ${day}
             </div>
@@ -2993,7 +4448,9 @@ function renderForecast(daily){
                     daily.temperature_2m_min[i]
                 )}°
             </div>
+
         `;
+
 
         box.appendChild(
             item
@@ -3004,14 +4461,9 @@ function renderForecast(daily){
 }
 
 
-/* =========================================================
-   手机天气
-========================================================= */
-
 function renderMobileWeather(
     weather,
-    city,
-    country
+    city
 ){
 
     const box =
@@ -3019,20 +4471,16 @@ function renderMobileWeather(
             "mobileWeatherContent"
         );
 
-    if(
-        !weather ||
-        !weather.current
-    ){
-        return;
-    }
 
     const current =
         weather.current;
+
 
     const info =
         getWeatherInfo(
             current.weather_code
         );
+
 
     box.innerHTML = `
 
@@ -3046,8 +4494,8 @@ function renderMobileWeather(
         </div>
 
         <div style="
-            font-size:13px;
             color:#8ca8c8;
+            font-size:13px;
             margin-top:5px;
         ">
             ${info.icon}
@@ -3126,13 +4574,16 @@ function resizeSpace(){
         window.devicePixelRatio ||
         1;
 
+
     space.width =
         window.innerWidth *
         ratio;
 
+
     space.height =
         window.innerHeight *
         ratio;
+
 
     sctx.setTransform(
         ratio,
@@ -3142,6 +4593,7 @@ function resizeSpace(){
         0,
         0
     );
+
 
     const count =
         Math.min(
@@ -3153,7 +4605,9 @@ function resizeSpace(){
             )
         );
 
+
     stars = [];
+
 
     for(
         let i=0;
@@ -3240,6 +4694,7 @@ function animateSpace(){
     const h =
         window.innerHeight;
 
+
     sctx.clearRect(
         0,
         0,
@@ -3254,6 +4709,7 @@ function animateSpace(){
             star.y -=
                 star.speed;
 
+
             if(
                 star.y < -5
             ){
@@ -3263,6 +4719,7 @@ function animateSpace(){
 
             }
 
+
             const pulse =
                 star.a +
                 Math.sin(
@@ -3271,15 +4728,18 @@ function animateSpace(){
                     star.x
                 ) * .15;
 
+
             sctx.beginPath();
+
 
             sctx.arc(
                 star.x,
                 star.y,
                 star.r,
                 0,
-                Math.PI * 2
+                Math.PI*2
             );
+
 
             sctx.fillStyle =
                 "rgba(180,225,255," +
@@ -3288,6 +4748,7 @@ function animateSpace(){
                     pulse
                 ) +
                 ")";
+
 
             sctx.fill();
 
@@ -3302,10 +4763,11 @@ function animateSpace(){
                 meteor.speed;
 
             meteor.y +=
-                meteor.speed * .55;
+                meteor.speed*.55;
 
             meteor.life -=
                 .025;
+
 
             const gradient =
                 sctx.createLinearGradient(
@@ -3317,6 +4779,7 @@ function animateSpace(){
                     meteor.length*.55
                 );
 
+
             gradient.addColorStop(
                 0,
                 "rgba(255,255,255," +
@@ -3324,17 +4787,21 @@ function animateSpace(){
                 ")"
             );
 
+
             gradient.addColorStop(
                 1,
                 "rgba(80,180,255,0)"
             );
 
+
             sctx.beginPath();
+
 
             sctx.moveTo(
                 meteor.x,
                 meteor.y
             );
+
 
             sctx.lineTo(
                 meteor.x -
@@ -3343,11 +4810,14 @@ function animateSpace(){
                 meteor.length*.55
             );
 
+
             sctx.strokeStyle =
                 gradient;
 
+
             sctx.lineWidth =
                 2;
+
 
             sctx.stroke();
 
@@ -3362,9 +4832,9 @@ function animateSpace(){
                 return (
                     meteor.life > 0 &&
                     meteor.x <
-                    w + 150 &&
+                    w+150 &&
                     meteor.y <
-                    h + 150
+                    h+150
                 );
 
             }
@@ -3391,7 +4861,7 @@ animateSpace();
 
 
 /* =========================================================
-   动态地球
+   地球
 ========================================================= */
 
 const globe =
@@ -3404,7 +4874,8 @@ const gctx =
         "2d"
     );
 
-let globeSize = 600;
+let globeSize =
+    600;
 
 
 function resizeGlobe(){
@@ -3421,25 +4892,31 @@ function resizeGlobe(){
             )
         );
 
+
     const scale =
         window.devicePixelRatio ||
         1;
+
 
     globe.width =
         globeSize *
         scale;
 
+
     globe.height =
         globeSize *
         scale;
+
 
     globe.style.width =
         globeSize +
         "px";
 
+
     globe.style.height =
         globeSize +
         "px";
+
 
     gctx.setTransform(
         scale,
@@ -3476,6 +4953,7 @@ function drawGlobe(time){
     const r =
         size*.35;
 
+
     gctx.clearRect(
         0,
         0,
@@ -3494,22 +4972,27 @@ function drawGlobe(time){
             r*1.45
         );
 
+
     glow.addColorStop(
         0,
         "rgba(30,150,255,.22)"
     );
+
 
     glow.addColorStop(
         .55,
         "rgba(20,100,255,.08)"
     );
 
+
     glow.addColorStop(
         1,
         "rgba(0,0,0,0)"
     );
 
+
     gctx.beginPath();
+
 
     gctx.arc(
         cx,
@@ -3519,8 +5002,10 @@ function drawGlobe(time){
         Math.PI*2
     );
 
+
     gctx.fillStyle =
         glow;
+
 
     gctx.fill();
 
@@ -3535,27 +5020,33 @@ function drawGlobe(time){
             r
         );
 
+
     earth.addColorStop(
         0,
         "#1c8edb"
     );
+
 
     earth.addColorStop(
         .45,
         "#0753a4"
     );
 
+
     earth.addColorStop(
         .82,
         "#032b65"
     );
+
 
     earth.addColorStop(
         1,
         "#01152f"
     );
 
+
     gctx.beginPath();
+
 
     gctx.arc(
         cx,
@@ -3565,8 +5056,10 @@ function drawGlobe(time){
         Math.PI*2
     );
 
+
     gctx.fillStyle =
         earth;
+
 
     gctx.fill();
 
@@ -3577,7 +5070,9 @@ function drawGlobe(time){
 
     gctx.save();
 
+
     gctx.beginPath();
+
 
     gctx.arc(
         cx,
@@ -3587,13 +5082,16 @@ function drawGlobe(time){
         Math.PI*2
     );
 
+
     gctx.clip();
 
 
     gctx.strokeStyle =
         "rgba(80,205,255,.28)";
 
-    gctx.lineWidth = 1;
+
+    gctx.lineWidth =
+        1;
 
 
     for(
@@ -3605,9 +5103,11 @@ function drawGlobe(time){
         const lat =
             i/5;
 
+
         const y =
             cy +
             lat*r;
+
 
         const width =
             r*
@@ -3618,7 +5118,9 @@ function drawGlobe(time){
                 )
             );
 
+
         gctx.beginPath();
+
 
         gctx.ellipse(
             cx,
@@ -3629,6 +5131,7 @@ function drawGlobe(time){
             0,
             Math.PI*2
         );
+
 
         gctx.stroke();
 
@@ -3645,10 +5148,12 @@ function drawGlobe(time){
             i/5*Math.PI +
             rotation;
 
+
         const visible =
             Math.cos(
                 longitude
             );
+
 
         const width =
             Math.max(
@@ -3658,7 +5163,9 @@ function drawGlobe(time){
                 )*r
             );
 
+
         gctx.beginPath();
+
 
         gctx.ellipse(
             cx,
@@ -3669,6 +5176,7 @@ function drawGlobe(time){
             0,
             Math.PI*2
         );
+
 
         gctx.stroke();
 
@@ -3699,7 +5207,9 @@ function drawGlobe(time){
             const y =
                 cy+c[1]*r;
 
+
             gctx.beginPath();
+
 
             gctx.ellipse(
                 x,
@@ -3710,6 +5220,7 @@ function drawGlobe(time){
                 0,
                 Math.PI*2
             );
+
 
             gctx.fill();
 
@@ -3725,12 +5236,14 @@ function drawGlobe(time){
     const satelliteAngle =
         time*.00035;
 
+
     const sx =
         cx +
         Math.cos(
             satelliteAngle
         ) *
         r*1.42;
+
 
     const sy =
         cy +
@@ -3739,7 +5252,9 @@ function drawGlobe(time){
         ) *
         r*.55;
 
+
     gctx.beginPath();
+
 
     gctx.arc(
         sx,
@@ -3749,60 +5264,24 @@ function drawGlobe(time){
         Math.PI*2
     );
 
+
     gctx.fillStyle =
         "#e7fbff";
+
 
     gctx.shadowColor =
         "#5cc8ff";
 
+
     gctx.shadowBlur =
         12;
 
+
     gctx.fill();
+
 
     gctx.shadowBlur =
         0;
-
-
-    const edge =
-        gctx.createRadialGradient(
-            cx-r*.45,
-            cy-r*.45,
-            r*.2,
-            cx,
-            cy,
-            r
-        );
-
-    edge.addColorStop(
-        .65,
-        "rgba(0,0,0,0)"
-    );
-
-    edge.addColorStop(
-        .9,
-        "rgba(70,190,255,.18)"
-    );
-
-    edge.addColorStop(
-        1,
-        "rgba(100,220,255,.55)"
-    );
-
-    gctx.beginPath();
-
-    gctx.arc(
-        cx,
-        cy,
-        r,
-        0,
-        Math.PI*2
-    );
-
-    gctx.fillStyle =
-        edge;
-
-    gctx.fill();
 
 
     requestAnimationFrame(
@@ -3818,7 +5297,7 @@ requestAnimationFrame(
 
 
 /* =========================================================
-   主题系统
+   主题
 ========================================================= */
 
 const themeSelect =
@@ -3832,7 +5311,9 @@ const mobileThemeSelect =
     );
 
 
-function applyTheme(theme){
+function applyThemeSilently(
+    theme
+){
 
     document.body.classList.remove(
         "light-theme",
@@ -3840,6 +5321,7 @@ function applyTheme(theme){
         "purple-theme",
         "midnight-theme"
     );
+
 
     if(theme === "light"){
 
@@ -3849,6 +5331,7 @@ function applyTheme(theme){
 
     }
 
+
     if(theme === "matrix"){
 
         document.body.classList.add(
@@ -3856,6 +5339,7 @@ function applyTheme(theme){
         );
 
     }
+
 
     if(theme === "purple"){
 
@@ -3865,6 +5349,7 @@ function applyTheme(theme){
 
     }
 
+
     if(theme === "midnight"){
 
         document.body.classList.add(
@@ -3873,16 +5358,28 @@ function applyTheme(theme){
 
     }
 
+
     themeSelect.value =
         theme;
 
     mobileThemeSelect.value =
         theme;
 
+}
+
+
+function applyTheme(theme){
+
+    applyThemeSilently(
+        theme
+    );
+
+
     localStorage.setItem(
         "security_lab_theme",
         theme
     );
+
 
     showToast(
         "主题已切换"
@@ -3900,48 +5397,6 @@ const savedTheme =
 applyThemeSilently(
     savedTheme
 );
-
-
-function applyThemeSilently(theme){
-
-    document.body.classList.remove(
-        "light-theme",
-        "matrix-theme",
-        "purple-theme",
-        "midnight-theme"
-    );
-
-    if(theme === "light"){
-        document.body.classList.add(
-            "light-theme"
-        );
-    }
-
-    if(theme === "matrix"){
-        document.body.classList.add(
-            "matrix-theme"
-        );
-    }
-
-    if(theme === "purple"){
-        document.body.classList.add(
-            "purple-theme"
-        );
-    }
-
-    if(theme === "midnight"){
-        document.body.classList.add(
-            "midnight-theme"
-        );
-    }
-
-    themeSelect.value =
-        theme;
-
-    mobileThemeSelect.value =
-        theme;
-
-}
 
 
 themeSelect.addEventListener(
@@ -3969,7 +5424,7 @@ mobileThemeSelect.addEventListener(
 
 
 /* =========================================================
-   手机导航
+   手机
 ========================================================= */
 
 function closeMobilePages(){
@@ -3988,6 +5443,7 @@ function closeMobilePages(){
             }
         );
 
+
     document
         .querySelectorAll(
             ".mobile-nav button"
@@ -4002,13 +5458,12 @@ function closeMobilePages(){
             }
         );
 
-    document
-        .getElementById(
-            "navChat"
-        )
-        .classList.add(
-            "active"
-        );
+
+    document.getElementById(
+        "navChat"
+    ).classList.add(
+        "active"
+    );
 
 }
 
@@ -4016,9 +5471,12 @@ function closeMobilePages(){
 function mobileNav(page){
 
     if(
-        window.innerWidth > 650
+        window.innerWidth >
+        650
     ){
+
         return;
+
     }
 
 
@@ -4027,14 +5485,6 @@ function mobileNav(page){
 
     if(page === "chat"){
 
-        document
-            .getElementById(
-                "navChat"
-            )
-            .classList.add(
-                "active"
-            );
-
         return;
 
     }
@@ -4042,21 +5492,18 @@ function mobileNav(page){
 
     if(page === "channels"){
 
-        document
-            .getElementById(
-                "mobileChannels"
-            )
-            .classList.add(
-                "show"
-            );
+        document.getElementById(
+            "mobileChannels"
+        ).classList.add(
+            "show"
+        );
 
-        document
-            .getElementById(
-                "navChannels"
-            )
-            .classList.add(
-                "active"
-            );
+
+        document.getElementById(
+            "navChannels"
+        ).classList.add(
+            "active"
+        );
 
         return;
 
@@ -4065,21 +5512,18 @@ function mobileNav(page){
 
     if(page === "weather"){
 
-        document
-            .getElementById(
-                "mobileWeather"
-            )
-            .classList.add(
-                "show"
-            );
+        document.getElementById(
+            "mobileWeather"
+        ).classList.add(
+            "show"
+        );
 
-        document
-            .getElementById(
-                "navWeather"
-            )
-            .classList.add(
-                "active"
-            );
+
+        document.getElementById(
+            "navWeather"
+        ).classList.add(
+            "active"
+        );
 
         return;
 
@@ -4088,23 +5532,18 @@ function mobileNav(page){
 
     if(page === "settings"){
 
-        document
-            .getElementById(
-                "mobileSettings"
-            )
-            .classList.add(
-                "show"
-            );
+        document.getElementById(
+            "mobileSettings"
+        ).classList.add(
+            "show"
+        );
 
-        document
-            .getElementById(
-                "navSettings"
-            )
-            .classList.add(
-                "active"
-            );
 
-        return;
+        document.getElementById(
+            "navSettings"
+        ).classList.add(
+            "active"
+        );
 
     }
 
@@ -4145,6 +5584,30 @@ setInterval(
     },
     5000
 );
+
+
+/* =========================================================
+   初始通知
+========================================================= */
+
+if(
+    !localStorage.getItem(
+        "security_lab_welcome_notification"
+    )
+){
+
+    addNotification(
+        "system",
+        "欢迎来到 Security Lab 👋"
+    );
+
+
+    localStorage.setItem(
+        "security_lab_welcome_notification",
+        "1"
+    );
+
+}
 
 
 /* =========================================================
