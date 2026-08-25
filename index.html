@@ -2,26 +2,18 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
 <title>Security Lab</title>
 
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 * {
     box-sizing: border-box;
-}
-
-:root {
-    --bg: #08090d;
-    --panel: rgba(18, 20, 27, 0.88);
-    --panel2: rgba(24, 27, 36, 0.9);
-    --border: rgba(255,255,255,.08);
-    --text: #f4f6f8;
-    --muted: #8c93a1;
-    --green: #45e38a;
-    --green2: #2bc978;
-    --blue: #6c8cff;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -30,822 +22,637 @@ body {
     padding: 0;
     width: 100%;
     min-height: 100%;
-    background: var(--bg);
-    color: var(--text);
+    background: #020806;
+    color: #00ff66;
     font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "SF Pro Display",
-        "Segoe UI",
+        Arial,
         "Microsoft YaHei",
         sans-serif;
 }
 
 body {
-    overflow: hidden;
-}
-
-button,
-input {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-#background {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background:
-        radial-gradient(
-            circle at 15% 15%,
-            rgba(69,227,138,.10),
-            transparent 30%
-        ),
-        radial-gradient(
-            circle at 85% 80%,
-            rgba(108,140,255,.10),
-            transparent 32%
-        ),
-        #08090d;
-}
-
-#background::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-        linear-gradient(
-            rgba(255,255,255,.025) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,.025) 1px,
-            transparent 1px
-        );
-    background-size: 45px 45px;
-    mask-image: linear-gradient(
-        to bottom,
-        black,
-        transparent
-    );
-}
-
-.app {
-    position: relative;
-    z-index: 1;
-
-    width: 100vw;
-    height: 100vh;
-
-    display: grid;
-    grid-template-columns: 250px minmax(0, 1fr) 240px;
-
-    padding: 14px;
-
-    gap: 14px;
+    overflow-x: hidden;
 }
 
 /* =========================
-   左侧
+   Matrix 背景
 ========================= */
 
-.sidebar {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    background: var(--panel);
-
-    border: 1px solid var(--border);
-    border-radius: 18px;
-
-    backdrop-filter: blur(20px);
-
-    overflow: hidden;
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    padding: 20px;
-
-    border-bottom: 1px solid var(--border);
-}
-
-.brand-icon {
-    width: 38px;
-    height: 38px;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 12px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #45e38a,
-            #2caaef
-        );
-
-    color: #06100a;
-
-    font-weight: 900;
-}
-
-.brand-name {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.brand-sub {
-    margin-top: 2px;
-
-    color: var(--muted);
-
-    font-size: 11px;
-}
-
-.section-title {
-    padding: 18px 16px 8px;
-
-    color: #6f7683;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    text-transform: uppercase;
-
-    letter-spacing: .08em;
-}
-
-.rooms {
-    padding: 0 10px;
-}
-
-.room {
+#matrix {
+    position: fixed;
+    inset: 0;
     width: 100%;
-
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 11px 12px;
-
-    border: 0;
-    border-radius: 10px;
-
-    background: transparent;
-    color: var(--muted);
-
-    text-align: left;
+    height: 100%;
+    z-index: 0;
+    background: #020806;
 }
 
-.room:hover {
-    background: rgba(255,255,255,.05);
-    color: var(--text);
-}
+/* =========================
+   页面
+========================= */
 
-.room.active {
-    background:
-        rgba(69,227,138,.12);
-
-    color: var(--text);
-}
-
-.room-icon {
-    width: 24px;
-
-    color: #707887;
-}
-
-.room.active .room-icon {
-    color: var(--green);
-}
-
-.room-name {
-    flex: 1;
-}
-
-.room-count {
-    color: #5e6571;
-    font-size: 11px;
-}
-
-.profile {
-    margin-top: auto;
-
-    padding: 14px;
-
-    border-top: 1px solid var(--border);
-}
-
-.profile-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 10px;
-
-    border-radius: 12px;
-
-    background: rgba(255,255,255,.04);
-}
-
-.avatar {
+.page {
     position: relative;
-
-    width: 36px;
-    height: 36px;
-
-    flex: 0 0 auto;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 50%;
-
-    background:
-        linear-gradient(
-            135deg,
-            #6c8cff,
-            #45e38a
-        );
-
-    color: white;
-
-    font-weight: 700;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 18px;
 }
 
-.online-dot {
-    position: absolute;
+/* =========================
+   顶部
+========================= */
 
-    right: -1px;
-    bottom: -1px;
+.header {
+    width: 100%;
+    max-width: 1100px;
+    margin: auto;
 
-    width: 10px;
-    height: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-    border: 2px solid #161921;
+    padding: 16px 20px;
 
-    border-radius: 50%;
+    border: 1px solid rgba(0,255,102,.35);
+    border-radius: 16px;
 
-    background: var(--green);
+    background: rgba(0,12,7,.88);
+
+    box-shadow:
+        0 0 25px rgba(0,255,102,.08);
+
+    backdrop-filter: blur(12px);
 }
 
-.profile-name {
-    min-width: 0;
-    flex: 1;
+.logo {
+    font-size: 21px;
+    font-weight: bold;
+    text-shadow: 0 0 15px #00ff66;
 }
 
-.profile-name strong {
-    display: block;
-
-    max-width: 130px;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
-
+.online {
     font-size: 13px;
 }
 
-.profile-name span {
-    color: var(--green);
-    font-size: 11px;
+.dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+
+    margin-right: 6px;
+
+    border-radius: 50%;
+    background: #00ff66;
+
+    box-shadow: 0 0 12px #00ff66;
 }
 
 /* =========================
-   主聊天
+   主体
 ========================= */
 
-.chat {
-    min-width: 0;
+.container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 25px auto;
+}
 
-    display: flex;
-    flex-direction: column;
+/* =========================
+   标题
+========================= */
 
-    background: var(--panel);
+.hero {
+    text-align: center;
+    padding: 25px 10px;
+}
 
-    border: 1px solid var(--border);
+.hero h1 {
+    margin: 0;
+
+    font-size: clamp(34px, 7vw, 60px);
+
+    text-shadow:
+        0 0 10px #00ff66,
+        0 0 30px rgba(0,255,102,.5);
+}
+
+.hero p {
+    margin-top: 10px;
+    color: #69e998;
+}
+
+/* =========================
+   卡片
+========================= */
+
+.panel {
+    width: 100%;
+
+    margin-top: 20px;
+    padding: 24px;
+
+    border:
+        1px solid rgba(0,255,102,.35);
+
     border-radius: 18px;
 
-    backdrop-filter: blur(20px);
+    background:
+        rgba(0,15,8,.88);
 
-    overflow: hidden;
+    box-shadow:
+        0 0 30px rgba(0,255,102,.08);
+
+    backdrop-filter: blur(10px);
 }
 
-.chat-header {
-    height: 72px;
+.panel-title {
+    margin: 0 0 18px;
 
-    flex: 0 0 auto;
+    font-size: 23px;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 22px;
-
-    border-bottom: 1px solid var(--border);
+    text-shadow:
+        0 0 10px #00ff66;
 }
 
-.channel-info {
+/* =========================
+   昵称
+========================= */
+
+.nickname-area {
     display: flex;
-    align-items: center;
     gap: 10px;
 }
 
-.channel-icon {
-    color: var(--muted);
+.nickname-input {
+    flex: 1;
 
-    font-size: 23px;
+    min-width: 0;
+
+    padding: 14px;
+
+    border:
+        1px solid #087d3a;
+
+    border-radius: 10px;
+
+    background: #020a06;
+
+    color: #00ff66;
+
+    font-size: 16px;
+
+    outline: none;
 }
 
-.channel-name {
+.nickname-input:focus {
+    border-color: #00ff66;
+
+    box-shadow:
+        0 0 15px rgba(0,255,102,.25);
+}
+
+.green-button {
+    border: 0;
+
+    padding: 14px 22px;
+
+    border-radius: 10px;
+
+    background: #00d957;
+
+    color: #001b0b;
+
+    font-weight: bold;
+
     font-size: 15px;
-    font-weight: 700;
+
+    cursor: pointer;
 }
 
-.channel-description {
-    margin-top: 2px;
-
-    color: var(--muted);
-
-    font-size: 11px;
+.green-button:active {
+    transform: scale(.97);
 }
 
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* =========================
+   当前用户
+========================= */
+
+.user-info {
+    margin-top: 12px;
+
+    color: #75ffa8;
+
+    font-size: 14px;
 }
 
-.icon-btn {
-    width: 36px;
-    height: 36px;
+/* =========================
+   聊天区域
+========================= */
 
-    border: 1px solid transparent;
-    border-radius: 9px;
+.chat-box {
+    height: 430px;
 
-    background: transparent;
-    color: var(--muted);
+    overflow-y: auto;
 
-    font-size: 17px;
+    padding: 10px;
+
+    border:
+        1px solid rgba(0,255,102,.15);
+
+    border-radius: 12px;
+
+    background:
+        rgba(0,0,0,.35);
 }
 
-.icon-btn:hover {
-    background: rgba(255,255,255,.06);
-    color: var(--text);
+.chat-box::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+    background: #00a844;
+    border-radius: 10px;
 }
 
 /* =========================
    消息
 ========================= */
 
-.messages {
-    flex: 1;
-
-    min-height: 0;
-
-    overflow-y: auto;
-
-    padding: 24px;
-
-    scrollbar-width: thin;
-    scrollbar-color:
-        rgba(255,255,255,.12)
-        transparent;
-}
-
-.welcome {
-    padding: 20px 0 30px;
-}
-
-.welcome-icon {
-    width: 48px;
-    height: 48px;
-
-    display: grid;
-    place-items: center;
-
-    margin-bottom: 14px;
-
-    border-radius: 15px;
-
-    background:
-        rgba(69,227,138,.12);
-
-    color: var(--green);
-
-    font-size: 22px;
-}
-
-.welcome h1 {
-    margin: 0 0 7px;
-
-    font-size: 22px;
-}
-
-.welcome p {
-    margin: 0;
-
-    color: var(--muted);
-
-    font-size: 13px;
-}
-
 .message {
-    display: flex;
-    gap: 12px;
+    padding: 13px 15px;
 
-    padding: 8px 8px;
+    margin-bottom: 12px;
 
-    margin: 2px 0;
+    border:
+        1px solid rgba(0,255,102,.18);
 
-    border-radius: 10px;
-}
-
-.message:hover {
-    background: rgba(255,255,255,.025);
-}
-
-.message-avatar {
-    width: 36px;
-    height: 36px;
-
-    flex: 0 0 36px;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 50%;
+    border-radius: 12px;
 
     background:
-        linear-gradient(
-            135deg,
-            #343b55,
-            #222936
-        );
-
-    color: #dce1ea;
-
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.message-content {
-    min-width: 0;
+        rgba(0,255,102,.035);
 }
 
 .message-top {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin-bottom: 7px;
 }
 
 .message-user {
-    color: var(--text);
-
-    font-size: 13px;
-    font-weight: 700;
+    color: #00ff66;
+    font-weight: bold;
 }
 
 .message-time {
-    color: #646b77;
-
-    font-size: 10px;
+    color: #4f8d65;
+    font-size: 12px;
 }
 
 .message-text {
-    margin-top: 4px;
-
-    color: #c7ccd5;
-
-    font-size: 14px;
-
-    line-height: 1.55;
-
-    white-space: pre-wrap;
-
+    color: #d4ffe2;
+    line-height: 1.6;
     word-break: break-word;
 }
 
 /* =========================
-   输入区
+   输入聊天
 ========================= */
 
-.composer {
-    flex: 0 0 auto;
-
-    padding: 14px 18px 18px;
-}
-
-.composer-inner {
+.chat-input-area {
     display: flex;
-    align-items: flex-end;
+
     gap: 10px;
 
-    padding: 8px 8px 8px 14px;
+    margin-top: 14px;
+}
+
+.chat-input {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 15px;
 
     border:
-        1px solid
-        rgba(255,255,255,.08);
+        1px solid #087d3a;
 
-    border-radius: 13px;
+    border-radius: 10px;
 
     background:
-        rgba(0,0,0,.25);
+        #020a06;
+
+    color: #00ff66;
+
+    outline: none;
+
+    font-size: 16px;
 }
 
-.name-input {
-    width: 130px;
-    flex: 0 0 130px;
-}
+.chat-input:focus {
+    border-color: #00ff66;
 
-.message-input {
-    min-width: 0;
-    flex: 1;
-}
-
-.text-input {
-    width: 100%;
-
-    padding: 9px 4px;
-
-    border: 0;
-    outline: 0;
-
-    background: transparent;
-
-    color: var(--text);
-
-    font-size: 14px;
-}
-
-.text-input::placeholder {
-    color: #646b77;
+    box-shadow:
+        0 0 15px rgba(0,255,102,.2);
 }
 
 .send-button {
-    width: 38px;
-    height: 38px;
-
-    flex: 0 0 38px;
+    width: 100px;
 
     border: 0;
+
     border-radius: 10px;
 
-    background: var(--green);
+    background: #00df5a;
 
-    color: #06100a;
+    color: #001b0b;
+
+    font-weight: bold;
 
     font-size: 16px;
-    font-weight: 900;
-}
 
-.send-button:hover {
-    background: #67f0a2;
-    transform: translateY(-1px);
+    cursor: pointer;
 }
 
 .send-button:disabled {
     opacity: .5;
-    cursor: not-allowed;
 }
 
 /* =========================
-   右侧成员
+   状态
 ========================= */
 
-.members {
-    min-width: 0;
+.status-box {
+    margin-top: 15px;
 
-    display: flex;
-    flex-direction: column;
+    min-height: 24px;
 
-    background: var(--panel);
-
-    border: 1px solid var(--border);
-    border-radius: 18px;
-
-    backdrop-filter: blur(20px);
-
-    overflow: hidden;
+    font-size: 14px;
 }
 
-.members-header {
+.status-ok {
+    color: #00ff66;
+}
+
+.status-error {
+    color: #ff5f6d;
+}
+
+.status-loading {
+    color: #ffe66d;
+}
+
+/* =========================
+   系统状态
+========================= */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 14px;
+}
+
+.stat {
     padding: 20px;
 
-    border-bottom: 1px solid var(--border);
-}
+    text-align: center;
 
-.members-title {
-    font-size: 13px;
-    font-weight: 700;
-}
+    border:
+        1px solid rgba(0,255,102,.18);
 
-.members-count {
-    margin-top: 4px;
-
-    color: var(--muted);
-
-    font-size: 11px;
-}
-
-.member-list {
-    padding: 10px;
-}
-
-.member {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    padding: 9px;
-
-    border-radius: 10px;
-}
-
-.member:hover {
-    background: rgba(255,255,255,.04);
-}
-
-.member-avatar {
-    position: relative;
-
-    width: 32px;
-    height: 32px;
-
-    display: grid;
-    place-items: center;
-
-    border-radius: 50%;
+    border-radius: 12px;
 
     background:
-        linear-gradient(
-            135deg,
-            #2b3243,
-            #202632
-        );
-
-    font-size: 12px;
-    font-weight: 700;
+        rgba(0,255,102,.035);
 }
 
-.member-status {
-    position: absolute;
-
-    right: -1px;
-    bottom: -1px;
-
-    width: 9px;
-    height: 9px;
-
-    border: 2px solid #181b24;
-
-    border-radius: 50%;
-
-    background: var(--green);
+.stat-label {
+    color: #72c88e;
+    font-size: 14px;
 }
 
-.member-name {
-    min-width: 0;
+.stat-value {
+    margin-top: 8px;
 
-    overflow: hidden;
+    font-size: 22px;
 
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
-
-    color: #c7ccd5;
-
-    font-size: 12px;
+    font-weight: bold;
 }
 
-.connection {
-    margin-top: auto;
+/* =========================
+   功能
+========================= */
+
+.features {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 16px;
+}
+
+.feature {
+    padding: 22px;
+
+    border:
+        1px solid rgba(0,255,102,.2);
+
+    border-radius: 14px;
+
+    background:
+        rgba(0,15,8,.8);
+}
+
+.feature h3 {
+    margin-top: 0;
+}
+
+.feature p {
+    color: #80b895;
+    line-height: 1.6;
+}
+
+/* =========================
+   页脚
+========================= */
+
+.footer {
+    max-width: 1100px;
+
+    margin: 40px auto 20px;
+
+    text-align: center;
+
+    color: #447456;
+
+    font-size: 13px;
+}
+
+/* =========================
+   昵称弹窗
+========================= */
+
+.nickname-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 999;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0,0,0,.78);
+
+    backdrop-filter: blur(8px);
+}
+
+.nickname-modal.show {
+    display: flex;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 430px;
+
+    padding: 28px;
+
+    border:
+        1px solid #00ff66;
+
+    border-radius: 18px;
+
+    background:
+        #020b06;
+
+    box-shadow:
+        0 0 35px rgba(0,255,102,.25);
+}
+
+.modal-box h2 {
+    margin-top: 0;
+
+    text-align: center;
+
+    text-shadow:
+        0 0 12px #00ff66;
+}
+
+.modal-box p {
+    text-align: center;
+
+    color: #72b987;
+}
+
+.modal-input {
+    width: 100%;
 
     padding: 15px;
 
-    border-top: 1px solid var(--border);
+    margin-top: 12px;
 
-    font-size: 11px;
+    border:
+        1px solid #087d3a;
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #000b06;
+
+    color: #00ff66;
+
+    font-size: 17px;
 }
 
-.connection-line {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    color: var(--muted);
+.modal-input:focus {
+    border-color: #00ff66;
 }
 
-.connection-dot {
-    width: 7px;
-    height: 7px;
+.modal-button {
+    width: 100%;
 
-    border-radius: 50%;
+    padding: 14px;
 
-    background: var(--green);
+    margin-top: 14px;
 
-    box-shadow: 0 0 8px rgba(69,227,138,.6);
+    border: 0;
+
+    border-radius: 10px;
+
+    background: #00df5a;
+
+    color: #001b0b;
+
+    font-size: 16px;
+
+    font-weight: bold;
 }
 
 /* =========================
    手机
 ========================= */
 
-.mobile-menu {
-    display: none;
-}
+@media (max-width: 700px) {
 
-@media (max-width: 900px) {
-
-    .app {
-        grid-template-columns:
-            210px minmax(0,1fr);
-    }
-
-    .members {
-        display: none;
-    }
-
-    .name-input {
-        width: 110px;
-        flex-basis: 110px;
-    }
-}
-
-@media (max-width: 650px) {
-
-    body {
-        overflow: hidden;
-    }
-
-    .app {
-        display: block;
-
-        padding: 0;
-
-        height: 100vh;
-    }
-
-    .sidebar {
-        display: none;
-    }
-
-    .chat {
-        width: 100vw;
-        height: 100vh;
-
-        border: 0;
-        border-radius: 0;
-    }
-
-    .chat-header {
-        height: 62px;
-
-        padding: 0 15px;
-    }
-
-    .messages {
-        padding: 16px 12px;
-    }
-
-    .composer {
+    .page {
         padding: 10px;
-        padding-bottom:
-            calc(
-                10px +
-                env(safe-area-inset-bottom)
-            );
     }
 
-    .composer-inner {
-        padding-left: 12px;
+    .header {
+        padding: 13px;
     }
 
-    .name-input {
-        display: none;
+    .logo {
+        font-size: 17px;
     }
 
-    .channel-description {
-        display: none;
+    .online {
+        font-size: 12px;
     }
 
-    .mobile-menu {
-        display: block;
+    .panel {
+        padding: 17px;
+    }
+
+    .nickname-area {
+        flex-direction: column;
+    }
+
+    .green-button {
+        width: 100%;
+    }
+
+    .chat-box {
+        height: 420px;
+    }
+
+    .chat-input-area {
+        flex-direction: column;
+    }
+
+    .send-button {
+        width: 100%;
+        height: 50px;
+    }
+
+    .stats {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .features {
+        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -853,989 +660,1074 @@ button {
 
 <body>
 
-<div id="background"></div>
+<!-- Matrix -->
+<canvas id="matrix"></canvas>
 
-<div class="app">
+<div class="page">
 
-    <!-- =========================
-         左侧
-    ========================== -->
+    <!-- 顶部 -->
+    <header class="header">
 
-    <aside class="sidebar">
-
-        <div class="brand">
-
-            <div class="brand-icon">
-                S
-            </div>
-
-            <div>
-                <div class="brand-name">
-                    Security Lab
-                </div>
-
-                <div class="brand-sub">
-                    Community
-                </div>
-            </div>
-
+        <div class="logo">
+            🛡 SECURITY LAB
         </div>
 
-
-        <div class="section-title">
-            CHANNELS
+        <div class="online">
+            <span class="dot"></span>
+            系统在线
         </div>
 
-
-        <div class="rooms">
-
-            <button class="room active">
-
-                <span class="room-icon">
-                    #
-                </span>
-
-                <span class="room-name">
-                    general
-                </span>
-
-                <span
-                    id="roomCount"
-                    class="room-count">
-                    0
-                </span>
-
-            </button>
+    </header>
 
 
-            <button
-                class="room"
-                onclick="alert('这个频道即将开放')">
+    <main class="container">
 
-                <span class="room-icon">
-                    #
-                </span>
+        <!-- 标题 -->
+        <section class="hero">
 
-                <span class="room-name">
-                    technology
-                </span>
+            <h1>安全实验室</h1>
 
-            </button>
+            <p>
+                SECURITY LAB · ONLINE CHAT
+            </p>
 
-
-            <button
-                class="room"
-                onclick="alert('这个频道即将开放')">
-
-                <span class="room-icon">
-                    #
-                </span>
-
-                <span class="room-name">
-                    gaming
-                </span>
-
-            </button>
-
-        </div>
+        </section>
 
 
-        <div class="profile">
+        <!-- 用户 -->
+        <section class="panel">
 
-            <div class="profile-box">
+            <h2 class="panel-title">
+                👤 用户身份
+            </h2>
 
-                <div class="avatar">
+            <div class="nickname-area">
 
-                    <span id="profileAvatar">
-                        ?
-                    </span>
-
-                    <span class="online-dot"></span>
-
-                </div>
-
-
-                <div class="profile-name">
-
-                    <strong id="profileName">
-                        未设置昵称
-                    </strong>
-
-                    <span>
-                        ● Online
-                    </span>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </aside>
-
-
-    <!-- =========================
-         聊天
-    ========================== -->
-
-    <main class="chat">
-
-        <header class="chat-header">
-
-            <div class="channel-info">
-
-                <div class="channel-icon">
-                    #
-                </div>
-
-                <div>
-
-                    <div class="channel-name">
-                        general
-                    </div>
-
-                    <div class="channel-description">
-                        欢迎来到 Security Lab 社区
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="header-actions">
+                <input
+                    id="nicknameInput"
+                    class="nickname-input"
+                    type="text"
+                    maxlength="20"
+                    placeholder="输入你的昵称"
+                >
 
                 <button
-                    class="icon-btn mobile-menu"
-                    onclick="alert('频道菜单')">
-                    ☰
-                </button>
-
-                <button
-                    class="icon-btn"
-                    onclick="loadMessages()">
-                    ↻
+                    class="green-button"
+                    onclick="saveNickname()"
+                >
+                    保存昵称
                 </button>
 
             </div>
 
-        </header>
+            <div
+                id="userInfo"
+                class="user-info"
+            >
+                当前昵称：未设置
+            </div>
+
+        </section>
 
 
-        <div
-            id="messages"
-            class="messages"
-        >
+        <!-- 聊天 -->
+        <section class="panel">
 
-            <div class="welcome">
+            <h2 class="panel-title">
+                💬 安全实验室聊天室
+            </h2>
 
-                <div class="welcome-icon">
-                    #
+            <div
+                id="chatBox"
+                class="chat-box"
+            >
+
+                <div
+                    style="
+                    text-align:center;
+                    color:#477957;
+                    padding:30px;
+                    "
+                >
+                    正在连接聊天服务器...
                 </div>
-
-                <h1>
-                    欢迎来到 #general
-                </h1>
-
-                <p>
-                    这是 Security Lab 的公共聊天室。
-                    现在开始聊天吧。
-                </p>
 
             </div>
 
-        </div>
 
+            <div class="chat-input-area">
 
-        <div class="composer">
-
-            <div class="composer-inner">
-
-                <div class="name-input">
-
-                    <input
-                        id="chatName"
-                        class="text-input"
-                        maxlength="30"
-                        placeholder="你的昵称"
-                    >
-
-                </div>
-
-
-                <div class="message-input">
-
-                    <input
-                        id="chatText"
-                        class="text-input"
-                        maxlength="500"
-                        placeholder="发送消息到 #general..."
-                    >
-
-                </div>
-
+                <input
+                    id="messageInput"
+                    class="chat-input"
+                    type="text"
+                    maxlength="500"
+                    placeholder="输入消息..."
+                    autocomplete="off"
+                >
 
                 <button
                     id="sendButton"
                     class="send-button"
-                    title="发送">
-                    ↑
+                    onclick="sendMessage()"
+                >
+                    发送
                 </button>
 
             </div>
 
-        </div>
+
+            <div
+                id="status"
+                class="status-box status-loading"
+            >
+                正在连接数据库...
+            </div>
+
+        </section>
+
+
+        <!-- 系统状态 -->
+        <section class="panel">
+
+            <h2 class="panel-title">
+                📊 系统状态
+            </h2>
+
+            <div class="stats">
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        数据库
+                    </div>
+
+                    <div
+                        id="databaseStatus"
+                        class="stat-value"
+                    >
+                        连接中
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        聊天
+                    </div>
+
+                    <div
+                        id="chatStatus"
+                        class="stat-value"
+                    >
+                        在线
+                    </div>
+
+                </div>
+
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        当前时间
+                    </div>
+
+                    <div
+                        id="clock"
+                        class="stat-value"
+                    >
+                        --:--:--
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- 功能 -->
+        <section class="features">
+
+            <div class="feature">
+
+                <h3>
+                    🔐 身份验证
+                </h3>
+
+                <p>
+                    使用昵称进入安全实验室聊天室。
+                </p>
+
+            </div>
+
+
+            <div class="feature">
+
+                <h3>
+                    🖥 在线聊天
+                </h3>
+
+                <p>
+                    使用 Supabase 保存和读取聊天消息。
+                </p>
+
+            </div>
+
+
+            <div class="feature">
+
+                <h3>
+                    📡 实时系统
+                </h3>
+
+                <p>
+                    页面会自动刷新聊天消息。
+                </p>
+
+            </div>
+
+        </section>
 
     </main>
 
 
-    <!-- =========================
-         右侧成员
-    ========================== -->
+    <footer class="footer">
 
-    <aside class="members">
+        SECURITY LAB DEMO ·
+        仅用于合法安全实验
 
-        <div class="members-header">
+    </footer>
 
-            <div class="members-title">
-                在线成员
-            </div>
-
-            <div
-                id="membersCount"
-                class="members-count">
-                1 人在线
-            </div>
-
-        </div>
+</div>
 
 
-        <div
-            id="memberList"
-            class="member-list">
+<!-- 昵称弹窗 -->
+<div
+    id="nicknameModal"
+    class="nickname-modal"
+>
 
-            <div class="member">
+    <div class="modal-box">
 
-                <div class="member-avatar">
+        <h2>
+            🛡 欢迎来到 Security Lab
+        </h2>
 
-                    ?
+        <p>
+            第一次使用，请设置你的昵称
+        </p>
 
-                    <span class="member-status"></span>
+        <input
+            id="modalNickname"
+            class="modal-input"
+            type="text"
+            maxlength="20"
+            placeholder="例如：czh"
+        >
 
-                </div>
+        <button
+            class="modal-button"
+            onclick="saveModalNickname()"
+        >
+            进入聊天室
+        </button>
 
-                <div class="member-name">
-                    未设置昵称
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="connection">
-
-            <div class="connection-line">
-
-                <span class="connection-dot"></span>
-
-                <span id="connectionText">
-                    正在连接...
-                </span>
-
-            </div>
-
-        </div>
-
-    </aside>
+    </div>
 
 </div>
 
 
 <script>
 
-/* ==================================================
+/* =====================================================
    Supabase 配置
-================================================== */
+===================================================== */
+
+/*
+   这是你的 Supabase 项目地址
+*/
 
 const SUPABASE_URL =
-    "https://lnducpwbmyjhnnjkqyxq.supabase.co";
+    "https://inducpwbmyjhnnjkqyxq.supabase.co";
+
+
+/*
+   这是你之前提供的 Publishable Key
+
+   注意：
+   sb_publishable 可以放在网页前端。
+   不要把 sb_secret 放进这里。
+*/
 
 const SUPABASE_KEY =
     "sb_publishable_aukve7aK4EQCniOtCSy8uQ_raK8MH0j";
 
 
-const supabaseClient =
-    window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-    );
+/* 创建 Supabase 客户端 */
 
+let supabaseClient = null;
 
-/* ==================================================
-   元素
-================================================== */
+try {
 
-const messagesElement =
-    document.getElementById("messages");
+    supabaseClient =
+        window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
 
-const chatName =
-    document.getElementById("chatName");
+} catch (error) {
 
-const chatText =
-    document.getElementById("chatText");
+    console.error(error);
 
-const sendButton =
-    document.getElementById("sendButton");
-
-const profileName =
-    document.getElementById("profileName");
-
-const profileAvatar =
-    document.getElementById("profileAvatar");
-
-const memberList =
-    document.getElementById("memberList");
-
-const membersCount =
-    document.getElementById("membersCount");
-
-const connectionText =
-    document.getElementById("connectionText");
-
-const roomCount =
-    document.getElementById("roomCount");
-
-
-/* ==================================================
-   安全处理文字
-================================================== */
-
-function escapeHTML(value) {
-
-    const div =
-        document.createElement("div");
-
-    div.textContent =
-        value == null
-        ? ""
-        : String(value);
-
-    return div.innerHTML;
 }
 
 
-/* ==================================================
-   昵称
-================================================== */
+/* =====================================================
+   用户昵称
+===================================================== */
 
-const savedName =
-    localStorage.getItem(
-        "security_lab_username"
+let nickname =
+    localStorage.getItem("security_lab_nickname") || "";
+
+
+/* 页面打开 */
+
+window.addEventListener("load", function() {
+
+    updateNicknameUI();
+
+    if (!nickname) {
+
+        document
+            .getElementById("nicknameModal")
+            .classList.add("show");
+
+        setTimeout(function() {
+
+            document
+                .getElementById("modalNickname")
+                .focus();
+
+        }, 300);
+
+    }
+
+    initChat();
+
+});
+
+
+/* 保存弹窗昵称 */
+
+function saveModalNickname() {
+
+    const input =
+        document.getElementById("modalNickname");
+
+    const name =
+        input.value.trim();
+
+    if (!name) {
+
+        alert("请输入昵称");
+
+        input.focus();
+
+        return;
+    }
+
+    nickname = name;
+
+    localStorage.setItem(
+        "security_lab_nickname",
+        nickname
     );
 
+    document
+        .getElementById("nicknameModal")
+        .classList.remove("show");
 
-if (savedName) {
+    updateNicknameUI();
 
-    chatName.value =
-        savedName;
-
-    updateProfile(
-        savedName
-    );
 }
 
 
-chatName.addEventListener(
-    "input",
-    function() {
+/* 保存普通昵称 */
 
-        const name =
-            chatName.value.trim();
+function saveNickname() {
 
-        if (name) {
+    const input =
+        document.getElementById("nicknameInput");
 
-            localStorage.setItem(
-                "security_lab_username",
-                name
+    const name =
+        input.value.trim();
+
+    if (!name) {
+
+        alert("请输入昵称");
+
+        return;
+    }
+
+    nickname = name;
+
+    localStorage.setItem(
+        "security_lab_nickname",
+        nickname
+    );
+
+    updateNicknameUI();
+
+    showStatus(
+        "昵称保存成功",
+        "ok"
+    );
+
+}
+
+
+/* 更新昵称 */
+
+function updateNicknameUI() {
+
+    const input =
+        document.getElementById("nicknameInput");
+
+    const info =
+        document.getElementById("userInfo");
+
+    if (nickname) {
+
+        input.value = nickname;
+
+        info.textContent =
+            "当前昵称：" + nickname;
+
+    } else {
+
+        info.textContent =
+            "当前昵称：未设置";
+
+    }
+
+}
+
+
+/* =====================================================
+   状态提示
+===================================================== */
+
+function showStatus(message, type) {
+
+    const status =
+        document.getElementById("status");
+
+    status.textContent = message;
+
+    status.className =
+        "status-box " +
+        (
+            type === "error"
+                ? "status-error"
+                : type === "ok"
+                ? "status-ok"
+                : "status-loading"
+        );
+
+}
+
+
+/* =====================================================
+   数据库连接
+===================================================== */
+
+async function initChat() {
+
+    if (!supabaseClient) {
+
+        setDatabaseError(
+            "Supabase 初始化失败"
+        );
+
+        return;
+    }
+
+    try {
+
+        const result =
+            await supabaseClient
+                .from("messages")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: true
+                    }
+                )
+                .limit(100);
+
+
+        if (result.error) {
+
+            console.error(
+                "Supabase:",
+                result.error
             );
 
-            updateProfile(name);
-
-        } else {
-
-            updateProfile(
-                "未设置昵称"
+            setDatabaseError(
+                result.error.message
             );
+
+            return;
         }
+
+
+        document
+            .getElementById("databaseStatus")
+            .textContent = "已连接";
+
+
+        showStatus(
+            "数据库连接成功",
+            "ok"
+        );
+
+
+        renderMessages(
+            result.data || []
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        setDatabaseError(
+            error.message || "连接失败"
+        );
+
     }
-);
 
-
-/* ==================================================
-   更新个人资料
-================================================== */
-
-function updateProfile(name) {
-
-    profileName.textContent =
-        name;
-
-    profileAvatar.textContent =
-        getInitial(name);
-
-    updateMemberList(name);
 }
 
 
-function getInitial(name) {
+/* 数据库错误 */
 
-    if (
-        !name ||
-        name === "未设置昵称"
-    ) {
-        return "?";
-    }
+function setDatabaseError(message) {
 
-    return name
-        .trim()
-        .charAt(0)
-        .toUpperCase();
+    document
+        .getElementById("databaseStatus")
+        .textContent = "连接失败";
+
+    showStatus(
+        "数据库连接失败：" + message,
+        "error"
+    );
+
 }
 
 
-/* ==================================================
-   在线成员
-================================================== */
-
-function updateMemberList(name) {
-
-    const safeName =
-        name || "未设置昵称";
-
-    memberList.innerHTML = `
-
-        <div class="member">
-
-            <div class="member-avatar">
-
-                ${escapeHTML(
-                    getInitial(safeName)
-                )}
-
-                <span class="member-status"></span>
-
-            </div>
-
-            <div class="member-name">
-
-                ${escapeHTML(
-                    safeName
-                )}
-
-            </div>
-
-        </div>
-
-    `;
-
-    membersCount.textContent =
-        "1 人在线";
-}
-
-
-/* ==================================================
-   加载消息
-================================================== */
+/* =====================================================
+   读取聊天
+===================================================== */
 
 async function loadMessages() {
 
-    const result =
-        await supabaseClient
-            .from("messages")
-            .select(
-                "id,created_at,username,message"
-            )
-            .order(
-                "created_at",
-                {
-                    ascending: true
-                }
-            )
-            .limit(100);
+    if (!supabaseClient) {
+        return;
+    }
+
+    try {
+
+        const result =
+            await supabaseClient
+                .from("messages")
+                .select("*")
+                .order(
+                    "created_at",
+                    {
+                        ascending: true
+                    }
+                )
+                .limit(100);
 
 
-    if (result.error) {
+        if (result.error) {
 
-        console.error(
-            result.error
+            console.error(
+                result.error
+            );
+
+            showStatus(
+                "读取聊天记录失败：" +
+                result.error.message,
+                "error"
+            );
+
+            return;
+        }
+
+
+        renderMessages(
+            result.data || []
         );
 
-        connectionText.textContent =
-            "数据库连接失败";
 
-        connectionText.style.color =
-            "#ff6b6b";
+    } catch (error) {
 
-        messagesElement.innerHTML = `
+        console.error(error);
 
-            <div class="welcome">
+        showStatus(
+            "读取聊天记录失败：" +
+            error.message,
+            "error"
+        );
 
-                <div class="welcome-icon">
-                    !
-                </div>
+    }
 
-                <h1>
-                    暂时无法读取消息
-                </h1>
+}
 
-                <p>
-                    ${escapeHTML(
-                        result.error.message
-                    )}
-                </p>
 
+/* =====================================================
+   显示聊天
+===================================================== */
+
+function renderMessages(messages) {
+
+    const chatBox =
+        document.getElementById("chatBox");
+
+
+    if (!messages.length) {
+
+        chatBox.innerHTML = `
+            <div style="
+                text-align:center;
+                color:#477957;
+                padding:40px;
+            ">
+                暂无消息<br>
+                <span style="font-size:13px">
+                    发送第一条消息吧
+                </span>
             </div>
-
         `;
 
         return;
     }
 
 
-    connectionText.textContent =
-        "数据库已连接";
-
-    connectionText.style.color =
-        "#45e38a";
+    chatBox.innerHTML = "";
 
 
-    messagesElement.innerHTML = `
+    messages.forEach(function(message) {
 
-        <div class="welcome">
+        const item =
+            document.createElement("div");
 
-            <div class="welcome-icon">
-                #
-            </div>
-
-            <h1>
-                欢迎来到 #general
-            </h1>
-
-            <p>
-                这是 Security Lab 的公共聊天室。
-                现在开始聊天吧。
-            </p>
-
-        </div>
-
-    `;
+        item.className = "message";
 
 
-    if (
-        result.data &&
-        result.data.length
-    ) {
+        const top =
+            document.createElement("div");
 
-        result.data.forEach(
-            function(item) {
-
-                addMessage(item);
-
-            }
-        );
-    }
+        top.className = "message-top";
 
 
-    updateRoomCount(
-        result.data
-        ? result.data.length
-        : 0
-    );
+        const user =
+            document.createElement("div");
+
+        user.className = "message-user";
+
+        user.textContent =
+            message.username ||
+            "匿名";
 
 
-    scrollToBottom();
+        const time =
+            document.createElement("div");
+
+        time.className = "message-time";
+
+        time.textContent =
+            formatTime(message.created_at);
+
+
+        const text =
+            document.createElement("div");
+
+        text.className = "message-text";
+
+        text.textContent =
+            message.info || "";
+
+
+        top.appendChild(user);
+
+        top.appendChild(time);
+
+        item.appendChild(top);
+
+        item.appendChild(text);
+
+        chatBox.appendChild(item);
+
+    });
+
+
+    chatBox.scrollTop =
+        chatBox.scrollHeight;
+
 }
 
 
-/* ==================================================
-   添加消息
-================================================== */
-
-function addMessage(item) {
-
-    if (!item) {
-        return;
-    }
-
-
-    if (
-        item.id &&
-        document.querySelector(
-            '[data-message-id="' +
-            item.id +
-            '"]'
-        )
-    ) {
-
-        return;
-    }
-
-
-    const message =
-        document.createElement("div");
-
-    message.className =
-        "message";
-
-
-    if (item.id) {
-
-        message.dataset.messageId =
-            item.id;
-    }
-
-
-    const name =
-        item.username ||
-        "匿名用户";
-
-
-    const initial =
-        getInitial(name);
-
-
-    let time = "";
-
-    if (item.created_at) {
-
-        time =
-            new Date(
-                item.created_at
-            ).toLocaleString(
-                "zh-CN",
-                {
-                    month: "numeric",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }
-            );
-    }
-
-
-    message.innerHTML = `
-
-        <div class="message-avatar">
-
-            ${escapeHTML(initial)}
-
-        </div>
-
-
-        <div class="message-content">
-
-            <div class="message-top">
-
-                <span class="message-user">
-
-                    ${escapeHTML(name)}
-
-                </span>
-
-                <span class="message-time">
-
-                    ${escapeHTML(time)}
-
-                </span>
-
-            </div>
-
-
-            <div class="message-text">
-
-                ${escapeHTML(
-                    item.message
-                )}
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    messagesElement.appendChild(
-        message
-    );
-}
-
-
-/* ==================================================
-   更新消息数量
-================================================== */
-
-function updateRoomCount(count) {
-
-    roomCount.textContent =
-        count || 0;
-}
-
-
-/* ==================================================
+/* =====================================================
    发送消息
-================================================== */
+===================================================== */
 
 async function sendMessage() {
 
-    const username =
-        chatName.value.trim();
+    if (!nickname) {
 
-    const message =
-        chatText.value.trim();
-
-
-    if (!username) {
-
-        alert(
-            "请先输入你的昵称"
-        );
-
-        chatName.focus();
+        document
+            .getElementById("nicknameModal")
+            .classList.add("show");
 
         return;
     }
 
 
-    if (!message) {
+    const input =
+        document.getElementById("messageInput");
 
-        chatText.focus();
+    const text =
+        input.value.trim();
+
+
+    if (!text) {
 
         return;
     }
 
 
-    if (
-        username.length > 30
-    ) {
+    if (!supabaseClient) {
 
-        alert(
-            "昵称最多30个字符"
+        showStatus(
+            "数据库没有连接",
+            "error"
         );
 
         return;
     }
 
 
-    if (
-        message.length > 500
-    ) {
+    const button =
+        document.getElementById("sendButton");
 
-        alert(
-            "消息最多500个字符"
+
+    button.disabled = true;
+
+    button.textContent =
+        "发送中";
+
+
+    try {
+
+        /*
+          messages 表对应：
+
+          username = 昵称
+          info     = 消息
+          created_at = 时间
+        */
+
+        const result =
+            await supabaseClient
+                .from("messages")
+                .insert([
+                    {
+                        username: nickname,
+                        info: text
+                    }
+                ]);
+
+
+        if (result.error) {
+
+            console.error(
+                result.error
+            );
+
+            showStatus(
+                "发送失败：" +
+                result.error.message,
+                "error"
+            );
+
+            return;
+        }
+
+
+        input.value = "";
+
+        showStatus(
+            "消息发送成功",
+            "ok"
         );
 
-        return;
+
+        await loadMessages();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        showStatus(
+            "发送失败：" +
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "发送";
+
     }
 
-
-    sendButton.disabled =
-        true;
-
-    sendButton.textContent =
-        "…";
-
-
-    const result =
-        await supabaseClient
-            .from("messages")
-            .insert({
-
-                username:
-                    username,
-
-                message:
-                    message
-
-            })
-            .select()
-            .single();
-
-
-    if (result.error) {
-
-        console.error(
-            result.error
-        );
-
-        alert(
-            "发送失败：\n" +
-            result.error.message
-        );
-
-        sendButton.disabled =
-            false;
-
-        sendButton.textContent =
-            "↑";
-
-        return;
-    }
-
-
-    localStorage.setItem(
-        "security_lab_username",
-        username
-    );
-
-
-    chatText.value =
-        "";
-
-
-    /*
-       立即显示消息
-    */
-
-    addMessage(
-        result.data
-    );
-
-
-    updateRoomCount(
-        document.querySelectorAll(
-            ".message"
-        ).length
-    );
-
-
-    scrollToBottom();
-
-
-    sendButton.disabled =
-        false;
-
-    sendButton.textContent =
-        "↑";
 }
 
 
-/* ==================================================
-   点击发送
-================================================== */
+/* =====================================================
+   时间
+===================================================== */
 
-sendButton.addEventListener(
-    "click",
-    sendMessage
+function formatTime(dateString) {
+
+    if (!dateString) {
+        return "";
+    }
+
+    const date =
+        new Date(dateString);
+
+
+    if (isNaN(date.getTime())) {
+        return "";
+    }
+
+
+    return date.toLocaleString(
+        "zh-CN",
+        {
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+
+}
+
+
+/* =====================================================
+   回车发送
+===================================================== */
+
+document
+    .getElementById("messageInput")
+    .addEventListener(
+        "keydown",
+        function(event) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+/* =====================================================
+   自动刷新聊天
+===================================================== */
+
+setInterval(
+    function() {
+
+        loadMessages();
+
+    },
+    5000
 );
 
 
-/* ==================================================
-   Enter 发送
-================================================== */
+/* =====================================================
+   实时时钟
+===================================================== */
 
-chatText.addEventListener(
-    "keydown",
-    function(event) {
+function updateClock() {
+
+    const now =
+        new Date();
+
+    document
+        .getElementById("clock")
+        .textContent =
+        now.toLocaleTimeString(
+            "zh-CN"
+        );
+
+}
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+/* =====================================================
+   Matrix
+===================================================== */
+
+const canvas =
+    document.getElementById("matrix");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+let width = 0;
+let height = 0;
+let columns = 0;
+let drops = [];
+
+
+const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}[]<>/\\$#@%";
+
+
+function resizeMatrix() {
+
+    width =
+        canvas.width =
+        window.innerWidth;
+
+    height =
+        canvas.height =
+        window.innerHeight;
+
+
+    columns =
+        Math.floor(
+            width / 18
+        );
+
+
+    drops = [];
+
+
+    for (
+        let i = 0;
+        i < columns;
+        i++
+    ) {
+
+        drops[i] =
+            Math.random() * -50;
+
+    }
+
+}
+
+
+function drawMatrix() {
+
+    ctx.fillStyle =
+        "rgba(2,8,6,0.08)";
+
+    ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    ctx.font =
+        "15px monospace";
+
+
+    for (
+        let i = 0;
+        i < drops.length;
+        i++
+    ) {
+
+        const text =
+            characters[
+                Math.floor(
+                    Math.random() *
+                    characters.length
+                )
+            ];
+
+
+        ctx.fillStyle =
+            "rgba(0,255,102,.55)";
+
+
+        ctx.fillText(
+            text,
+            i * 18,
+            drops[i] * 18
+        );
+
 
         if (
-            event.key === "Enter"
+            drops[i] * 18 > height &&
+            Math.random() > .975
         ) {
 
-            event.preventDefault();
+            drops[i] = 0;
 
-            sendMessage();
         }
+
+
+        drops[i]++;
+
     }
-);
 
-
-/* ==================================================
-   滚动到底部
-================================================== */
-
-function scrollToBottom() {
-
-    setTimeout(
-        function() {
-
-            messagesElement.scrollTop =
-                messagesElement.scrollHeight;
-
-        },
-        50
-    );
 }
 
 
-/* ==================================================
-   Supabase Realtime
-================================================== */
+resizeMatrix();
 
-const realtimeChannel =
-    supabaseClient
-        .channel(
-            "security-lab-chat"
-        )
-        .on(
-            "postgres_changes",
-            {
-                event: "INSERT",
-                schema: "public",
-                table: "messages"
-            },
-            function(payload) {
-
-                console.log(
-                    "New message:",
-                    payload.new
-                );
+window.addEventListener(
+    "resize",
+    resizeMatrix
+);
 
 
-                addMessage(
-                    payload.new
-                );
-
-
-                updateRoomCount(
-                    document.querySelectorAll(
-                        ".message"
-                    ).length
-                );
-
-
-                scrollToBottom();
-            }
-        )
-        .subscribe(
-            function(state) {
-
-                console.log(
-                    "Realtime:",
-                    state
-                );
-
-
-                if (
-                    state === "SUBSCRIBED"
-                ) {
-
-                    connectionText.textContent =
-                        "实时连接正常";
-
-                    connectionText.style.color =
-                        "#45e38a";
-                }
-
-            }
-        );
-
-
-/* ==================================================
-   启动
-================================================== */
-
-loadMessages();
+setInterval(
+    drawMatrix,
+    50
+);
 
 </script>
 
