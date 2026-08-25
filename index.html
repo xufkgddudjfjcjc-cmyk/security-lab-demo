@@ -7,7 +7,6 @@
 
 <title>Security Lab</title>
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -24,19 +23,12 @@ body {
     min-height: 100%;
     background: #020806;
     color: #00ff66;
-    font-family:
-        Arial,
-        "Microsoft YaHei",
-        sans-serif;
+    font-family: Arial, "Microsoft YaHei", sans-serif;
 }
 
 body {
     overflow-x: hidden;
 }
-
-/* =========================
-   Matrix 背景
-========================= */
 
 #matrix {
     position: fixed;
@@ -47,10 +39,6 @@ body {
     background: #020806;
 }
 
-/* =========================
-   页面
-========================= */
-
 .page {
     position: relative;
     z-index: 1;
@@ -58,29 +46,18 @@ body {
     padding: 18px;
 }
 
-/* =========================
-   顶部
-========================= */
-
 .header {
     width: 100%;
     max-width: 1100px;
     margin: auto;
-
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     padding: 16px 20px;
-
     border: 1px solid rgba(0,255,102,.35);
     border-radius: 16px;
-
     background: rgba(0,12,7,.88);
-
-    box-shadow:
-        0 0 25px rgba(0,255,102,.08);
-
+    box-shadow: 0 0 25px rgba(0,255,102,.08);
     backdrop-filter: blur(12px);
 }
 
@@ -98,28 +75,17 @@ body {
     display: inline-block;
     width: 8px;
     height: 8px;
-
     margin-right: 6px;
-
     border-radius: 50%;
     background: #00ff66;
-
     box-shadow: 0 0 12px #00ff66;
 }
-
-/* =========================
-   主体
-========================= */
 
 .container {
     width: 100%;
     max-width: 1100px;
     margin: 25px auto;
 }
-
-/* =========================
-   标题
-========================= */
 
 .hero {
     text-align: center;
@@ -128,9 +94,7 @@ body {
 
 .hero h1 {
     margin: 0;
-
     font-size: clamp(34px, 7vw, 60px);
-
     text-shadow:
         0 0 10px #00ff66,
         0 0 30px rgba(0,255,102,.5);
@@ -141,162 +105,90 @@ body {
     color: #69e998;
 }
 
-/* =========================
-   卡片
-========================= */
-
 .panel {
     width: 100%;
-
     margin-top: 20px;
     padding: 24px;
-
-    border:
-        1px solid rgba(0,255,102,.35);
-
+    border: 1px solid rgba(0,255,102,.35);
     border-radius: 18px;
-
-    background:
-        rgba(0,15,8,.88);
-
-    box-shadow:
-        0 0 30px rgba(0,255,102,.08);
-
+    background: rgba(0,15,8,.88);
+    box-shadow: 0 0 30px rgba(0,255,102,.08);
     backdrop-filter: blur(10px);
 }
 
 .panel-title {
     margin: 0 0 18px;
-
     font-size: 23px;
-
-    text-shadow:
-        0 0 10px #00ff66;
+    text-shadow: 0 0 10px #00ff66;
 }
-
-/* =========================
-   昵称
-========================= */
 
 .nickname-area {
     display: flex;
     gap: 10px;
 }
 
-.nickname-input {
+.nickname-input,
+.chat-input {
     flex: 1;
-
     min-width: 0;
-
     padding: 14px;
-
-    border:
-        1px solid #087d3a;
-
+    border: 1px solid #087d3a;
     border-radius: 10px;
-
     background: #020a06;
-
     color: #00ff66;
-
     font-size: 16px;
-
     outline: none;
 }
 
-.nickname-input:focus {
+.nickname-input:focus,
+.chat-input:focus {
     border-color: #00ff66;
-
-    box-shadow:
-        0 0 15px rgba(0,255,102,.25);
+    box-shadow: 0 0 15px rgba(0,255,102,.25);
 }
 
-.green-button {
+.green-button,
+.send-button,
+.modal-button {
     border: 0;
-
-    padding: 14px 22px;
-
     border-radius: 10px;
-
-    background: #00d957;
-
+    background: #00df5a;
     color: #001b0b;
-
     font-weight: bold;
-
-    font-size: 15px;
-
     cursor: pointer;
 }
 
-.green-button:active {
-    transform: scale(.97);
+.green-button {
+    padding: 14px 22px;
+    font-size: 15px;
 }
-
-/* =========================
-   当前用户
-========================= */
 
 .user-info {
     margin-top: 12px;
-
     color: #75ffa8;
-
     font-size: 14px;
 }
 
-/* =========================
-   聊天区域
-========================= */
-
 .chat-box {
     height: 430px;
-
     overflow-y: auto;
-
     padding: 10px;
-
-    border:
-        1px solid rgba(0,255,102,.15);
-
+    border: 1px solid rgba(0,255,102,.15);
     border-radius: 12px;
-
-    background:
-        rgba(0,0,0,.35);
+    background: rgba(0,0,0,.35);
 }
-
-.chat-box::-webkit-scrollbar {
-    width: 5px;
-}
-
-.chat-box::-webkit-scrollbar-thumb {
-    background: #00a844;
-    border-radius: 10px;
-}
-
-/* =========================
-   消息
-========================= */
 
 .message {
     padding: 13px 15px;
-
     margin-bottom: 12px;
-
-    border:
-        1px solid rgba(0,255,102,.18);
-
+    border: 1px solid rgba(0,255,102,.18);
     border-radius: 12px;
-
-    background:
-        rgba(0,255,102,.035);
+    background: rgba(0,255,102,.035);
 }
 
 .message-top {
     display: flex;
     justify-content: space-between;
     gap: 10px;
-
     margin-bottom: 7px;
 }
 
@@ -316,78 +208,24 @@ body {
     word-break: break-word;
 }
 
-/* =========================
-   输入聊天
-========================= */
-
 .chat-input-area {
     display: flex;
-
     gap: 10px;
-
     margin-top: 14px;
-}
-
-.chat-input {
-    flex: 1;
-
-    min-width: 0;
-
-    padding: 15px;
-
-    border:
-        1px solid #087d3a;
-
-    border-radius: 10px;
-
-    background:
-        #020a06;
-
-    color: #00ff66;
-
-    outline: none;
-
-    font-size: 16px;
-}
-
-.chat-input:focus {
-    border-color: #00ff66;
-
-    box-shadow:
-        0 0 15px rgba(0,255,102,.2);
 }
 
 .send-button {
     width: 100px;
-
-    border: 0;
-
-    border-radius: 10px;
-
-    background: #00df5a;
-
-    color: #001b0b;
-
-    font-weight: bold;
-
     font-size: 16px;
-
-    cursor: pointer;
 }
 
 .send-button:disabled {
     opacity: .5;
 }
 
-/* =========================
-   状态
-========================= */
-
 .status-box {
     margin-top: 15px;
-
     min-height: 24px;
-
     font-size: 14px;
 }
 
@@ -403,31 +241,18 @@ body {
     color: #ffe66d;
 }
 
-/* =========================
-   系统状态
-========================= */
-
 .stats {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
 }
 
 .stat {
     padding: 20px;
-
     text-align: center;
-
-    border:
-        1px solid rgba(0,255,102,.18);
-
+    border: 1px solid rgba(0,255,102,.18);
     border-radius: 12px;
-
-    background:
-        rgba(0,255,102,.035);
+    background: rgba(0,255,102,.035);
 }
 
 .stat-label {
@@ -437,35 +262,22 @@ body {
 
 .stat-value {
     margin-top: 8px;
-
     font-size: 22px;
-
     font-weight: bold;
 }
 
-/* =========================
-   功能
-========================= */
-
 .features {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
+    margin-top: 20px;
 }
 
 .feature {
     padding: 22px;
-
-    border:
-        1px solid rgba(0,255,102,.2);
-
+    border: 1px solid rgba(0,255,102,.2);
     border-radius: 14px;
-
-    background:
-        rgba(0,15,8,.8);
+    background: rgba(0,15,8,.8);
 }
 
 .feature h3 {
@@ -477,43 +289,23 @@ body {
     line-height: 1.6;
 }
 
-/* =========================
-   页脚
-========================= */
-
 .footer {
     max-width: 1100px;
-
     margin: 40px auto 20px;
-
     text-align: center;
-
     color: #447456;
-
     font-size: 13px;
 }
 
-/* =========================
-   昵称弹窗
-========================= */
-
 .nickname-modal {
     position: fixed;
-
     inset: 0;
-
     z-index: 999;
-
     display: none;
-
     align-items: center;
     justify-content: center;
-
     padding: 20px;
-
-    background:
-        rgba(0,0,0,.78);
-
+    background: rgba(0,0,0,.78);
     backdrop-filter: blur(8px);
 }
 
@@ -524,84 +316,42 @@ body {
 .modal-box {
     width: 100%;
     max-width: 430px;
-
     padding: 28px;
-
-    border:
-        1px solid #00ff66;
-
+    border: 1px solid #00ff66;
     border-radius: 18px;
-
-    background:
-        #020b06;
-
-    box-shadow:
-        0 0 35px rgba(0,255,102,.25);
+    background: #020b06;
+    box-shadow: 0 0 35px rgba(0,255,102,.25);
 }
 
 .modal-box h2 {
     margin-top: 0;
-
     text-align: center;
-
-    text-shadow:
-        0 0 12px #00ff66;
+    text-shadow: 0 0 12px #00ff66;
 }
 
 .modal-box p {
     text-align: center;
-
     color: #72b987;
 }
 
 .modal-input {
     width: 100%;
-
     padding: 15px;
-
     margin-top: 12px;
-
-    border:
-        1px solid #087d3a;
-
+    border: 1px solid #087d3a;
     border-radius: 10px;
-
     outline: none;
-
     background: #000b06;
-
     color: #00ff66;
-
     font-size: 17px;
-}
-
-.modal-input:focus {
-    border-color: #00ff66;
 }
 
 .modal-button {
     width: 100%;
-
     padding: 14px;
-
     margin-top: 14px;
-
-    border: 0;
-
-    border-radius: 10px;
-
-    background: #00df5a;
-
-    color: #001b0b;
-
     font-size: 16px;
-
-    font-weight: bold;
 }
-
-/* =========================
-   手机
-========================= */
 
 @media (max-width: 700px) {
 
@@ -647,8 +397,7 @@ body {
     }
 
     .stats {
-        grid-template-columns:
-            repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);
     }
 
     .features {
@@ -660,261 +409,164 @@ body {
 
 <body>
 
-<!-- Matrix -->
 <canvas id="matrix"></canvas>
 
 <div class="page">
 
-    <!-- 顶部 -->
-    <header class="header">
+<header class="header">
+    <div class="logo">🛡 SECURITY LAB</div>
 
-        <div class="logo">
-            🛡 SECURITY LAB
+    <div class="online">
+        <span class="dot"></span>
+        系统在线
+    </div>
+</header>
+
+<main class="container">
+
+<section class="hero">
+    <h1>安全实验室</h1>
+    <p>SECURITY LAB · ONLINE CHAT</p>
+</section>
+
+<section class="panel">
+
+    <h2 class="panel-title">👤 用户身份</h2>
+
+    <div class="nickname-area">
+
+        <input
+            id="nicknameInput"
+            class="nickname-input"
+            type="text"
+            maxlength="20"
+            placeholder="输入你的昵称">
+
+        <button
+            class="green-button"
+            onclick="saveNickname()">
+            保存昵称
+        </button>
+
+    </div>
+
+    <div id="userInfo" class="user-info">
+        当前昵称：未设置
+    </div>
+
+</section>
+
+<section class="panel">
+
+    <h2 class="panel-title">
+        💬 安全实验室聊天室
+    </h2>
+
+    <div id="chatBox" class="chat-box">
+        <div style="
+            text-align:center;
+            color:#477957;
+            padding:30px;">
+            正在连接聊天服务器...
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+
+        <input
+            id="messageInput"
+            class="chat-input"
+            type="text"
+            maxlength="500"
+            placeholder="输入消息..."
+            autocomplete="off">
+
+        <button
+            id="sendButton"
+            class="send-button"
+            onclick="sendMessage()">
+            发送
+        </button>
+
+    </div>
+
+    <div
+        id="status"
+        class="status-box status-loading">
+        正在连接数据库...
+    </div>
+
+</section>
+
+<section class="panel">
+
+    <h2 class="panel-title">📊 系统状态</h2>
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-label">数据库</div>
+            <div id="databaseStatus" class="stat-value">
+                连接中
+            </div>
         </div>
 
-        <div class="online">
-            <span class="dot"></span>
-            系统在线
+        <div class="stat">
+            <div class="stat-label">聊天</div>
+            <div id="chatStatus" class="stat-value">
+                在线
+            </div>
         </div>
 
-    </header>
-
-
-    <main class="container">
-
-        <!-- 标题 -->
-        <section class="hero">
-
-            <h1>安全实验室</h1>
-
-            <p>
-                SECURITY LAB · ONLINE CHAT
-            </p>
-
-        </section>
-
-
-        <!-- 用户 -->
-        <section class="panel">
-
-            <h2 class="panel-title">
-                👤 用户身份
-            </h2>
-
-            <div class="nickname-area">
-
-                <input
-                    id="nicknameInput"
-                    class="nickname-input"
-                    type="text"
-                    maxlength="20"
-                    placeholder="输入你的昵称"
-                >
-
-                <button
-                    class="green-button"
-                    onclick="saveNickname()"
-                >
-                    保存昵称
-                </button>
-
+        <div class="stat">
+            <div class="stat-label">当前时间</div>
+            <div id="clock" class="stat-value">
+                --:--:--
             </div>
+        </div>
 
-            <div
-                id="userInfo"
-                class="user-info"
-            >
-                当前昵称：未设置
-            </div>
+    </div>
 
-        </section>
+</section>
 
+<section class="features">
 
-        <!-- 聊天 -->
-        <section class="panel">
+    <div class="feature">
+        <h3>🔐 身份验证</h3>
+        <p>
+            使用昵称进入安全实验室聊天室。
+        </p>
+    </div>
 
-            <h2 class="panel-title">
-                💬 安全实验室聊天室
-            </h2>
+    <div class="feature">
+        <h3>🖥 在线聊天</h3>
+        <p>
+            使用 Supabase 保存和读取聊天消息。
+        </p>
+    </div>
 
-            <div
-                id="chatBox"
-                class="chat-box"
-            >
+    <div class="feature">
+        <h3>📡 实时系统</h3>
+        <p>
+            页面会自动刷新聊天消息。
+        </p>
+    </div>
 
-                <div
-                    style="
-                    text-align:center;
-                    color:#477957;
-                    padding:30px;
-                    "
-                >
-                    正在连接聊天服务器...
-                </div>
+</section>
 
-            </div>
+</main>
 
-
-            <div class="chat-input-area">
-
-                <input
-                    id="messageInput"
-                    class="chat-input"
-                    type="text"
-                    maxlength="500"
-                    placeholder="输入消息..."
-                    autocomplete="off"
-                >
-
-                <button
-                    id="sendButton"
-                    class="send-button"
-                    onclick="sendMessage()"
-                >
-                    发送
-                </button>
-
-            </div>
-
-
-            <div
-                id="status"
-                class="status-box status-loading"
-            >
-                正在连接数据库...
-            </div>
-
-        </section>
-
-
-        <!-- 系统状态 -->
-        <section class="panel">
-
-            <h2 class="panel-title">
-                📊 系统状态
-            </h2>
-
-            <div class="stats">
-
-                <div class="stat">
-
-                    <div class="stat-label">
-                        数据库
-                    </div>
-
-                    <div
-                        id="databaseStatus"
-                        class="stat-value"
-                    >
-                        连接中
-                    </div>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <div class="stat-label">
-                        聊天
-                    </div>
-
-                    <div
-                        id="chatStatus"
-                        class="stat-value"
-                    >
-                        在线
-                    </div>
-
-                </div>
-
-
-                <div class="stat">
-
-                    <div class="stat-label">
-                        当前时间
-                    </div>
-
-                    <div
-                        id="clock"
-                        class="stat-value"
-                    >
-                        --:--:--
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- 功能 -->
-        <section class="features">
-
-            <div class="feature">
-
-                <h3>
-                    🔐 身份验证
-                </h3>
-
-                <p>
-                    使用昵称进入安全实验室聊天室。
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <h3>
-                    🖥 在线聊天
-                </h3>
-
-                <p>
-                    使用 Supabase 保存和读取聊天消息。
-                </p>
-
-            </div>
-
-
-            <div class="feature">
-
-                <h3>
-                    📡 实时系统
-                </h3>
-
-                <p>
-                    页面会自动刷新聊天消息。
-                </p>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <footer class="footer">
-
-        SECURITY LAB DEMO ·
-        仅用于合法安全实验
-
-    </footer>
+<footer class="footer">
+    SECURITY LAB DEMO · 仅用于合法安全实验
+</footer>
 
 </div>
 
-
-<!-- 昵称弹窗 -->
-<div
-    id="nicknameModal"
-    class="nickname-modal"
->
+<div id="nicknameModal" class="nickname-modal">
 
     <div class="modal-box">
 
-        <h2>
-            🛡 欢迎来到 Security Lab
-        </h2>
+        <h2>🛡 欢迎来到 Security Lab</h2>
 
         <p>
             第一次使用，请设置你的昵称
@@ -925,13 +577,11 @@ body {
             class="modal-input"
             type="text"
             maxlength="20"
-            placeholder="例如：czh"
-        >
+            placeholder="例如：czh">
 
         <button
             class="modal-button"
-            onclick="saveModalNickname()"
-        >
+            onclick="saveModalNickname()">
             进入聊天室
         </button>
 
@@ -943,124 +593,115 @@ body {
 <script>
 
 /* =====================================================
-   Supabase 配置
-===================================================== */
+   SUPABASE 配置
+   ===================================================== */
 
 /*
-   这是你的 Supabase 项目地址
+   你的 Supabase Project URL
 */
 
 const SUPABASE_URL =
-    "https://inducpwbmyjhnnjkqyxq.supabase.co";
+    "https://lnducpwbmyjhnnjkqyxq.supabase.co";
 
 
 /*
-   这是你之前提供的 Publishable Key
+   你的 Publishable Key
 
-   注意：
-   sb_publishable 可以放在网页前端。
-   不要把 sb_secret 放进这里。
+   不要使用 sb_secret。
 */
 
 const SUPABASE_KEY =
     "sb_publishable_aukve7aK4EQCniOtCSy8uQ_raK8MH0j";
 
 
-/* 创建 Supabase 客户端 */
-
 let supabaseClient = null;
 
-try {
 
-    supabaseClient =
-        window.supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
+/* =====================================================
+   初始化 Supabase
+   ===================================================== */
+
+function initSupabase() {
+
+    try {
+
+        if (
+            !window.supabase ||
+            !window.supabase.createClient
+        ) {
+
+            throw new Error(
+                "Supabase JS 加载失败"
+            );
+        }
+
+        supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_KEY
+            );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Supabase 初始化错误:",
+            error
         );
 
-} catch (error) {
+        setDatabaseError(
+            "Supabase 初始化失败"
+        );
 
-    console.error(error);
-
+        return false;
+    }
 }
 
 
 /* =====================================================
    用户昵称
-===================================================== */
+   ===================================================== */
 
 let nickname =
-    localStorage.getItem("security_lab_nickname") || "";
+    localStorage.getItem(
+        "security_lab_nickname"
+    ) || "";
 
 
-/* 页面打开 */
-
-window.addEventListener("load", function() {
-
-    updateNicknameUI();
-
-    if (!nickname) {
-
-        document
-            .getElementById("nicknameModal")
-            .classList.add("show");
-
-        setTimeout(function() {
-
-            document
-                .getElementById("modalNickname")
-                .focus();
-
-        }, 300);
-
-    }
-
-    initChat();
-
-});
-
-
-/* 保存弹窗昵称 */
-
-function saveModalNickname() {
+function updateNicknameUI() {
 
     const input =
-        document.getElementById("modalNickname");
+        document.getElementById(
+            "nicknameInput"
+        );
 
-    const name =
-        input.value.trim();
+    const info =
+        document.getElementById(
+            "userInfo"
+        );
 
-    if (!name) {
+    if (nickname) {
 
-        alert("请输入昵称");
+        input.value = nickname;
 
-        input.focus();
+        info.textContent =
+            "当前昵称：" + nickname;
 
-        return;
+    } else {
+
+        info.textContent =
+            "当前昵称：未设置";
     }
-
-    nickname = name;
-
-    localStorage.setItem(
-        "security_lab_nickname",
-        nickname
-    );
-
-    document
-        .getElementById("nicknameModal")
-        .classList.remove("show");
-
-    updateNicknameUI();
-
 }
 
-
-/* 保存普通昵称 */
 
 function saveNickname() {
 
     const input =
-        document.getElementById("nicknameInput");
+        document.getElementById(
+            "nicknameInput"
+        );
 
     const name =
         input.value.trim();
@@ -1085,45 +726,94 @@ function saveNickname() {
         "昵称保存成功",
         "ok"
     );
-
 }
 
 
-/* 更新昵称 */
-
-function updateNicknameUI() {
+function saveModalNickname() {
 
     const input =
-        document.getElementById("nicknameInput");
+        document.getElementById(
+            "modalNickname"
+        );
 
-    const info =
-        document.getElementById("userInfo");
+    const name =
+        input.value.trim();
 
-    if (nickname) {
+    if (!name) {
 
-        input.value = nickname;
+        alert("请输入昵称");
 
-        info.textContent =
-            "当前昵称：" + nickname;
-
-    } else {
-
-        info.textContent =
-            "当前昵称：未设置";
-
+        return;
     }
 
+    nickname = name;
+
+    localStorage.setItem(
+        "security_lab_nickname",
+        nickname
+    );
+
+    document
+        .getElementById(
+            "nicknameModal"
+        )
+        .classList.remove("show");
+
+    updateNicknameUI();
 }
 
 
 /* =====================================================
-   状态提示
-===================================================== */
+   页面启动
+   ===================================================== */
 
-function showStatus(message, type) {
+window.addEventListener(
+    "load",
+    async function() {
+
+        updateNicknameUI();
+
+        if (!nickname) {
+
+            document
+                .getElementById(
+                    "nicknameModal"
+                )
+                .classList.add("show");
+
+            setTimeout(function() {
+
+                document
+                    .getElementById(
+                        "modalNickname"
+                    )
+                    .focus();
+
+            }, 300);
+        }
+
+        if (!initSupabase()) {
+            return;
+        }
+
+        await initChat();
+    }
+);
+
+
+/* =====================================================
+   状态
+   ===================================================== */
+
+function showStatus(
+    message,
+    type
+) {
 
     const status =
-        document.getElementById("status");
+        document.getElementById(
+            "status"
+        );
 
     status.textContent = message;
 
@@ -1136,49 +826,78 @@ function showStatus(message, type) {
                 ? "status-ok"
                 : "status-loading"
         );
+}
 
+
+function setDatabaseError(message) {
+
+    document
+        .getElementById(
+            "databaseStatus"
+        )
+        .textContent = "连接失败";
+
+    document
+        .getElementById(
+            "chatStatus"
+        )
+        .textContent = "离线";
+
+    showStatus(
+        "数据库连接失败：" + message,
+        "error"
+    );
 }
 
 
 /* =====================================================
-   数据库连接
-===================================================== */
+   初始化聊天
+   ===================================================== */
 
 async function initChat() {
 
     if (!supabaseClient) {
 
         setDatabaseError(
-            "Supabase 初始化失败"
+            "Supabase 未初始化"
         );
 
         return;
     }
 
+    showStatus(
+        "正在读取聊天记录...",
+        "loading"
+    );
+
     try {
 
-        const result =
-            await supabaseClient
-                .from("messages")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: true
-                    }
-                )
-                .limit(100);
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("messages")
+            .select(
+                "id, created_at, username, info"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: true
+                }
+            )
+            .limit(100);
 
 
-        if (result.error) {
+        if (error) {
 
             console.error(
-                "Supabase:",
-                result.error
+                "读取 messages 失败:",
+                error
             );
 
             setDatabaseError(
-                result.error.message
+                error.message
             );
 
             return;
@@ -1186,8 +905,17 @@ async function initChat() {
 
 
         document
-            .getElementById("databaseStatus")
+            .getElementById(
+                "databaseStatus"
+            )
             .textContent = "已连接";
+
+
+        document
+            .getElementById(
+                "chatStatus"
+            )
+            .textContent = "在线";
 
 
         showStatus(
@@ -1197,42 +925,28 @@ async function initChat() {
 
 
         renderMessages(
-            result.data || []
+            data || []
         );
 
 
     } catch (error) {
 
-        console.error(error);
-
-        setDatabaseError(
-            error.message || "连接失败"
+        console.error(
+            "数据库请求失败:",
+            error
         );
 
+        setDatabaseError(
+            error.message ||
+            "网络请求失败"
+        );
     }
-
-}
-
-
-/* 数据库错误 */
-
-function setDatabaseError(message) {
-
-    document
-        .getElementById("databaseStatus")
-        .textContent = "连接失败";
-
-    showStatus(
-        "数据库连接失败：" + message,
-        "error"
-    );
-
 }
 
 
 /* =====================================================
    读取聊天
-===================================================== */
+   ===================================================== */
 
 async function loadMessages() {
 
@@ -1242,28 +956,33 @@ async function loadMessages() {
 
     try {
 
-        const result =
-            await supabaseClient
-                .from("messages")
-                .select("*")
-                .order(
-                    "created_at",
-                    {
-                        ascending: true
-                    }
-                )
-                .limit(100);
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("messages")
+            .select(
+                "id, created_at, username, info"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: true
+                }
+            )
+            .limit(100);
 
 
-        if (result.error) {
+        if (error) {
 
             console.error(
-                result.error
+                "读取聊天记录失败:",
+                error
             );
 
             showStatus(
                 "读取聊天记录失败：" +
-                result.error.message,
+                error.message,
                 "error"
             );
 
@@ -1271,8 +990,22 @@ async function loadMessages() {
         }
 
 
+        document
+            .getElementById(
+                "databaseStatus"
+            )
+            .textContent = "已连接";
+
+
+        document
+            .getElementById(
+                "chatStatus"
+            )
+            .textContent = "在线";
+
+
         renderMessages(
-            result.data || []
+            data || []
         );
 
 
@@ -1282,23 +1015,26 @@ async function loadMessages() {
 
         showStatus(
             "读取聊天记录失败：" +
-            error.message,
+            (
+                error.message ||
+                "网络请求失败"
+            ),
             "error"
         );
-
     }
-
 }
 
 
 /* =====================================================
-   显示聊天
-===================================================== */
+   显示消息
+   ===================================================== */
 
 function renderMessages(messages) {
 
     const chatBox =
-        document.getElementById("chatBox");
+        document.getElementById(
+            "chatBox"
+        );
 
 
     if (!messages.length) {
@@ -1307,8 +1043,7 @@ function renderMessages(messages) {
             <div style="
                 text-align:center;
                 color:#477957;
-                padding:40px;
-            ">
+                padding:40px;">
                 暂无消息<br>
                 <span style="font-size:13px">
                     发送第一条消息吧
@@ -1323,77 +1058,96 @@ function renderMessages(messages) {
     chatBox.innerHTML = "";
 
 
-    messages.forEach(function(message) {
+    messages.forEach(
+        function(message) {
 
-        const item =
-            document.createElement("div");
+            const item =
+                document.createElement(
+                    "div"
+                );
 
-        item.className = "message";
-
-
-        const top =
-            document.createElement("div");
-
-        top.className = "message-top";
+            item.className =
+                "message";
 
 
-        const user =
-            document.createElement("div");
+            const top =
+                document.createElement(
+                    "div"
+                );
 
-        user.className = "message-user";
-
-        user.textContent =
-            message.username ||
-            "匿名";
-
-
-        const time =
-            document.createElement("div");
-
-        time.className = "message-time";
-
-        time.textContent =
-            formatTime(message.created_at);
+            top.className =
+                "message-top";
 
 
-        const text =
-            document.createElement("div");
+            const user =
+                document.createElement(
+                    "div"
+                );
 
-        text.className = "message-text";
+            user.className =
+                "message-user";
 
-        text.textContent =
-            message.info || "";
+            user.textContent =
+                message.username ||
+                "匿名";
 
 
-        top.appendChild(user);
+            const time =
+                document.createElement(
+                    "div"
+                );
 
-        top.appendChild(time);
+            time.className =
+                "message-time";
 
-        item.appendChild(top);
+            time.textContent =
+                formatTime(
+                    message.created_at
+                );
 
-        item.appendChild(text);
 
-        chatBox.appendChild(item);
+            const text =
+                document.createElement(
+                    "div"
+                );
 
-    });
+            text.className =
+                "message-text";
+
+            text.textContent =
+                message.info || "";
+
+
+            top.appendChild(user);
+
+            top.appendChild(time);
+
+            item.appendChild(top);
+
+            item.appendChild(text);
+
+            chatBox.appendChild(item);
+        }
+    );
 
 
     chatBox.scrollTop =
         chatBox.scrollHeight;
-
 }
 
 
 /* =====================================================
    发送消息
-===================================================== */
+   ===================================================== */
 
 async function sendMessage() {
 
     if (!nickname) {
 
         document
-            .getElementById("nicknameModal")
+            .getElementById(
+                "nicknameModal"
+            )
             .classList.add("show");
 
         return;
@@ -1401,14 +1155,15 @@ async function sendMessage() {
 
 
     const input =
-        document.getElementById("messageInput");
+        document.getElementById(
+            "messageInput"
+        );
 
     const text =
         input.value.trim();
 
 
     if (!text) {
-
         return;
     }
 
@@ -1425,45 +1180,42 @@ async function sendMessage() {
 
 
     const button =
-        document.getElementById("sendButton");
+        document.getElementById(
+            "sendButton"
+        );
 
 
     button.disabled = true;
 
-    button.textContent =
-        "发送中";
+    button.textContent = "发送中";
 
 
     try {
 
-        /*
-          messages 表对应：
-
-          username = 昵称
-          info     = 消息
-          created_at = 时间
-        */
-
-        const result =
-            await supabaseClient
-                .from("messages")
-                .insert([
-                    {
-                        username: nickname,
-                        info: text
-                    }
-                ]);
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("messages")
+            .insert([
+                {
+                    username: nickname,
+                    info: text
+                }
+            ])
+            .select();
 
 
-        if (result.error) {
+        if (error) {
 
             console.error(
-                result.error
+                "发送消息失败:",
+                error
             );
 
             showStatus(
                 "发送失败：" +
-                result.error.message,
+                error.message,
                 "error"
             );
 
@@ -1472,6 +1224,7 @@ async function sendMessage() {
 
 
         input.value = "";
+
 
         showStatus(
             "消息发送成功",
@@ -1488,7 +1241,10 @@ async function sendMessage() {
 
         showStatus(
             "发送失败：" +
-            error.message,
+            (
+                error.message ||
+                "网络请求失败"
+            ),
             "error"
         );
 
@@ -1496,52 +1252,19 @@ async function sendMessage() {
 
         button.disabled = false;
 
-        button.textContent =
-            "发送";
-
+        button.textContent = "发送";
     }
-
-}
-
-
-/* =====================================================
-   时间
-===================================================== */
-
-function formatTime(dateString) {
-
-    if (!dateString) {
-        return "";
-    }
-
-    const date =
-        new Date(dateString);
-
-
-    if (isNaN(date.getTime())) {
-        return "";
-    }
-
-
-    return date.toLocaleString(
-        "zh-CN",
-        {
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-
 }
 
 
 /* =====================================================
    回车发送
-===================================================== */
+   ===================================================== */
 
 document
-    .getElementById("messageInput")
+    .getElementById(
+        "messageInput"
+    )
     .addEventListener(
         "keydown",
         function(event) {
@@ -1554,16 +1277,70 @@ document
                 event.preventDefault();
 
                 sendMessage();
-
             }
-
         }
     );
 
 
 /* =====================================================
-   自动刷新聊天
-===================================================== */
+   时间
+   ===================================================== */
+
+function formatTime(
+    dateString
+) {
+
+    if (!dateString) {
+        return "";
+    }
+
+    const date =
+        new Date(dateString);
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    return date.toLocaleString(
+        "zh-CN",
+        {
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+function updateClock() {
+
+    document
+        .getElementById(
+            "clock"
+        )
+        .textContent =
+        new Date().toLocaleTimeString(
+            "zh-CN"
+        );
+}
+
+
+updateClock();
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+/* =====================================================
+   每 5 秒刷新聊天
+   ===================================================== */
 
 setInterval(
     function() {
@@ -1576,37 +1353,13 @@ setInterval(
 
 
 /* =====================================================
-   实时时钟
-===================================================== */
-
-function updateClock() {
-
-    const now =
-        new Date();
-
-    document
-        .getElementById("clock")
-        .textContent =
-        now.toLocaleTimeString(
-            "zh-CN"
-        );
-
-}
-
-updateClock();
-
-setInterval(
-    updateClock,
-    1000
-);
-
-
-/* =====================================================
-   Matrix
-===================================================== */
+   Matrix 背景
+   ===================================================== */
 
 const canvas =
-    document.getElementById("matrix");
+    document.getElementById(
+        "matrix"
+    );
 
 const ctx =
     canvas.getContext("2d");
@@ -1650,9 +1403,7 @@ function resizeMatrix() {
 
         drops[i] =
             Math.random() * -50;
-
     }
-
 }
 
 
@@ -1701,18 +1452,15 @@ function drawMatrix() {
 
         if (
             drops[i] * 18 > height &&
-            Math.random() > .975
+            Math.random() > 0.975
         ) {
 
             drops[i] = 0;
-
         }
 
 
         drops[i]++;
-
     }
-
 }
 
 
