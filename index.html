@@ -138,6 +138,42 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 .digital-clock{font-size:28px;font-weight:800;letter-spacing:2px;color:#e9f3ff}
 .widget-note{color:#8fa9cc;text-align:center;font-size:12px;margin-top:8px}
 </style>
+
+<style id="smooth-boot">
+#boot{
+  opacity:1;
+  transform:scale(1);
+  filter:blur(0);
+  transition:
+    opacity .9s cubic-bezier(.22,1,.36,1),
+    transform 1.05s cubic-bezier(.22,1,.36,1),
+    filter .9s ease;
+  will-change:opacity,transform,filter;
+}
+#boot.hide{
+  opacity:0;
+  transform:scale(1.045);
+  filter:blur(8px);
+  pointer-events:none;
+}
+#boot::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 48%,rgba(80,150,255,.12),transparent 42%);
+  opacity:.8;
+  animation:bootGlow 2.6s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes bootGlow{
+  0%,100%{opacity:.45;transform:scale(.96)}
+  50%{opacity:1;transform:scale(1.03)}
+}
+@media (prefers-reduced-motion:reduce){
+  #boot,#boot.hide{transition:none;animation:none}
+}
+</style>
+
 </head>
 <body>
 <!-- 移动端功能菜单 -->
@@ -478,7 +514,7 @@ resize();addEventListener("resize",resize);animate();
 
 updateProfile();applySettings();renderNotifications();loadWeather();
 setInterval(()=>{$("onlineCount").textContent=String(Math.max(1,Math.floor(1+Math.random()*6)));updateStats()},15000);
-setTimeout(()=>$("boot").classList.add("hide"),3200);
+setTimeout(()=>$("boot").classList.add("hide"),3600);
 (async()=>{await initSupabase();subscribeRealtime();await loadMessages()})();
 
 // 手机端功能菜单
