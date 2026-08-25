@@ -2,207 +2,318 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>安全实验室聊天室</title>
 
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{box-sizing:border-box}
-
-html,body{
-    margin:0;
-    min-height:100%;
-    font-family:Arial,"Microsoft YaHei",sans-serif;
-    background:#020b06;
-    color:#00ff66;
+* {
+    box-sizing: border-box;
 }
 
-body{overflow-x:hidden}
-
-#matrix{
-    position:fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    z-index:0;
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+    font-family: Arial, "Microsoft YaHei", sans-serif;
+    background: #020b06;
+    color: #00ff66;
 }
 
-.page{
-    position:relative;
-    z-index:1;
-    min-height:100vh;
-    padding:25px 15px;
+body {
+    overflow-x: hidden;
 }
 
-.header,
-.box{
-    max-width:1000px;
-    margin:20px auto;
-    padding:25px;
-    border:1px solid rgba(0,255,102,.4);
-    border-radius:16px;
-    background:rgba(0,15,8,.92);
-    box-shadow:0 0 25px rgba(0,255,102,.12);
+#matrix {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background: #020b06;
 }
 
-.header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    padding: 20px 12px 40px;
 }
 
-.logo{
-    font-size:22px;
-    font-weight:bold;
-    text-shadow:0 0 12px #00ff66;
+.header {
+    max-width: 1000px;
+    margin: 0 auto 20px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 15px 20px;
+
+    border: 1px solid rgba(0,255,102,.45);
+    border-radius: 15px;
+
+    background: rgba(0,15,8,.92);
+
+    box-shadow: 0 0 20px rgba(0,255,102,.12);
 }
 
-.status{
-    font-size:14px;
+.logo {
+    font-size: 21px;
+    font-weight: bold;
+    text-shadow: 0 0 12px #00ff66;
 }
 
-.dot{
-    display:inline-block;
-    width:9px;
-    height:9px;
-    margin-right:6px;
-    border-radius:50%;
-    background:#00ff66;
-    box-shadow:0 0 12px #00ff66;
+.status {
+    font-size: 14px;
 }
 
-.title{
-    text-align:center;
-    font-size:40px;
-    margin:0 0 8px;
-    text-shadow:0 0 20px #00ff66;
+.status-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: #00ff66;
+    box-shadow: 0 0 12px #00ff66;
 }
 
-.subtitle{
-    text-align:center;
-    color:#72ffad;
-    margin-bottom:25px;
+.box {
+    max-width: 1000px;
+    margin: 20px auto;
+
+    padding: 25px;
+
+    border: 1px solid rgba(0,255,102,.4);
+    border-radius: 18px;
+
+    background: rgba(0,15,8,.92);
+
+    box-shadow:
+        0 0 25px rgba(0,255,102,.12),
+        inset 0 0 20px rgba(0,255,102,.03);
 }
 
-.input{
-    width:100%;
-    padding:14px;
-    margin:7px 0;
-    border:1px solid #00aa44;
-    border-radius:8px;
-    outline:none;
-    background:rgba(0,0,0,.7);
-    color:#00ff66;
-    font-size:16px;
+.title {
+    text-align: center;
+    font-size: 38px;
+    margin: 0 0 8px;
+    text-shadow: 0 0 20px #00ff66;
 }
 
-.input:focus{
-    border-color:#00ff66;
-    box-shadow:0 0 12px rgba(0,255,102,.35);
+.subtitle {
+    text-align: center;
+    color: #72ffad;
+    margin-bottom: 25px;
 }
 
-.btn{
-    width:100%;
-    padding:13px;
-    margin-top:10px;
-    border:0;
-    border-radius:8px;
-    background:#00b84f;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
+.input {
+    width: 100%;
+    padding: 14px;
+
+    margin: 7px 0;
+
+    border: 1px solid #00aa44;
+    border-radius: 9px;
+
+    outline: none;
+
+    background: rgba(0,0,0,.65);
+    color: #00ff66;
+
+    font-size: 16px;
 }
 
-.btn:hover{
-    background:#00e861;
+.input::placeholder {
+    color: #4d996b;
 }
 
-.chat{
-    max-width:1000px;
-    margin:30px auto;
+.input:focus {
+    border-color: #00ff66;
+
+    box-shadow:
+        0 0 12px
+        rgba(0,255,102,.35);
 }
 
-.messages{
-    height:400px;
-    overflow-y:auto;
-    padding:15px;
-    border:1px solid rgba(0,255,102,.3);
-    border-radius:10px;
-    background:rgba(0,0,0,.55);
+.btn {
+    width: 100%;
+    padding: 14px;
+
+    margin-top: 10px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #00b84f;
+    color: white;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
 }
 
-.message{
-    padding:10px 12px;
-    margin-bottom:10px;
-    border-left:3px solid #00ff66;
-    background:rgba(0,255,102,.05);
-    border-radius:6px;
+.btn:hover {
+    background: #00e861;
+    box-shadow: 0 0 18px rgba(0,255,102,.4);
 }
 
-.username{
-    color:#00ff66;
-    font-weight:bold;
+.messages {
+    height: 420px;
+
+    overflow-y: auto;
+
+    padding: 15px;
+
+    border:
+        1px solid
+        rgba(0,255,102,.35);
+
+    border-radius: 12px;
+
+    background:
+        rgba(0,0,0,.6);
 }
 
-.time{
-    color:#579b70;
-    font-size:12px;
-    margin-left:8px;
+.message {
+    padding: 12px;
+    margin-bottom: 10px;
+
+    border-left:
+        3px solid #00ff66;
+
+    border-radius: 7px;
+
+    background:
+        rgba(0,255,102,.055);
+
+    word-break: break-word;
 }
 
-.text{
-    margin-top:5px;
-    color:#d5ffe2;
-    word-break:break-word;
+.username {
+    color: #00ff66;
+    font-weight: bold;
 }
 
-.send-area{
-    display:grid;
-    grid-template-columns:180px 1fr 110px;
-    gap:10px;
-    margin-top:12px;
+.time {
+    color: #579b70;
+    font-size: 12px;
+    margin-left: 8px;
 }
 
-.send-area .input{
-    margin:0;
+.message-text {
+    color: #d5ffe2;
+    margin-top: 6px;
+    line-height: 1.5;
 }
 
-.send{
-    margin:0;
+.send-area {
+    display: grid;
+    grid-template-columns: 180px 1fr 110px;
+
+    gap: 10px;
+
+    margin-top: 12px;
 }
 
-.info{
-    margin-top:10px;
-    color:#72ffad;
-    font-size:13px;
+.send-area .input {
+    margin: 0;
 }
 
-.error{
-    color:#ff6666;
+.send {
+    margin: 0;
 }
 
-.footer{
-    text-align:center;
-    color:#579b70;
-    padding:30px;
+.info {
+    margin-top: 12px;
+    color: #72ffad;
+    font-size: 14px;
 }
 
-@media(max-width:700px){
-    .header{
-        padding:15px;
+.success {
+    color: #00ff66;
+}
+
+.error {
+    color: #ff6666;
+}
+
+.system-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
+}
+
+.system-item {
+    padding: 18px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(0,255,102,.05);
+}
+
+.system-value {
+    margin-top: 7px;
+
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.footer {
+    text-align: center;
+
+    margin-top: 30px;
+
+    color: #579b70;
+
+    font-size: 13px;
+}
+
+@media (max-width: 700px) {
+
+    .page {
+        padding: 12px 10px 30px;
     }
 
-    .title{
-        font-size:30px;
+    .header {
+        padding: 13px;
     }
 
-    .send-area{
-        grid-template-columns:1fr;
+    .logo {
+        font-size: 18px;
     }
 
-    .send{
-        margin-top:5px;
+    .title {
+        font-size: 30px;
+    }
+
+    .box {
+        padding: 18px;
+    }
+
+    .messages {
+        height: 380px;
+    }
+
+    .send-area {
+        grid-template-columns: 1fr;
+    }
+
+    .send {
+        margin-top: 5px;
+    }
+
+    .system-grid {
+        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -215,18 +326,26 @@ body{overflow-x:hidden}
 <div class="page">
 
 <header class="header">
-    <div class="logo">🛡 SECURITY LAB</div>
+
+    <div class="logo">
+        🛡 SECURITY LAB
+    </div>
 
     <div class="status">
-        <span class="dot"></span>
+        <span class="status-dot"></span>
         系统在线
     </div>
+
 </header>
 
 
+<!-- 用户区域 -->
+
 <section class="box">
 
-    <h1 class="title">安全实验室</h1>
+    <h1 class="title">
+        安全实验室
+    </h1>
 
     <div class="subtitle">
         SECURITY LAB · REALTIME CHAT
@@ -235,30 +354,43 @@ body{overflow-x:hidden}
     <input
         id="username"
         class="input"
+        type="text"
         maxlength="30"
-        placeholder="输入聊天昵称"
+        placeholder="输入你的聊天昵称"
     >
 
-    <div id="userInfo" class="info">
+    <div
+        id="userInfo"
+        class="info"
+    >
         当前未设置昵称
     </div>
 
 </section>
 
 
-<section class="box chat">
+<!-- 聊天区域 -->
 
-    <h2>💬 实时聊天室</h2>
+<section class="box">
 
-    <div id="messages" class="messages">
+    <h2>
+        💬 实时聊天室
+    </h2>
+
+    <div
+        id="messages"
+        class="messages"
+    >
         正在连接聊天服务器...
     </div>
+
 
     <div class="send-area">
 
         <input
             id="chatName"
             class="input"
+            type="text"
             maxlength="30"
             placeholder="昵称"
         >
@@ -266,6 +398,7 @@ body{overflow-x:hidden}
         <input
             id="chatText"
             class="input"
+            type="text"
             maxlength="500"
             placeholder="输入消息，按 Enter 发送"
         >
@@ -273,36 +406,75 @@ body{overflow-x:hidden}
         <button
             id="sendButton"
             class="btn send"
+            type="button"
         >
             发送
         </button>
 
     </div>
 
-    <div id="status" class="info">
+
+    <div
+        id="status"
+        class="info"
+    >
         正在连接 Supabase...
     </div>
 
 </section>
 
 
+<!-- 系统状态 -->
+
 <section class="box">
 
-    <h2>📊 系统状态</h2>
+    <h2>
+        📊 系统状态
+    </h2>
 
-    <p>
-        数据库：
-        <strong id="databaseStatus">
-            检查中
-        </strong>
-    </p>
+    <div class="system-grid">
 
-    <p>
-        当前时间：
-        <strong id="clock">
-            --:--:--
-        </strong>
-    </p>
+        <div class="system-item">
+            数据库
+            <div
+                id="databaseStatus"
+                class="system-value"
+            >
+                检查中
+            </div>
+        </div>
+
+        <div class="system-item">
+            实时连接
+            <div
+                id="realtimeStatus"
+                class="system-value"
+            >
+                连接中
+            </div>
+        </div>
+
+        <div class="system-item">
+            消息数量
+            <div
+                id="messageCount"
+                class="system-value"
+            >
+                0
+            </div>
+        </div>
+
+        <div class="system-item">
+            当前时间
+            <div
+                id="clock"
+                class="system-value"
+            >
+                --:--:--
+            </div>
+        </div>
+
+    </div>
 
 </section>
 
@@ -316,29 +488,31 @@ body{overflow-x:hidden}
 
 <script>
 
-/* =====================================
-   Supabase 配置
-===================================== */
+/* ==========================================
+   1. Supabase 配置
+========================================== */
 
 const SUPABASE_URL =
-"https://inducpwbmyjhnnjkqyxq.supabase.co";
+"https://lnducpwbmyjhnnjkqyxq.supabase.co";
 
 const SUPABASE_KEY =
 "sb_publishable_aukve7aK4EQCniOtCSy8uQ_raK8MH0j";
 
 
-/* 创建客户端 */
+/* ==========================================
+   2. 创建 Supabase 客户端
+========================================== */
 
-const client =
+const supabaseClient =
 window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
 
 
-/* =====================================
-   页面元素
-===================================== */
+/* ==========================================
+   3. 获取页面元素
+========================================== */
 
 const usernameInput =
 document.getElementById("username");
@@ -349,6 +523,9 @@ document.getElementById("chatName");
 const chatText =
 document.getElementById("chatText");
 
+const sendButton =
+document.getElementById("sendButton");
+
 const messages =
 document.getElementById("messages");
 
@@ -358,20 +535,44 @@ document.getElementById("status");
 const databaseStatus =
 document.getElementById("databaseStatus");
 
+const realtimeStatus =
+document.getElementById("realtimeStatus");
+
+const messageCount =
+document.getElementById("messageCount");
+
 const userInfo =
 document.getElementById("userInfo");
 
 
-/* =====================================
-   恢复昵称
-===================================== */
+/* ==========================================
+   4. HTML 安全处理
+========================================== */
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        value == null
+        ? ""
+        : String(value);
+
+    return div.innerHTML;
+}
+
+
+/* ==========================================
+   5. 保存昵称
+========================================== */
 
 const savedName =
 localStorage.getItem(
     "security_lab_username"
 );
 
-if(savedName){
+if (savedName) {
 
     usernameInput.value =
         savedName;
@@ -385,21 +586,17 @@ if(savedName){
 }
 
 
-/* =====================================
-   保存昵称
-===================================== */
-
 usernameInput.addEventListener(
     "input",
-    function(){
+    function () {
 
         const name =
-        usernameInput.value.trim();
+            usernameInput.value.trim();
 
         chatName.value =
-        name;
+            name;
 
-        if(name){
+        if (name) {
 
             localStorage.setItem(
                 "security_lab_username",
@@ -410,7 +607,7 @@ usernameInput.addEventListener(
                 "当前昵称：" +
                 name;
 
-        }else{
+        } else {
 
             userInfo.textContent =
                 "当前未设置昵称";
@@ -419,122 +616,40 @@ usernameInput.addEventListener(
 );
 
 
-/* =====================================
-   防止 HTML 注入
-===================================== */
+/* ==========================================
+   6. 显示聊天消息
+========================================== */
 
-function escapeHTML(value){
+function addMessage(item) {
 
-    const div =
-    document.createElement("div");
-
-    div.textContent =
-    value == null ? "" : String(value);
-
-    return div.innerHTML;
-}
-
-
-/* =====================================
-   加载聊天记录
-===================================== */
-
-async function loadMessages(){
-
-    const result =
-    await client
-        .from("messages")
-        .select(
-            "id,created_at,username,message"
-        )
-        .order(
-            "created_at",
-            {ascending:true}
-        )
-        .limit(100);
-
-
-    if(result.error){
-
-        console.error(
-            result.error
-        );
-
-        databaseStatus.textContent =
-            "连接失败";
-
-        status.innerHTML =
-            '<span class="error">' +
-            "读取聊天记录失败：" +
-            escapeHTML(
-                result.error.message
-            ) +
-            "</span>";
-
+    if (!item || !item.id) {
         return;
     }
 
 
-    databaseStatus.textContent =
-        "正常";
-
-    status.textContent =
-        "Supabase 已连接";
-
-
-    messages.innerHTML = "";
-
-
-    if(
-        !result.data ||
-        result.data.length === 0
-    ){
-
-        messages.innerHTML =
-            "<div>目前没有聊天消息。</div>";
-
-        return;
-    }
-
-
-    result.data.forEach(
-        addMessage
-    );
-
-
-    scrollToBottom();
-}
-
-
-/* =====================================
-   显示一条消息
-===================================== */
-
-function addMessage(item){
-
-    if(
+    const old =
         document.querySelector(
-            '[data-id="' +
+            '[data-message-id="' +
             item.id +
             '"]'
-        )
-    ){
+        );
 
+    if (old) {
         return;
     }
 
 
     const div =
-    document.createElement("div");
+        document.createElement("div");
 
     div.className =
         "message";
 
-    div.dataset.id =
+    div.dataset.messageId =
         item.id;
 
 
-    const username =
+    const name =
         escapeHTML(
             item.username
         );
@@ -544,12 +659,18 @@ function addMessage(item){
             item.message
         );
 
-    const time =
-        item.created_at
-        ? new Date(
-            item.created_at
-        ).toLocaleString("zh-CN")
-        : "";
+
+    let time = "";
+
+    if (item.created_at) {
+
+        time =
+            new Date(
+                item.created_at
+            ).toLocaleString(
+                "zh-CN"
+            );
+    }
 
 
     div.innerHTML =
@@ -557,7 +678,7 @@ function addMessage(item){
         '<div>' +
 
             '<span class="username">' +
-            username +
+            name +
             '</span>' +
 
             '<span class="time">' +
@@ -566,22 +687,144 @@ function addMessage(item){
 
         '</div>' +
 
-        '<div class="text">' +
+        '<div class="message-text">' +
         text +
         '</div>';
 
 
-    messages.appendChild(
-        div
-    );
+    messages.appendChild(div);
+
+
+    updateMessageCount();
 }
 
 
-/* =====================================
-   发送消息
-===================================== */
+/* ==========================================
+   7. 更新消息数量
+========================================== */
 
-async function sendMessage(){
+function updateMessageCount() {
+
+    const count =
+        messages.querySelectorAll(
+            ".message"
+        ).length;
+
+    messageCount.textContent =
+        count;
+}
+
+
+/* ==========================================
+   8. 滚动到底部
+========================================== */
+
+function scrollToBottom() {
+
+    messages.scrollTop =
+        messages.scrollHeight;
+}
+
+
+/* ==========================================
+   9. 读取历史消息
+========================================== */
+
+async function loadMessages() {
+
+    status.textContent =
+        "正在读取聊天记录...";
+
+
+    const result =
+        await supabaseClient
+            .from("messages")
+            .select(
+                "id,created_at,username,message"
+            )
+            .order(
+                "created_at",
+                {
+                    ascending: true
+                }
+            )
+            .limit(100);
+
+
+    if (result.error) {
+
+        console.error(
+            "Supabase error:",
+            result.error
+        );
+
+
+        databaseStatus.textContent =
+            "连接失败";
+
+        databaseStatus.className =
+            "system-value error";
+
+
+        status.innerHTML =
+            '<span class="error">' +
+            "读取聊天记录失败：" +
+            escapeHTML(
+                result.error.message
+            ) +
+            "</span>";
+
+
+        return;
+    }
+
+
+    databaseStatus.textContent =
+        "正常";
+
+    databaseStatus.className =
+        "system-value success";
+
+
+    status.textContent =
+        "聊天服务器已连接";
+
+
+    messages.innerHTML = "";
+
+
+    if (
+        !result.data ||
+        result.data.length === 0
+    ) {
+
+        messages.innerHTML =
+            "<div>目前还没有聊天消息。</div>";
+
+        updateMessageCount();
+
+        return;
+    }
+
+
+    result.data.forEach(
+        function(item) {
+
+            addMessage(item);
+
+        }
+    );
+
+
+    scrollToBottom();
+}
+
+
+/* ==========================================
+   10. 发送消息
+========================================== */
+
+async function sendMessage() {
 
     const username =
         chatName.value.trim();
@@ -590,7 +833,7 @@ async function sendMessage(){
         chatText.value.trim();
 
 
-    if(!username){
+    if (!username) {
 
         alert("请输入昵称");
 
@@ -600,7 +843,7 @@ async function sendMessage(){
     }
 
 
-    if(!message){
+    if (!message) {
 
         alert("请输入消息");
 
@@ -610,46 +853,56 @@ async function sendMessage(){
     }
 
 
-    if(username.length > 30){
+    if (username.length > 30) {
 
-        alert("昵称最多 30 个字符");
+        alert("昵称不能超过30个字符");
+
+        return;
+    }
+
+
+    if (message.length > 500) {
+
+        alert("消息不能超过500个字符");
 
         return;
     }
 
 
-    if(message.length > 500){
+    sendButton.disabled =
+        true;
 
-        alert("消息最多 500 个字符");
-
-        return;
-    }
+    sendButton.textContent =
+        "发送中...";
 
 
     status.textContent =
-        "正在发送...";
+        "正在发送消息...";
 
 
     const result =
-    await client
-        .from("messages")
-        .insert({
+        await supabaseClient
+            .from("messages")
+            .insert({
 
-            username:
-                username,
+                username:
+                    username,
 
-            message:
-                message
-        })
-        .select()
-        .single();
+                message:
+                    message
+
+            })
+            .select()
+            .single();
 
 
-    if(result.error){
+    if (result.error) {
 
         console.error(
+            "发送错误:",
             result.error
         );
+
 
         status.innerHTML =
             '<span class="error">' +
@@ -659,11 +912,15 @@ async function sendMessage(){
             ) +
             "</span>";
 
+
+        sendButton.disabled =
+            false;
+
+        sendButton.textContent =
+            "发送";
+
         return;
     }
-
-
-    chatText.value = "";
 
 
     localStorage.setItem(
@@ -672,17 +929,23 @@ async function sendMessage(){
     );
 
 
-    status.textContent =
-        "消息发送成功";
+    chatText.value =
+        "";
+
+
+    status.innerHTML =
+        '<span class="success">' +
+        "消息发送成功" +
+        "</span>";
 
 
     /*
-       立即显示自己的消息。
-       如果 Realtime 随后收到同一条消息，
-       addMessage 会自动避免重复。
+       立即显示消息。
+       Realtime 如果再次收到，
+       addMessage 会自动防止重复。
     */
 
-    if(result.data){
+    if (result.data) {
 
         addMessage(
             result.data
@@ -690,18 +953,37 @@ async function sendMessage(){
 
         scrollToBottom();
     }
+
+
+    sendButton.disabled =
+        false;
+
+    sendButton.textContent =
+        "发送";
 }
 
 
-/* =====================================
-   Enter 发送
-===================================== */
+/* ==========================================
+   11. 点击发送
+========================================== */
+
+sendButton.addEventListener(
+    "click",
+    sendMessage
+);
+
+
+/* ==========================================
+   12. Enter 发送
+========================================== */
 
 chatText.addEventListener(
     "keydown",
-    function(event){
+    function(event) {
 
-        if(event.key === "Enter"){
+        if (
+            event.key === "Enter"
+        ) {
 
             event.preventDefault();
 
@@ -711,58 +993,78 @@ chatText.addEventListener(
 );
 
 
-/* =====================================
-   滚动到底部
-===================================== */
+/* ==========================================
+   13. Realtime 实时聊天
+========================================== */
 
-function scrollToBottom(){
+const chatChannel =
+    supabaseClient
+        .channel(
+            "security-lab-messages"
+        )
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "messages"
+            },
+            function(payload) {
 
-    messages.scrollTop =
-        messages.scrollHeight;
-}
-
-
-/* =====================================
-   Realtime
-===================================== */
-
-const channel =
-client
-    .channel(
-        "security-lab-chat"
-    )
-    .on(
-        "postgres_changes",
-        {
-            event:"INSERT",
-            schema:"public",
-            table:"messages"
-        },
-        function(payload){
-
-            addMessage(
-                payload.new
-            );
-
-            scrollToBottom();
-        }
-    )
-    .subscribe(
-        function(channelStatus){
-
-            console.log(
-                "Realtime:",
-                channelStatus
-            );
-        }
-    );
+                console.log(
+                    "收到新消息:",
+                    payload.new
+                );
 
 
-/* =====================================
-   时钟
-===================================== */
+                addMessage(
+                    payload.new
+                );
 
-function updateClock(){
+
+                scrollToBottom();
+            }
+        )
+        .subscribe(
+            function(channelStatus) {
+
+                console.log(
+                    "Realtime状态:",
+                    channelStatus
+                );
+
+
+                if (
+                    channelStatus ===
+                    "SUBSCRIBED"
+                ) {
+
+                    realtimeStatus.textContent =
+                        "正常";
+
+                    realtimeStatus.className =
+                        "system-value success";
+
+                } else if (
+                    channelStatus ===
+                    "CHANNEL_ERROR"
+                ) {
+
+                    realtimeStatus.textContent =
+                        "连接失败";
+
+                    realtimeStatus.className =
+                        "system-value error";
+                }
+            }
+        );
+
+
+/* ==========================================
+   14. 实时时钟
+========================================== */
+
+function updateClock() {
 
     document.getElementById(
         "clock"
@@ -772,6 +1074,7 @@ function updateClock(){
         );
 }
 
+
 updateClock();
 
 setInterval(
@@ -780,28 +1083,29 @@ setInterval(
 );
 
 
-/* =====================================
-   Matrix 背景
-===================================== */
+/* ==========================================
+   15. Matrix 背景
+========================================== */
 
 const canvas =
-document.getElementById(
-    "matrix"
-);
+    document.getElementById(
+        "matrix"
+    );
 
 const ctx =
-canvas.getContext("2d");
+    canvas.getContext("2d");
 
 let width;
 let height;
 let columns;
 let drops;
 
+
 const characters =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}[]<>/\\$#@%";
 
 
-function resizeMatrix(){
+function resizeMatrix() {
 
     width =
         canvas.width =
@@ -811,18 +1115,21 @@ function resizeMatrix(){
         canvas.height =
         window.innerHeight;
 
+
     columns =
         Math.floor(
             width / 18
         );
 
+
     drops = [];
 
-    for(
+
+    for (
         let i = 0;
         i < columns;
         i++
-    ){
+    ) {
 
         drops[i] =
             Math.random() * -50;
@@ -830,10 +1137,11 @@ function resizeMatrix(){
 }
 
 
-function drawMatrix(){
+function drawMatrix() {
 
     ctx.fillStyle =
         "rgba(2,11,6,0.08)";
+
 
     ctx.fillRect(
         0,
@@ -842,15 +1150,16 @@ function drawMatrix(){
         height
     );
 
+
     ctx.font =
         "16px monospace";
 
 
-    for(
+    for (
         let i = 0;
         i < drops.length;
         i++
-    ){
+    ) {
 
         const text =
             characters[
@@ -872,10 +1181,10 @@ function drawMatrix(){
         );
 
 
-        if(
+        if (
             drops[i] * 18 > height &&
             Math.random() > 0.975
-        ){
+        ) {
 
             drops[i] = 0;
         }
@@ -888,10 +1197,12 @@ function drawMatrix(){
 
 resizeMatrix();
 
+
 window.addEventListener(
     "resize",
     resizeMatrix
 );
+
 
 setInterval(
     drawMatrix,
@@ -899,9 +1210,9 @@ setInterval(
 );
 
 
-/* =====================================
-   启动
-===================================== */
+/* ==========================================
+   16. 启动
+========================================== */
 
 loadMessages();
 
