@@ -2246,6 +2246,29 @@ button:active{
 @media(max-width:560px){.leaderboard-tabs button{font-size:8px}.leaderboard-card{border-radius:26px!important}}
 </style>
 
+
+<style id="security-events-v1">
+.event-card{width:min(620px,calc(100vw - 22px))!important;max-height:88vh;overflow:auto!important;border-radius:30px!important}
+.event-title{font-size:22px;font-weight:950;color:#eef8ff}
+.event-sub{color:#7089a4;font-size:10px;margin-top:4px}
+.event-list{display:grid;gap:10px;margin-top:17px}
+.event-item{position:relative;padding:15px;border-radius:20px;background:rgba(15,29,48,.85);border:1px solid rgba(103,158,227,.13);overflow:hidden}
+.event-item:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(69,213,255,.05),transparent 45%,rgba(136,86,255,.05));pointer-events:none}
+.event-head{display:flex;align-items:center;gap:11px}
+.event-icon{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;font-size:26px;background:rgba(65,125,210,.13)}
+.event-name{color:#e8f5ff;font-size:13px;font-weight:950}
+.event-desc{color:#7189a3;font-size:9px;line-height:1.5;margin-top:4px}
+.event-time{margin-top:10px;color:#67d9ff;font-size:9px;font-weight:900}
+.event-countdown{color:#ffd56a;font-size:11px;font-weight:950;margin-left:auto}
+.event-bar{height:6px;border-radius:999px;background:rgba(75,111,148,.13);overflow:hidden;margin:12px 0 8px}
+.event-bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#48e4ff,#765bff);box-shadow:0 0 12px rgba(72,213,255,.3)}
+.event-foot{display:flex;align-items:center;gap:8px}
+.event-reward{flex:1;color:#a9bfd4;font-size:9px}
+.event-claim{border:0;border-radius:13px;padding:8px 12px;background:linear-gradient(135deg,#4e80ff,#744eff);color:#fff;font-size:9px;font-weight:900}
+.event-claim:disabled{opacity:.4}
+.event-empty{text-align:center;padding:45px 10px;color:#637c96;font-size:10px}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -4685,6 +4708,69 @@ async function renderLeaderboard(){
 
 
 const SECURITY_LAB_STATS_SQL='create table if not exists public.user_stats (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  display_name text,\n  avatar_url text,\n  messages integer not null default 0,\n  lottery_count integer not null default 0,\n  badge_count integer not null default 0,\n  points integer not null default 0,\n  streak integer not null default 0,\n  updated_at timestamptz not null default now()\n);\n\nalter table public.user_stats enable row level security;\n\ncreate policy "Anyone can view leaderboard stats"\non public.user_stats for select to authenticated\nusing (true);\n\ncreate policy "Users can insert own stats"\non public.user_stats for insert to authenticated\nwith check (auth.uid() = user_id);\n\ncreate policy "Users can update own stats"\non public.user_stats for update to authenticated\nusing (auth.uid() = user_id)\nwith check (auth.uid() = user_id);';
+
+const SECURITY_LAB_EVENTS=[
+ {id:"cyber_week",name:"Cyber Week",icon:"⚡",desc:"累计完成 10 次抽奖，领取 500 积分与限定徽章。",goal:10,metric:"lottery",points:500,badge:"event_cyber"},
+ {id:"badge_hunt",name:"徽章猎人",icon:"🏅",desc:"在活动期间获得 3 个不同徽章。",goal:3,metric:"badges",points:600,badge:"event_hunter"},
+ {id:"chat_rush",name:"Neon Chat Rush",icon:"💬",desc:"发送 100 条消息，解锁活动奖励。",goal:100,metric:"messages",points:300,badge:"event_chat"}
+];
+
+let eventTimer=null;
+
+function eventMetric(e){
+  if(e.metric==="lottery") return Number(localStorage.getItem("sl_lottery_total")||0);
+  if(e.metric==="messages") return Number(localStorage.getItem("sl_sent_count")||0);
+  if(e.metric==="badges") return Number($("userBadgeCount")?.textContent||0);
+  return 0;
+}
+function eventEndText(){
+  return "活动进行中";
+}
+async function openEvents(){
+  $("eventCenterModal")?.classList.add("show");
+  await renderEvents();
+}
+function closeEvents(){
+  $("eventCenterModal")?.classList.remove("show");
+  if(eventTimer){clearInterval(eventTimer);eventTimer=null}
+}
+async function renderEvents(){
+  const list=$("eventList"); if(!list)return;
+  list.innerHTML=SECURITY_LAB_EVENTS.map(e=>{
+    const progress=Math.min(e.goal,eventMetric(e));
+    const pct=Math.round(progress/e.goal*100);
+    const claimed=localStorage.getItem("sl_event_claim_"+e.id)==="1";
+    return `<div class="event-item">
+      <div class="event-head">
+        <div class="event-icon">${e.icon}</div>
+        <div style="flex:1"><div class="event-name">${esc(e.name)}</div>
+        <div class="event-desc">${esc(e.desc)}</div></div>
+        <div class="event-countdown" data-event-countdown="${e.id}">LIVE</div>
+      </div>
+      <div class="event-time">⏳ 限时活动 · ${eventEndText()}</div>
+      <div class="event-bar"><i style="width:${pct}%"></i></div>
+      <div class="event-foot">
+        <div class="event-reward">🎁 ${e.points} 积分${e.badge?" + 限定徽章":""} · ${progress}/${e.goal}</div>
+        <button class="event-claim" ${progress<e.goal||claimed?"disabled":""} onclick="claimEvent('${e.id}')">${claimed?"✅ 已领取":"领取奖励"}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+async function claimEvent(id){
+  const e=SECURITY_LAB_EVENTS.find(x=>x.id===id); if(!e)return;
+  if(eventMetric(e)<e.goal){toast("还没有完成活动");return}
+  if(localStorage.getItem("sl_event_claim_"+id)==="1"){toast("已经领取过了");return}
+  await addPoints(e.points,"活动："+e.name);
+  if(e.badge){
+    await addRewardToInventory({id:e.badge,badge:e.badge,name:e.name+" 限定徽章",emoji:e.icon,desc:"限时活动限定奖励",rarity:"限定"});
+  }
+  localStorage.setItem("sl_event_claim_"+id,"1");
+  toast("🎁 活动奖励已领取");
+  await renderEvents();
+}
+
+
+const SECURITY_LAB_EVENT_SQL='create table if not exists public.lab_events (\n  id bigint generated by default as identity primary key,\n  event_id text unique not null,\n  name text not null,\n  description text,\n  icon text,\n  starts_at timestamptz not null,\n  ends_at timestamptz not null,\n  reward_points integer not null default 0,\n  reward_badge_id text,\n  active boolean not null default true\n);\n\ncreate table if not exists public.user_event_progress (\n  id bigint generated by default as identity primary key,\n  event_id text not null references public.lab_events(event_id) on delete cascade,\n  user_id uuid not null references auth.users(id) on delete cascade,\n  progress integer not null default 0,\n  claimed boolean not null default false,\n  updated_at timestamptz not null default now(),\n  unique(event_id,user_id)\n);\n\nalter table public.lab_events enable row level security;\nalter table public.user_event_progress enable row level security;\n\ncreate policy "Anyone can view active events"\non public.lab_events for select to authenticated\nusing (active = true);\n\ncreate policy "Users can view own event progress"\non public.user_event_progress for select to authenticated\nusing (auth.uid() = user_id);\n\ncreate policy "Users can insert own event progress"\non public.user_event_progress for insert to authenticated\nwith check (auth.uid() = user_id);\n\ncreate policy "Users can update own event progress"\non public.user_event_progress for update to authenticated\nusing (auth.uid() = user_id)\nwith check (auth.uid() = user_id);';
 </script>
 
 <!-- 奖励仓库 -->
@@ -4830,6 +4916,7 @@ with check (auth.uid() = user_id);
 <button class="points-pill" style="border:0;cursor:pointer" onclick="openCheckin()">🔥 签到</button>
 <button class="points-pill" style="border:0;cursor:pointer" onclick="openAchievements()">🏆 成就</button>
 <button class="points-pill" style="border:0;cursor:pointer" onclick="openLeaderboard()">🏆 排行</button>
+<button class="points-pill" style="border:0;cursor:pointer" onclick="openEvents()">🎁 活动</button>
 
 <div class="modal" id="achievementModal" onclick="if(event.target===this)closeAchievements()">
   <div class="modal-card achievement-card">
@@ -4857,6 +4944,16 @@ with check (auth.uid() = user_id);
       <button onclick="switchLeaderboard('streak',this)">🔥 连续</button>
     </div>
     <div class="leaderboard-list" id="leaderboardList"></div>
+  </div>
+</div>
+
+
+<div class="modal" id="eventCenterModal" onclick="if(event.target===this)closeEvents()">
+  <div class="modal-card event-card">
+    <button class="close" onclick="closeEvents()">×</button>
+    <div class="event-title">🎁 限时活动</div>
+    <div class="event-sub">完成活动任务，领取限定奖励</div>
+    <div id="eventList" class="event-list"></div>
   </div>
 </div>
 
