@@ -619,6 +619,91 @@ body.dark .voice-person.speaking{background:#17251b}
   font-size:9px;font-weight:800;vertical-align:middle;
 }
 .cloud-badge.developer{background:linear-gradient(135deg,#fff4c7,#fff9e8);border-color:#e8c95f;color:#8a6500}
+/* ===== 他人的公开徽章 ===== */
+.profile-badges-box{
+  margin:12px 0;
+  padding:12px;
+  border-radius:13px;
+  background:rgba(14,25,41,.78);
+  border:1px solid rgba(104,157,230,.14);
+}
+.profile-badges-title{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#dcecff;
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:9px;
+}
+.profile-badges-title span{
+  min-width:18px;height:18px;padding:0 5px;
+  display:inline-grid;place-items:center;
+  border-radius:9px;
+  background:rgba(82,143,255,.14);
+  color:#78adff;
+  font-size:9px;
+}
+.profile-badges-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.profile-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-height:30px;
+  padding:4px 9px;
+  border-radius:9px;
+  background:rgba(25,39,61,.9);
+  border:1px solid rgba(102,155,225,.17);
+  color:#bcd0e5;
+  font-size:10px;
+  font-weight:800;
+  box-shadow:inset 0 0 12px rgba(74,128,220,.04);
+}
+.profile-badge small{
+  display:block;
+  color:#6f88a3;
+  font-size:8px;
+  font-weight:600;
+}
+.profile-badge.purple{
+  color:#c8a6ff;
+  border-color:rgba(161,110,255,.32);
+  background:rgba(104,55,166,.17);
+  box-shadow:0 0 13px rgba(137,79,255,.10);
+}
+.profile-badge.gold{
+  color:#ffe28a;
+  border-color:rgba(239,195,72,.32);
+  background:rgba(126,91,18,.17);
+  box-shadow:0 0 13px rgba(239,190,62,.10);
+}
+.profile-badge.blue{
+  color:#82c1ff;
+  border-color:rgba(91,156,255,.28);
+  background:rgba(45,99,180,.16);
+}
+.profile-badge.green{
+  color:#71efad;
+  border-color:rgba(65,214,137,.28);
+  background:rgba(22,104,66,.16);
+}
+.profile-badge.red{
+  color:#ff93a8;
+  border-color:rgba(255,95,122,.28);
+  background:rgba(145,42,60,.16);
+}
+.profile-badges-empty{
+  width:100%;
+  padding:14px 6px;
+  text-align:center;
+  color:#647c97;
+  font-size:10px;
+}
+
 .msg-top .cloud-badge{margin-left:0}
 .member-name .cloud-badge{font-size:8px;height:19px;padding:0 5px;margin-left:3px}
 body.dark .cloud-badge{background:#29233a;border-color:#6e52a1;color:#d6c5ff}
@@ -1110,6 +1195,556 @@ body::before{
 }
 </style>
 
+
+<style id="security-lab-cyber-v4">
+/* =========================================================
+   Security Lab — Unified Cyber / Neon Motion System
+   仅增强视觉与动画；不替换原有业务逻辑。
+   ========================================================= */
+:root{
+  --cyber-blue:#4da3ff;
+  --cyber-cyan:#42e8ff;
+  --cyber-purple:#8b5cff;
+  --cyber-pink:#d85cff;
+  --cyber-green:#42f5a7;
+  --cyber-gold:#ffd35a;
+  --cyber-bg:#050913;
+  --cyber-glass:rgba(10,19,34,.72);
+  --cyber-line:rgba(100,175,255,.18);
+  --cyber-shadow:0 20px 70px rgba(0,0,0,.45);
+}
+
+/* 全局层次 */
+body{
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(56,143,255,.13),transparent 28%),
+    radial-gradient(circle at 85% 78%,rgba(139,74,255,.12),transparent 30%),
+    #050913 !important;
+}
+body:after{
+  content:"";
+  position:fixed;
+  inset:-20%;
+  pointer-events:none;
+  z-index:9998;
+  opacity:.08;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(110,190,255,.12) 4px
+    );
+  mix-blend-mode:screen;
+}
+
+/* 页面进入 */
+.app,.auth-gate{
+  animation:cyberPageIn .7s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes cyberPageIn{
+  from{opacity:0;transform:scale(1.012);filter:brightness(.55) blur(4px)}
+  to{opacity:1;transform:none;filter:none}
+}
+
+/* 启动/加载时的科技光扫 */
+#bootScreen,.boot-screen,.splash{
+  background:
+    radial-gradient(circle at center,rgba(62,150,255,.18),transparent 32%),
+    #03060d !important;
+}
+#bootScreen:after,.boot-screen:after,.splash:after{
+  content:"";
+  position:absolute;
+  left:-20%;
+  right:-20%;
+  top:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--cyber-cyan),#fff,var(--cyber-purple),transparent);
+  box-shadow:0 0 25px var(--cyber-cyan);
+  animation:cyberScan 1.6s linear infinite;
+}
+@keyframes cyberScan{
+  0%{transform:translateY(-30vh);opacity:0}
+  12%{opacity:1}
+  88%{opacity:1}
+  100%{transform:translateY(130vh);opacity:0}
+}
+
+/* 登录页 */
+.auth-card{
+  animation:cyberAuthIn .65s cubic-bezier(.18,.86,.24,1.15) both;
+  box-shadow:
+    0 30px 100px rgba(0,0,0,.6),
+    0 0 35px rgba(77,163,255,.14),
+    inset 0 0 35px rgba(72,126,255,.035) !important;
+}
+@keyframes cyberAuthIn{
+  from{opacity:0;transform:translateY(28px) scale(.96);filter:blur(7px)}
+  to{opacity:1;transform:none;filter:none}
+}
+.auth-logo{
+  position:relative;
+  overflow:visible;
+  animation:cyberLogo 2.5s ease-in-out infinite;
+}
+.auth-logo:before,.auth-logo:after{
+  content:"";
+  position:absolute;
+  inset:-7px;
+  border-radius:inherit;
+  border:1px solid rgba(66,232,255,.28);
+  animation:cyberRing 2.2s ease-out infinite;
+}
+.auth-logo:after{
+  inset:-15px;
+  border-color:rgba(139,92,255,.17);
+  animation-delay:.7s;
+}
+@keyframes cyberLogo{
+  0%,100%{box-shadow:0 0 18px rgba(77,163,255,.24)}
+  50%{box-shadow:0 0 42px rgba(66,232,255,.48),0 0 70px rgba(139,92,255,.15)}
+}
+@keyframes cyberRing{
+  0%{opacity:.65;transform:scale(.92)}
+  100%{opacity:0;transform:scale(1.18)}
+}
+
+/* 按钮统一光效 */
+button,.send,.primary,.auth-guest,.voice-actions button,.head-btn,.compose-btn{
+  transition:
+    transform .18s ease,
+    filter .18s ease,
+    box-shadow .18s ease,
+    background .18s ease,
+    border-color .18s ease !important;
+}
+button:hover,.send:hover,.primary:hover,.auth-guest:hover,.voice-actions button:hover,.head-btn:hover,.compose-btn:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.1);
+}
+button:active,.send:active,.primary:active,.auth-guest:active,.voice-actions button:active{
+  transform:translateY(1px) scale(.97);
+}
+.primary,.send,.auth-guest{
+  position:relative;
+  overflow:hidden;
+}
+.primary:after,.send:after,.auth-guest:after{
+  content:"";
+  position:absolute;
+  top:-80%;
+  left:-35%;
+  width:25%;
+  height:260%;
+  transform:rotate(24deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+  opacity:0;
+  transition:opacity .15s;
+}
+.primary:hover:after,.send:hover:after,.auth-guest:hover:after{
+  opacity:1;
+  animation:cyberShine .7s ease;
+}
+@keyframes cyberShine{
+  from{left:-35%}
+  to{left:125%}
+}
+
+/* 聊天消息出现 */
+.message{
+  animation:cyberMessageIn .28s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes cyberMessageIn{
+  from{opacity:0;transform:translateY(8px);filter:blur(2px)}
+  to{opacity:1;transform:none;filter:none}
+}
+.message:hover{
+  background:linear-gradient(90deg,rgba(70,140,255,.055),transparent) !important;
+}
+.msg-avatar{
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.message:hover .msg-avatar{
+  transform:translateY(-1px) scale(1.03);
+  box-shadow:0 0 0 1px rgba(66,232,255,.24),0 0 22px rgba(66,157,255,.18);
+}
+
+/* 聊天标题 / 状态灯 */
+.chat-title .hash{
+  text-shadow:0 0 10px var(--cyber-blue),0 0 24px rgba(66,232,255,.28);
+}
+.cloud-status.ok{
+  animation:cyberStatus 1.8s ease-in-out infinite;
+}
+@keyframes cyberStatus{
+  0%,100%{text-shadow:0 0 5px rgba(66,245,167,.2)}
+  50%{text-shadow:0 0 14px rgba(66,245,167,.65)}
+}
+
+/* 输入框聚焦 */
+.composer:focus-within{
+  animation:cyberFocus .9s ease-in-out infinite alternate;
+}
+@keyframes cyberFocus{
+  from{box-shadow:0 0 0 rgba(66,157,255,0)}
+  to{box-shadow:0 0 22px rgba(66,157,255,.13)}
+}
+
+/* 页面/弹窗切换 */
+.modal{
+  opacity:0;
+  transition:opacity .22s ease,backdrop-filter .22s ease;
+}
+.modal.show{
+  opacity:1;
+}
+.modal-card{
+  transform:translateY(16px) scale(.97);
+  opacity:0;
+}
+.modal.show .modal-card{
+  animation:cyberModalIn .32s cubic-bezier(.2,.85,.2,1.08) forwards;
+}
+@keyframes cyberModalIn{
+  to{transform:none;opacity:1}
+}
+
+/* 抽奖：滚动期间、中奖后统一 Cyber 爆闪 */
+.lottery-machine{
+  position:relative;
+  overflow:hidden;
+}
+.lottery-machine:before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  pointer-events:none;
+  background:conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(66,232,255,.18) 55deg,
+    transparent 105deg,
+    rgba(139,92,255,.18) 190deg,
+    transparent 240deg
+  );
+  animation:cyberSpin 5s linear infinite;
+}
+@keyframes cyberSpin{to{transform:rotate(360deg)}}
+.lottery-machine.rolling{
+  box-shadow:
+    0 0 22px rgba(66,157,255,.25),
+    0 0 55px rgba(139,92,255,.12) !important;
+  animation:cyberLotteryRoll .35s ease-in-out infinite alternate;
+}
+@keyframes cyberLotteryRoll{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.18)}
+}
+.lottery-machine.win{
+  animation:cyberLotteryWin .8s cubic-bezier(.2,.9,.25,1.2);
+}
+@keyframes cyberLotteryWin{
+  0%{transform:scale(1);filter:brightness(1)}
+  25%{transform:scale(1.025);filter:brightness(1.8)}
+  45%{transform:scale(.99);filter:brightness(1.25)}
+  70%{transform:scale(1.015);filter:brightness(1.55)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+.lottery-machine.epic{
+  box-shadow:0 0 35px rgba(158,101,255,.65),inset 0 0 35px rgba(158,101,255,.12) !important;
+}
+.lottery-machine.legendary{
+  box-shadow:0 0 45px rgba(255,211,90,.7),0 0 100px rgba(255,170,40,.2),inset 0 0 40px rgba(255,211,90,.1) !important;
+  animation:cyberLegend 1s ease-in-out infinite alternate;
+}
+@keyframes cyberLegend{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.24)}
+}
+.lottery-result.win-result{
+  animation:cyberResult .5s cubic-bezier(.2,.9,.25,1.2) both;
+}
+@keyframes cyberResult{
+  from{opacity:0;transform:translateY(8px) scale(.92);filter:brightness(1.8)}
+  to{opacity:1;transform:none;filter:none}
+}
+
+/* 徽章：高级浮动 */
+.profile-badge,.badge-item,.user-badge,.cloud-badge{
+  transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+}
+.profile-badge:hover,.badge-item:hover,.user-badge:hover,.cloud-badge:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.12);
+  box-shadow:0 0 20px rgba(84,155,255,.14);
+}
+.profile-badge.purple,.user-badge.purple{
+  box-shadow:0 0 16px rgba(161,110,255,.14);
+}
+.profile-badge.gold,.user-badge.gold{
+  box-shadow:0 0 18px rgba(239,195,72,.14);
+}
+
+/* 手机端进一步压缩 */
+@media(max-width:760px){
+  .servers{width:58px !important}
+  .channels{width:220px !important}
+  .members{display:none !important}
+  .chat-head{height:58px !important}
+  .profile-badges-list{gap:6px}
+  .profile-badge{font-size:9px;padding:4px 7px}
+}
+</style>
+
+
+<style id="security-lottery-premium-v5">
+/* ===== Premium Cyber Lottery ===== */
+.lottery-machine{
+  isolation:isolate;
+  perspective:900px;
+  overflow:hidden !important;
+  border-radius:24px !important;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(76,164,255,.14),transparent 30%),
+    radial-gradient(circle at 50% 110%,rgba(139,92,255,.12),transparent 42%),
+    linear-gradient(145deg,#07101f,#0b1424 55%,#080e1a) !important;
+  border:1px solid rgba(118,181,255,.22) !important;
+}
+.lottery-machine:after{
+  content:"";
+  position:absolute;
+  inset:7px;
+  z-index:0;
+  pointer-events:none;
+  border-radius:19px;
+  border:1px solid rgba(76,176,255,.10);
+  box-shadow:inset 0 0 35px rgba(61,135,255,.06);
+}
+.lottery-machine > *{
+  position:relative;
+  z-index:2;
+}
+
+/* 扫描线 */
+.lottery-machine .lottery-reel:after{
+  content:"";
+  position:absolute;
+  left:4%;
+  right:4%;
+  height:2px;
+  top:12%;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,#5ce7ff,#fff,#9c75ff,transparent);
+  opacity:.42;
+  filter:blur(.3px);
+  box-shadow:0 0 14px rgba(71,215,255,.8);
+  animation:lotteryScan 1.7s ease-in-out infinite;
+}
+@keyframes lotteryScan{
+  0%,100%{transform:translateY(0);opacity:.12}
+  50%{transform:translateY(190px);opacity:.7}
+}
+
+/* 转盘外环 */
+.lottery-machine:before{
+  content:"";
+  position:absolute;
+  z-index:1;
+  width:310px;
+  height:310px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  pointer-events:none;
+  background:
+    conic-gradient(from 0deg,
+      transparent 0 8%,
+      rgba(66,232,255,.18) 9% 11%,
+      transparent 12% 25%,
+      rgba(139,92,255,.22) 26% 28%,
+      transparent 29% 48%,
+      rgba(66,232,255,.14) 49% 51%,
+      transparent 52% 70%,
+      rgba(255,211,90,.18) 71% 73%,
+      transparent 74%);
+  mask:radial-gradient(circle,transparent 57%,#000 58%,#000 60%,transparent 61%);
+  animation:lotteryRing 9s linear infinite;
+}
+@keyframes lotteryRing{
+  to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+
+/* 抽奖进行中：速度逐渐增强的高级感 */
+.lottery-machine.rolling{
+  animation:premiumRoll .25s ease-in-out infinite alternate !important;
+  box-shadow:
+    0 0 24px rgba(67,169,255,.28),
+    0 0 70px rgba(116,75,255,.16),
+    inset 0 0 40px rgba(61,150,255,.08) !important;
+}
+.lottery-machine.rolling .lottery-slot{
+  animation:slotPulse .16s linear infinite alternate;
+}
+@keyframes premiumRoll{
+  from{transform:scale(1);filter:brightness(1)}
+  to{transform:scale(1.008);filter:brightness(1.16)}
+}
+@keyframes slotPulse{
+  from{box-shadow:inset 0 0 12px rgba(70,157,255,.05)}
+  to{box-shadow:inset 0 0 26px rgba(70,157,255,.18)}
+}
+
+/* 中奖前停顿 */
+.lottery-machine.lottery-near-win{
+  animation:nearWin .45s ease-in-out infinite alternate !important;
+}
+@keyframes nearWin{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.32)}
+}
+
+/* 普通中奖 */
+.lottery-machine.win{
+  animation:premiumWin .85s cubic-bezier(.16,.84,.22,1.1) both !important;
+}
+@keyframes premiumWin{
+  0%{transform:scale(.98);filter:brightness(1)}
+  18%{transform:scale(1.025);filter:brightness(1.7)}
+  32%{transform:scale(.995);filter:brightness(1.15)}
+  52%{transform:scale(1.018);filter:brightness(1.45)}
+  75%{transform:scale(1.005);filter:brightness(1.15)}
+  100%{transform:scale(1);filter:brightness(1)}
+}
+
+/* 史诗 */
+.lottery-machine.epic{
+  border-color:rgba(174,115,255,.58) !important;
+  box-shadow:
+    0 0 28px rgba(166,102,255,.55),
+    0 0 85px rgba(126,65,255,.26),
+    inset 0 0 55px rgba(152,92,255,.14) !important;
+}
+.lottery-machine.epic:before{
+  background:
+    conic-gradient(from 0deg,
+      transparent 0 8%,
+      rgba(201,143,255,.75) 9% 11%,
+      transparent 12% 25%,
+      rgba(141,82,255,.75) 26% 28%,
+      transparent 29% 48%,
+      rgba(221,174,255,.65) 49% 51%,
+      transparent 52% 70%,
+      rgba(161,102,255,.75) 71% 73%,
+      transparent 74%);
+  animation-duration:3s;
+}
+
+/* 传说 */
+.lottery-machine.legendary{
+  border-color:rgba(255,218,106,.68) !important;
+  box-shadow:
+    0 0 35px rgba(255,209,72,.62),
+    0 0 100px rgba(255,164,32,.27),
+    0 0 150px rgba(255,213,92,.11),
+    inset 0 0 65px rgba(255,211,90,.13) !important;
+}
+.lottery-machine.legendary:before{
+  background:
+    conic-gradient(from 0deg,
+      transparent 0 6%,
+      rgba(255,244,173,.95) 7% 10%,
+      transparent 11% 24%,
+      rgba(255,201,62,.9) 25% 28%,
+      transparent 29% 44%,
+      rgba(255,239,148,.9) 45% 48%,
+      transparent 49% 67%,
+      rgba(255,190,38,.9) 68% 72%,
+      transparent 73%);
+  animation-duration:1.6s;
+}
+
+/* 中央中奖文字 */
+.lottery-result{
+  transition:transform .2s ease,box-shadow .2s ease;
+}
+.lottery-result.win-result{
+  position:relative;
+  overflow:hidden;
+  animation:resultReveal .55s cubic-bezier(.17,.85,.25,1.2) both !important;
+  box-shadow:0 0 25px rgba(71,166,255,.14);
+}
+.lottery-result.win-result:after{
+  content:"";
+  position:absolute;
+  top:-80%;
+  left:-35%;
+  width:25%;
+  height:260%;
+  transform:rotate(25deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);
+  animation:resultShine .8s ease .15s both;
+}
+@keyframes resultReveal{
+  from{opacity:0;transform:translateY(10px) scale(.88);filter:blur(4px)}
+  to{opacity:1;transform:none;filter:none}
+}
+@keyframes resultShine{
+  from{left:-35%}
+  to{left:125%}
+}
+
+/* 徽章爆发光 */
+.lottery-machine.epic .lottery-slot.center{
+  box-shadow:
+    0 0 0 2px rgba(186,124,255,.55),
+    0 0 28px rgba(158,98,255,.6),
+    inset 0 0 25px rgba(164,104,255,.15) !important;
+}
+.lottery-machine.legendary .lottery-slot.center{
+  box-shadow:
+    0 0 0 2px rgba(255,225,115,.75),
+    0 0 32px rgba(255,201,55,.75),
+    0 0 65px rgba(255,175,30,.3),
+    inset 0 0 28px rgba(255,216,80,.17) !important;
+}
+
+/* 奖品卡片 */
+.lottery-prize{
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease !important;
+}
+.lottery-prize:hover{
+  transform:translateY(-3px) scale(1.015);
+  border-color:rgba(96,169,255,.3) !important;
+  box-shadow:0 0 22px rgba(73,147,255,.12);
+}
+
+/* 小星粒子容器，由 JS 动态生成 */
+.lottery-particles{
+  position:absolute !important;
+  inset:0 !important;
+  z-index:8 !important;
+  pointer-events:none !important;
+  overflow:hidden !important;
+}
+.lottery-particle{
+  position:absolute;
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 0 8px #fff,0 0 15px currentColor;
+  animation:particleBurst .9s cubic-bezier(.15,.85,.25,1) forwards;
+}
+@keyframes particleBurst{
+  0%{opacity:0;transform:translate(0,0) scale(.2)}
+  12%{opacity:1}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.8)}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -1212,9 +1847,15 @@ body::before{
 <!-- 用户资料 -->
 <div class="modal" id="userModal" onclick="if(event.target===this)closeUser()">
  <div class="modal-card">
-  <div class="modal-head"><span>用户资料</span><button class="close" onclick="closeUser()">×</button></div>
+  <div class="modal-head"><span>用户资料 · 徽章</span><button class="close" onclick="closeUser()">×</button></div>
   <div class="user-modal-head"><div class="big-avatar" id="userBigAvatar">U</div><div><b id="userModalName">用户</b><div id="userModalStatus" style="font-size:10px;color:#35a85a;margin-top:4px">● 在线</div></div></div>
   <p id="userModalBio" style="font-size:12px;color:#777;line-height:1.6"></p>
+  <div class="profile-badges-box">
+    <div class="profile-badges-title">🎖️ 徽章 <span id="userBadgeCount">0</span></div>
+    <div class="profile-badges-list" id="userBadgeList">
+      <div class="profile-badges-empty">正在读取徽章…</div>
+    </div>
+  </div>
   <div class="row-btn"><button class="primary" onclick="startDM()">💬 私信</button><button class="primary" style="background:#f0f1f3;color:#555" onclick="mentionUser()">@ 提及</button></div>
   <div class="row-btn"><button class="primary" style="background:#f0f1f3;color:#555" onclick="adminMute()">禁言</button><button class="primary" style="background:#fee2e2;color:#b91c1c" onclick="adminKick()">踢出</button></div>
  </div>
@@ -1851,14 +2492,68 @@ function saveProfile(){
  $("miniName").textContent=nickname;$("profilePreviewName").textContent=nickname;setAvatar($("miniAvatar"),avatarURL,nickname);renderMembers();closeProfile();toast("个人资料已保存")
 }
 function setAvatar(el,url,name){el.innerHTML="";if(url){const im=new Image();im.src=url;im.onload=()=>el.appendChild(im);im.onerror=()=>el.textContent=(name||"游")[0]}else el.textContent=(name||"游")[0]}
-function openUser(name){
+async function openUser(name){
   const p=getPublicProfile(name);
   $("userModalName").innerHTML=esc(name)+" "+profileBadgeHtml(p);
   $("userModalBio").textContent=name===nickname?signature:"Security Lab 社区成员";
   setAvatar($("userBigAvatar"),p?.avatar_url || (name===nickname?avatarURL:""),name);
   window.__selectedUser=name;
-  $("userModal").classList.add("show")
+  window.__selectedProfile=p||null;
+  $("userBadgeList").innerHTML='<div class="profile-badges-empty">正在读取徽章…</div>';
+  $("userBadgeCount").textContent="0";
+  $("userModal").classList.add("show");
+  await renderPublicUserBadges(name,p);
 }
+
+async function renderPublicUserBadges(name,profile){
+  const list=$("userBadgeList"), count=$("userBadgeCount");
+  const found=[];
+
+  // 当前账号：显示本机已解锁徽章。
+  if(name===nickname){
+    badgeDefs.forEach(b=>{
+      if(badgeUnlocked(b.id)) found.push(b);
+    });
+  }
+
+  // 云端账号：读取 user_badges 表中的公开徽章。
+  if(profile?.id && sb){
+    try{
+      const {data,error}=await sb.from("user_badges")
+        .select("badge_id")
+        .eq("user_id",profile.id);
+      if(!error){
+        const ids=(data||[]).map(x=>String(x.badge_id));
+        [...badgeDefs,...lotteryBadgeDefs].forEach(b=>{
+          if(ids.includes(String(b.id)) && !found.some(x=>x.id===b.id)) found.push(b);
+        });
+      }
+    }catch(e){
+      console.warn("读取用户徽章失败",e);
+    }
+  }
+
+  // 开发者身份徽章始终跟随公开 profile。
+  if(profile?.role==="developer" || profile?.badge==="developer" || name==="开发者"){
+    const dev=badgeDefs.find(b=>b.id==="developer");
+    if(dev && !found.some(x=>x.id===dev.id)) found.push(dev);
+  }
+
+  // 没有徽章时给出明确提示。
+  count.textContent=String(found.length);
+  if(!found.length){
+    list.innerHTML='<div class="profile-badges-empty">这个用户暂时还没有公开徽章</div>';
+    return;
+  }
+
+  list.innerHTML=found.map(b=>`
+    <div class="profile-badge ${esc(b.cls||"")}">
+      <span style="font-size:17px">${b.icon}</span>
+      <span>${esc(b.name)}<small>${esc(b.desc)}</small></span>
+    </div>
+  `).join("");
+}
+
 function closeUser(){$("userModal").classList.remove("show")}
 function startDM(){const n=window.__selectedUser;closeUser();openDM(n)}
 function mentionUser(){$("messageInput").value+="@"+window.__selectedUser+" ";closeUser();$("messageInput").focus()}
@@ -1925,6 +2620,36 @@ function updateLotteryUI(){
 }
 function openLottery(){$("lotteryModal").classList.add("show");$("lotteryResult").textContent="点击下面按钮开始抽奖";updateLotteryUI()}
 function closeLottery(){$("lotteryModal").classList.remove("show")}
+
+function cyberLotteryBurst(kind){
+  const machine=document.querySelector(".lottery-machine");
+  if(!machine) return;
+  let layer=machine.querySelector(".lottery-particles");
+  if(!layer){
+    layer=document.createElement("div");
+    layer.className="lottery-particles";
+    machine.appendChild(layer);
+  }
+  layer.innerHTML="";
+  const count=kind==="legendary"?48:(kind==="epic"?34:20);
+  for(let i=0;i<count;i++){
+    const p=document.createElement("i");
+    p.className="lottery-particle";
+    const angle=Math.random()*Math.PI*2;
+    const distance=(kind==="legendary"?130:kind==="epic"?105:85)+Math.random()*80;
+    p.style.left="50%";
+    p.style.top="50%";
+    p.style.setProperty("--dx",`${Math.cos(angle)*distance}px`);
+    p.style.setProperty("--dy",`${Math.sin(angle)*distance}px`);
+    p.style.animationDelay=`${Math.random()*90}ms`;
+    if(kind==="legendary") p.style.color=Math.random()>.35?"#ffd75a":"#fff4b0";
+    else if(kind==="epic") p.style.color=Math.random()>.35?"#ad7cff":"#e5ccff";
+    else p.style.color=Math.random()>.4?"#54cfff":"#ffffff";
+    layer.appendChild(p);
+  }
+  setTimeout(()=>layer.remove(),1200);
+}
+
 function drawLottery(){
   const key=lotteryDateKey();
   const countKey=key+"_count";
@@ -1991,6 +2716,7 @@ function drawLottery(){
       machine.classList.add("win");
       if(win.rarity==="史诗") machine.classList.add("epic");
       if(win.rarity==="传说") machine.classList.add("legendary");
+      setTimeout(()=>cyberLotteryBurst(win.rarity==="传说"?"legendary":win.rarity==="史诗"?"epic":"normal"),80);
       const rarityClass=win.rarity==="史诗"?"lottery-rarity-epic":(win.rarity==="传说"?"lottery-rarity-legendary":"");
       result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
       result.classList.remove("rolling");
