@@ -171,6 +171,11 @@ body.dark .voice-room,body.dark .voice-actions button{background:#20232a;color:#
 .voice-connection{font-size:9px;color:#999;margin-top:2px}
 body.dark .voice-person.speaking{background:#17251b}
 
+
+.voice-network-ok{color:#35a85a!important}
+.voice-network-warn{color:#d19a2a!important}
+.voice-network-err{color:#d9534f!important}
+
 </style>
 </head>
 <body>
@@ -312,6 +317,7 @@ body.dark .voice-person.speaking{background:#17251b}
     <div class="voice-room">
       <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
       <div class="voice-state" id="voiceState">未加入语音</div>
+      <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div>
     </div>
     <div class="voice-list" id="voiceList">
       <div class="voice-empty">还没有人加入语音</div>
@@ -726,6 +732,8 @@ if(localStorage.getItem("sl_dark")==="1"){
 
 /* ===== 第一阶段语音：WebRTC + Supabase Realtime ===== */
 let voiceRoom=null, voiceStream=null, voiceJoined=false, voiceMuted=false;
+let voiceStatsTimer=null;
+
 let voiceAudioContext=null, voiceAnalyser=null, voiceAudioData=null, voiceLevelTimer=null;
 const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()).toString().slice(0,36);
 const voicePeers={};
@@ -796,7 +804,11 @@ function makePeer(id,name){
     a.play().catch(()=>{});
   };
   pc.onconnectionstatechange=()=>{
+    updateVoiceNetworkStatus();
     if(["failed","closed"].includes(pc.connectionState))removePeer(id);
+  };
+  pc.oniceconnectionstatechange=()=>{
+    updateVoiceNetworkStatus();
   };
   return voicePeers[id];
 }
@@ -864,6 +876,7 @@ async function joinVoice(){
       });
     });
     voiceJoined=true;
+    startVoiceNetworkMonitor();
     $("voiceJoin").textContent="📞 离开语音";
     $("voiceMute").disabled=false;
     voiceState("已加入语音");
@@ -887,6 +900,7 @@ async function leaveVoice(){
     try{await sb.removeChannel(voiceRoom)}catch(_){}
   }
   voiceRoom=null;voiceJoined=false;voiceMuted=false;
+  stopVoiceNetworkMonitor();
   if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
   stopVoiceLevelMonitor();
   $("voiceJoin").textContent="🎙️ 加入语音";
@@ -946,6 +960,76 @@ function stopVoiceLevelMonitor(){
   voiceAudioContext=null;
   voiceAnalyser=null;
   voiceAudioData=null;
+}
+
+
+function setVoiceNetwork(text,kind){
+  const el=$("voiceNetwork");
+  if(!el)return;
+  el.textContent="网络："+text;
+  el.classList.remove("voice-network-ok","voice-network-warn","voice-network-err");
+  if(kind==="ok")el.classList.add("voice-network-ok");
+  else if(kind==="warn")el.classList.add("voice-network-warn");
+  else if(kind==="err")el.classList.add("voice-network-err");
+}
+
+async function updateVoiceNetworkStatus(){
+  if(!voiceJoined){
+    setVoiceNetwork("未检测","warn");
+    return;
+  }
+  const peers=Object.values(voicePeers);
+  if(!peers.length){
+    setVoiceNetwork("已加入，等待其他成员","warn");
+    return;
+  }
+
+  let connected=0,relay=0,checking=0,failed=0;
+  for(const p of peers){
+    const s=p.pc.connectionState;
+    if(s==="connected")connected++;
+    else if(s==="checking"||s==="new")checking++;
+    else if(s==="failed"||s==="disconnected")failed++;
+
+    try{
+      const stats=await p.pc.getStats();
+      stats.forEach(r=>{
+        if(r.type==="candidate-pair" && r.state==="succeeded"){
+          if(r.localCandidateId){
+            const local=stats.get(r.localCandidateId);
+            if(local?.candidateType==="relay")relay++;
+          }
+          if(r.remoteCandidateId){
+            const remote=stats.get(r.remoteCandidateId);
+            if(remote?.candidateType==="relay")relay++;
+          }
+        }
+      });
+    }catch(_){}
+  }
+
+  if(failed>0){
+    setVoiceNetwork("连接异常，可能需要 TURN","err");
+  }else if(relay>0){
+    setVoiceNetwork("TURN 中继连接 ✓","ok");
+  }else if(connected>0){
+    setVoiceNetwork("WebRTC 直连 ✓","ok");
+  }else if(checking>0){
+    setVoiceNetwork("正在建立连接…","warn");
+  }else{
+    setVoiceNetwork("等待连接…","warn");
+  }
+}
+
+function startVoiceNetworkMonitor(){
+  stopVoiceNetworkMonitor();
+  updateVoiceNetworkStatus();
+  voiceStatsTimer=setInterval(updateVoiceNetworkStatus,2500);
+}
+function stopVoiceNetworkMonitor(){
+  if(voiceStatsTimer)clearInterval(voiceStatsTimer);
+  voiceStatsTimer=null;
+  setVoiceNetwork("未检测","warn");
 }
 
 </script>
