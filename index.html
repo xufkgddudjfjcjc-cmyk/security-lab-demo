@@ -2827,6 +2827,43 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-mobile-v5-fix">
+@media (max-width:800px){
+  .userbar{
+    position:relative !important;
+    z-index:120 !important;
+    pointer-events:auto !important;
+  }
+  .userbar-actions{
+    position:relative !important;
+    z-index:130 !important;
+    display:flex !important;
+    align-items:center !important;
+    gap:6px !important;
+    pointer-events:auto !important;
+  }
+  .userbar-actions button{
+    position:relative !important;
+    z-index:131 !important;
+    pointer-events:auto !important;
+    touch-action:manipulation !important;
+    -webkit-tap-highlight-color:transparent !important;
+    cursor:pointer !important;
+  }
+  #settingsModal,
+  #profileModal{
+    z-index:500 !important;
+  }
+  #settingsModal .modal-card,
+  #profileModal .modal-card{
+    position:relative !important;
+    z-index:501 !important;
+    pointer-events:auto !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -2845,7 +2882,7 @@ button:active{
     <div class="userbar">
       <div style="position:relative"><div class="avatar" id="miniAvatar">游</div><i class="status-dot"></i></div>
       <div class="userbar-info"><div class="userbar-name" id="miniName">游客</div><div class="userbar-id">在线 · 本地账号</div></div>
-      <div class="userbar-actions"><button onclick="openProfile()" title="个人资料">⚙</button><button onclick="openSettings()" title="设置">⋯</button></div>
+      <div class="userbar-actions"><button type="button" onclick="openSettings()" title="设置">⚙</button><button type="button" onclick="openProfile()" title="个人资料">⋯</button></div>
     </div>
   </aside>
 
@@ -5928,6 +5965,40 @@ with check (auth.uid() = user_id);
     document.querySelectorAll('.mobile-nav button').forEach(x => x.classList.remove('active'));
     btn.classList.add('active');
   }, {passive:true});
+})();
+</script>
+
+
+<script id="security-lab-mobile-v5-fix-js">
+(function(){
+  // iOS Safari sometimes keeps a stale click target after drawer animations.
+  // Bind the two userbar buttons explicitly as a fallback.
+  function bindUserbarButtons(){
+    const actions = document.querySelector('.userbar-actions');
+    if(!actions || actions.dataset.v5Bound) return;
+    const buttons = actions.querySelectorAll('button');
+    if(buttons[0]){
+      buttons[0].addEventListener('click', function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if(typeof window.openSettings === 'function') window.openSettings();
+      }, {passive:false});
+    }
+    if(buttons[1]){
+      buttons[1].addEventListener('click', function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        if(typeof window.openProfile === 'function') window.openProfile();
+      }, {passive:false});
+    }
+    actions.dataset.v5Bound = '1';
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindUserbarButtons);
+  }else{
+    bindUserbarButtons();
+  }
 })();
 </script>
 
