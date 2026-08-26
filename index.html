@@ -1745,6 +1745,252 @@ button:active,.send:active,.primary:active,.auth-guest:active,.voice-actions but
 }
 </style>
 
+
+<style id="security-lab-rounded-v6">
+/* ===== Security Lab · Soft Rounded UI ===== */
+:root{
+  --radius-xs:10px;
+  --radius-sm:14px;
+  --radius-md:18px;
+  --radius-lg:24px;
+  --radius-xl:30px;
+}
+
+/* 全局圆润化 */
+button,
+input,
+textarea,
+select,
+.search,
+.composer,
+.field,
+.auth-card,
+.modal-card,
+.server,
+.channel,
+.member,
+.file-card,
+.attach-preview,
+.msg-actions,
+.context-menu,
+.toast,
+.lottery-machine,
+.lottery-reel,
+.lottery-slot,
+.lottery-prize,
+.lottery-result,
+.profile-badges-box,
+.profile-badge,
+.badge-item,
+.user-badge,
+.voice-room,
+.voice-person,
+.voice-actions button{
+  border-radius:var(--radius-sm) !important;
+}
+
+/* 页面容器更柔和 */
+.channels,
+.members,
+.chat,
+.userbar,
+.input-area,
+.chat-head,
+.server-head{
+  border-radius:0 !important;
+}
+
+/* 左侧服务器 */
+.server{
+  border-radius:16px !important;
+  transition:all .22s cubic-bezier(.2,.8,.2,1) !important;
+}
+.server:hover{
+  transform:translateY(-2px) scale(1.025);
+}
+
+/* 频道 */
+.channel{
+  margin:3px 8px !important;
+  padding-left:10px !important;
+  padding-right:10px !important;
+  border-radius:12px !important;
+}
+.channel.active{
+  border-radius:13px !important;
+}
+
+/* 顶部搜索 */
+.search{
+  border-radius:16px !important;
+}
+
+/* 消息区域：更像现代聊天 App */
+.message{
+  margin:2px 8px !important;
+  padding:8px 10px !important;
+  border-radius:16px !important;
+  transition:background .18s ease,transform .18s ease !important;
+}
+.message:hover{
+  transform:translateX(1px);
+  border-radius:18px !important;
+}
+.msg-avatar{
+  border-radius:15px !important;
+}
+.msg-image{
+  border-radius:18px !important;
+}
+
+/* 输入框做成大圆角胶囊 */
+.composer{
+  min-height:48px !important;
+  border-radius:25px !important;
+  padding-left:8px !important;
+  padding-right:7px !important;
+}
+.message-input{
+  border-radius:20px !important;
+}
+.send{
+  width:38px !important;
+  height:38px !important;
+  min-width:38px !important;
+  border-radius:50% !important;
+}
+.compose-btn{
+  width:34px !important;
+  height:34px !important;
+  border-radius:50% !important;
+}
+
+/* 成员 */
+.member{
+  margin:3px 7px !important;
+  padding:7px 8px !important;
+  border-radius:14px !important;
+}
+
+/* 弹窗 */
+.modal-card{
+  border-radius:28px !important;
+  overflow:hidden;
+}
+.modal-head{
+  border-radius:0 !important;
+}
+.close{
+  width:34px !important;
+  height:34px !important;
+  border-radius:50% !important;
+}
+
+/* 登录卡片 */
+.auth-card{
+  border-radius:32px !important;
+}
+.auth-tabs{
+  border-radius:18px !important;
+}
+.auth-tabs button{
+  border-radius:14px !important;
+}
+.auth-logo{
+  border-radius:22px !important;
+}
+.auth-guest,
+.primary{
+  border-radius:16px !important;
+}
+
+/* 抽奖 UI */
+.lottery-machine{
+  border-radius:30px !important;
+}
+.lottery-reel{
+  border-radius:24px !important;
+  overflow:hidden;
+}
+.lottery-slot{
+  border-radius:18px !important;
+}
+.lottery-slot.center{
+  border-radius:20px !important;
+}
+.lottery-prize{
+  border-radius:18px !important;
+}
+.lottery-result{
+  border-radius:17px !important;
+}
+
+/* 徽章胶囊 */
+.user-badge,
+.cloud-badge{
+  border-radius:999px !important;
+}
+.profile-badge{
+  border-radius:15px !important;
+}
+
+/* 语音 */
+.voice-room{
+  border-radius:22px !important;
+}
+.voice-person{
+  border-radius:18px !important;
+}
+.voice-person-avatar{
+  border-radius:50% !important;
+}
+.voice-actions button{
+  border-radius:18px !important;
+}
+
+/* 按钮统一柔和 */
+button{
+  -webkit-tap-highlight-color:transparent;
+}
+button:hover{
+  filter:brightness(1.06);
+}
+button:active{
+  transform:scale(.97);
+}
+
+/* 手机端圆角更明显 */
+@media(max-width:760px){
+  .composer{
+    border-radius:27px !important;
+  }
+  .message{
+    margin:2px 4px !important;
+    border-radius:17px !important;
+  }
+  .modal-card{
+    width:calc(100vw - 24px) !important;
+    border-radius:25px !important;
+  }
+  .auth-card{
+    width:calc(100vw - 28px) !important;
+    border-radius:28px !important;
+  }
+  .lottery-machine{
+    border-radius:25px !important;
+  }
+}
+
+/* 尊重系统减少动态效果 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
