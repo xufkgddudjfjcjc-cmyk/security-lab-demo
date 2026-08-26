@@ -1257,14 +1257,29 @@ function makePeer(id,name){
       a=document.createElement("audio");
       a.autoplay=true;
       a.playsInline=true;
+      a.muted=true;
       a.setAttribute("playsinline","");
       a.style.display="none";
       document.body.appendChild(a);
       voicePeers[id].audio=a;
     }
     if(e.streams?.[0]){
-      a.srcObject=e.streams[0];
-      startRemoteLevelMonitor(id,e.streams[0]);
+      const remoteStream=e.streams[0];
+      a.srcObject=remoteStream;
+      // iOS Safari 经常会阻止异步到达的 WebRTC <audio>.play()。
+      // 语音加入按钮本身属于用户手势，因此提前恢复 AudioContext，
+      // 再把远端 MediaStream 接到 destination，避免依赖 autoplay。
+      try{
+        const ctx=getVoiceAudioContext();
+        if(ctx.state==="suspended")ctx.resume().catch(()=>{});
+        if(!voicePeers[id].remoteSource){
+          voicePeers[id].remoteSource=ctx.createMediaStreamSource(remoteStream);
+          voicePeers[id].remoteSource.connect(ctx.destination);
+        }
+      }catch(err){
+        console.warn("remote audio context",err);
+      }
+      startRemoteLevelMonitor(id,remoteStream);
     }
     a.play().catch(()=>{});
   };
@@ -1289,6 +1304,7 @@ function makePeer(id,name){
   if(p.levelTimer)cancelAnimationFrame(p.levelTimer);
   try{p.source?.disconnect()}catch(_){}
   try{p.analyser?.disconnect()}catch(_){}
+  try{p.remoteSource?.disconnect()}catch(_){}
   delete voicePeers[id];
   delete voicePendingIce[id];
 }
@@ -1434,7 +1450,9 @@ async function handleVoice(event,p){
   }catch(e){
     console.warn("join voice",e);
     voiceState("加入失败："+(e.message||"未知错误"),true);
-    toast("语音加入失败，请检查麦克风权限");
+    const em=e?.message||"未知错误";
+    if(/NotAllowedError|Permission denied/i.test(em)) toast("麦克风权限被拒绝，请在 iPhone 设置中允许此网站使用麦克风");
+    else toast("语音加入失败，请检查麦克风权限和网络");
     if(voiceRoom){try{await sb.removeChannel(voiceRoom)}catch(_){}}
     voiceRoom=null;
     if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
