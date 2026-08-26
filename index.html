@@ -1615,13 +1615,53 @@ function isCurrentUserDeveloper(){
 
 const badgeDefs=[
  {id:"welcome",icon:"👋",name:"初来乍到",desc:"第一次进入 Security Lab",cls:"blue"},
- {id:"chat",icon:"💬",name:"聊天达人",desc:"发送 100 条消息",cls:"green"},
+ {id:"member",icon:"🛡️",name:"正式成员",desc:"完成账号登录",cls:"blue"},
+ {id:"developer",icon:"💻",name:"开发者",desc:"管理员授予",cls:"purple"},
+ {id:"admin",icon:"🛡️",name:"管理员",desc:"管理员身份",cls:"gold"},
+ {id:"vip",icon:"💎",name:"VIP",desc:"获得 VIP 身份",cls:"gold"},
+ {id:"early",icon:"⚡",name:"早期用户",desc:"连续活跃 7 天",cls:"red"},
+ {id:"founder",icon:"🏛️",name:"元老成员",desc:"早期加入 Security Lab",cls:"gold"},
+
+ {id:"chat10",icon:"💬",name:"初次发言",desc:"发送 10 条消息",cls:"green"},
+ {id:"chat",icon:"🗣️",name:"聊天达人",desc:"发送 100 条消息",cls:"green"},
+ {id:"chat500",icon:"🔥",name:"话题王者",desc:"发送 500 条消息",cls:"red"},
+ {id:"chat1000",icon:"💬",name:"社区元老",desc:"发送 1000 条消息",cls:"gold"},
+ {id:"first_reply",icon:"↩️",name:"热心回复",desc:"完成一次回复互动",cls:"blue"},
+ {id:"night",icon:"🌙",name:"夜猫子",desc:"深夜活跃",cls:"purple"},
+
  {id:"voice",icon:"🎙️",name:"语音玩家",desc:"加入语音聊天室",cls:"purple"},
+ {id:"voice10",icon:"🎧",name:"语音达人",desc:"累计语音 10 小时",cls:"purple"},
+ {id:"voice50",icon:"📢",name:"麦霸",desc:"累计语音 50 小时",cls:"gold"},
+
  {id:"lucky",icon:"🍀",name:"幸运之星",desc:"抽中一次奖励",cls:"gold"},
  {id:"lottery10",icon:"🎰",name:"抽奖达人",desc:"累计抽奖 10 次",cls:"gold"},
- {id:"member",icon:"🛡️",name:"Security Lab 成员",desc:"完成账号登录",cls:"blue"},
- {id:"early",icon:"⚡",name:"活跃用户",desc:"连续活跃 7 天",cls:"red"},
- {id:"developer",icon:"💻",name:"开发者",desc:"管理员授予",cls:"purple"}
+ {id:"lottery100",icon:"🎯",name:"百抽挑战者",desc:"累计抽奖 100 次",cls:"blue"},
+ {id:"lottery500",icon:"🎰",name:"抽奖狂热者",desc:"累计抽奖 500 次",cls:"purple"},
+ {id:"lottery1000",icon:"🏆",name:"千抽收藏家",desc:"累计抽奖 1000 次",cls:"gold"},
+ {id:"rare_lucky",icon:"⭐",name:"稀有猎手",desc:"获得稀有奖励",cls:"blue"},
+ {id:"epic_collector",icon:"🟣",name:"史诗收藏家",desc:"获得史诗徽章",cls:"purple"},
+ {id:"legend_collector",icon:"👑",name:"传说收藏家",desc:"获得传说徽章",cls:"gold"},
+
+ {id:"streak3",icon:"🌱",name:"连续 3 天",desc:"连续活跃 3 天",cls:"green"},
+ {id:"streak7",icon:"🔥",name:"连续 7 天",desc:"连续活跃 7 天",cls:"red"},
+ {id:"streak30",icon:"🌟",name:"连续 30 天",desc:"连续活跃 30 天",cls:"gold"},
+ {id:"streak100",icon:"👑",name:"连续 100 天",desc:"连续活跃 100 天",cls:"gold"},
+
+ {id:"security",icon:"🔐",name:"安全卫士",desc:"完成安全设置",cls:"blue"},
+ {id:"profile",icon:"🪪",name:"完整档案",desc:"完善个人资料",cls:"blue"},
+ {id:"custom_avatar",icon:"🖼️",name:"专属头像",desc:"设置自定义头像",cls:"purple"},
+ {id:"custom_bg",icon:"🎨",name:"空间设计师",desc:"设置聊天背景",cls:"purple"},
+ {id:"voice_creator",icon:"🎤",name:"语音房主",desc:"创建语音聊天室",cls:"gold"},
+ {id:"explorer",icon:"🧭",name:"探索者",desc:"访问多个频道",cls:"green"}
+];
+
+const lotteryBadgeDefs=[
+ {id:"epic_void",icon:"🟣",name:"虚空行者",desc:"抽奖获得史诗徽章",cls:"purple"},
+ {id:"epic_galaxy",icon:"🌌",name:"星河守望者",desc:"抽奖获得史诗徽章",cls:"purple"},
+ {id:"epic_eye",icon:"🔮",name:"深渊之眼",desc:"抽奖获得史诗徽章",cls:"purple"},
+ {id:"legend_king",icon:"👑",name:"传奇王者",desc:"抽奖获得传说徽章",cls:"gold"},
+ {id:"legend_creator",icon:"🌟",name:"创世者",desc:"抽奖获得传说徽章",cls:"gold"},
+ {id:"legend_eternal",icon:"💫",name:"永恒之星",desc:"抽奖获得传说徽章",cls:"gold"}
 ];
 
 const lotteryBadgeDefs=[
@@ -1639,10 +1679,26 @@ function badgeUnlocked(id){
   if(id==="welcome")return true;
   if(id==="developer")return isCurrentUserDeveloper();
   if(id==="member")return !!currentUser;
-  if(id==="chat")return parseInt(localStorage.getItem("sl_sent_count")||"0")>=100;
+  const sent=parseInt(localStorage.getItem("sl_sent_count")||"0");
+  const total=parseInt(localStorage.getItem("sl_lottery_total")||"0");
+  if(id==="chat10")return sent>=10;
+  if(id==="chat")return sent>=100;
+  if(id==="chat500")return sent>=500;
+  if(id==="chat1000")return sent>=1000;
   if(id==="voice")return localStorage.getItem("sl_voice_joined")==="1";
+  if(id==="voice10")return parseInt(localStorage.getItem("sl_voice_minutes")||"0")>=600;
+  if(id==="voice50")return parseInt(localStorage.getItem("sl_voice_minutes")||"0")>=3000;
   if(id==="lucky")return localStorage.getItem("sl_lottery_won")==="1";
-  if(id==="lottery10")return parseInt(localStorage.getItem("sl_lottery_total")||"0")>=10;
+  if(id==="lottery10")return total>=10;
+  if(id==="lottery100")return total>=100;
+  if(id==="lottery500")return total>=500;
+  if(id==="lottery1000")return total>=1000;
+  if(id==="epic_collector")return JSON.parse(localStorage.getItem("sl_owned_badges")||"[]").some(x=>["epic_void","epic_galaxy","epic_eye"].includes(x));
+  if(id==="legend_collector")return JSON.parse(localStorage.getItem("sl_owned_badges")||"[]").some(x=>["legend_king","legend_creator","legend_eternal"].includes(x));
+  if(id==="rare_lucky")return localStorage.getItem("sl_rare_won")==="1";
+  if(id==="custom_avatar")return !!localStorage.getItem("sl_avatar");
+  if(id==="custom_bg")return !!(localStorage.getItem("sl_chat_bg")||localStorage.getItem("sl_chat_bg_color"));
+  if(id==="profile")return !!(localStorage.getItem("sl_name")&&localStorage.getItem("sl_sig"));
   return false;
 }
 function renderBadges(){
