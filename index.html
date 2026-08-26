@@ -163,6 +163,14 @@ body.dark .context-menu button:hover{background:#292d35}
 .voice-empty{text-align:center;color:#999;padding:45px 10px;font-size:12px}
 body.dark .voice-room,body.dark .voice-actions button{background:#20232a;color:#eee}
 
+
+.voice-person{position:relative}
+.voice-person.speaking{box-shadow:inset 0 0 0 2px #35c759;background:#f1fff4}
+.voice-person .voice-level{width:34px;height:4px;border-radius:4px;background:#dfe2e6;overflow:hidden;margin-top:5px}
+.voice-person .voice-level i{display:block;width:0;height:100%;background:#35c759;transition:width .08s linear}
+.voice-connection{font-size:9px;color:#999;margin-top:2px}
+body.dark .voice-person.speaking{background:#17251b}
+
 </style>
 </head>
 <body>
@@ -718,6 +726,7 @@ if(localStorage.getItem("sl_dark")==="1"){
 
 /* ===== 第一阶段语音：WebRTC + Supabase Realtime ===== */
 let voiceRoom=null, voiceStream=null, voiceJoined=false, voiceMuted=false;
+let voiceAudioContext=null, voiceAnalyser=null, voiceAudioData=null, voiceLevelTimer=null;
 const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()).toString().slice(0,36);
 const voicePeers={};
 
@@ -739,18 +748,26 @@ function voiceState(t,err=false){
 }
 function renderVoiceList(){
   const box=$("voiceList");
-  if(!voiceRoom){box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';return}
+  if(!voiceRoom){
+    box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';
+    return;
+  }
   const state=voiceRoom.presenceState();
   const users=[];
   Object.values(state||{}).forEach(arr=>(arr||[]).forEach(u=>users.push(u)));
-  if(!users.length){box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';return}
-  box.innerHTML=users.map(u=>`<div class="voice-person">
+  if(!users.length){
+    box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';
+    return;
+  }
+  box.innerHTML=users.map(u=>`<div class="voice-person" id="voice-person-${esc(u.peerId)}">
     <div class="voice-person-avatar">${esc((u.name||"游")[0])}</div>
-    <div><b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
-    <div style="font-size:9px;color:#999">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div></div>
+    <div style="min-width:0;flex:1">
+      <b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
+      <div class="voice-connection">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div>
+      <div class="voice-level"><i id="voice-level-${esc(u.peerId)}"></i></div>
+    </div>
   </div>`).join("");
-}
-async function voiceBroadcast(event,payload){
+}async function voiceBroadcast(event,payload){
   if(!voiceRoom)return;
   try{await voiceRoom.send({type:"broadcast",event,payload})}catch(e){console.warn("voice",e)}
 }
@@ -824,6 +841,7 @@ async function joinVoice(){
       audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
       video:false
     });
+    startVoiceLevelMonitor();
     voiceRoom=sb.channel(voiceTopic(),{
       config:{broadcast:{self:false,ack:true},presence:{key:voiceId}}
     });
@@ -870,6 +888,7 @@ async function leaveVoice(){
   }
   voiceRoom=null;voiceJoined=false;voiceMuted=false;
   if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
+  stopVoiceLevelMonitor();
   $("voiceJoin").textContent="🎙️ 加入语音";
   $("voiceMute").disabled=true;
   $("voiceMute").textContent="🎤 静音";
@@ -886,6 +905,47 @@ async function toggleVoiceMute(){
     try{await voiceRoom.track({peerId:voiceId,name:nickname||"游客",muted:voiceMuted})}catch(_){}
     renderVoiceList();
   }
+}
+
+
+function startVoiceLevelMonitor(){
+  try{
+    if(!voiceStream || voiceAudioContext)return;
+    voiceAudioContext=new (window.AudioContext||window.webkitAudioContext)();
+    const source=voiceAudioContext.createMediaStreamSource(voiceStream);
+    voiceAnalyser=voiceAudioContext.createAnalyser();
+    voiceAnalyser.fftSize=256;
+    voiceAudioData=new Uint8Array(voiceAnalyser.fftSize);
+    source.connect(voiceAnalyser);
+
+    const tick=()=>{
+      if(!voiceAnalyser || !voiceJoined)return;
+      voiceAnalyser.getByteTimeDomainData(voiceAudioData);
+      let sum=0;
+      for(let i=0;i<voiceAudioData.length;i++){
+        const v=(voiceAudioData[i]-128)/128;
+        sum+=v*v;
+      }
+      const rms=Math.sqrt(sum/voiceAudioData.length);
+      const level=Math.min(100,Math.round(rms*420));
+      const me=$("voice-level-"+voiceId);
+      const person=$("voice-person-"+voiceId);
+      if(me)me.style.width=level+"%";
+      if(person)person.classList.toggle("speaking",level>9);
+      voiceLevelTimer=requestAnimationFrame(tick);
+    };
+    tick();
+  }catch(e){console.warn("voice level monitor",e)}
+}
+function stopVoiceLevelMonitor(){
+  if(voiceLevelTimer)cancelAnimationFrame(voiceLevelTimer);
+  voiceLevelTimer=null;
+  if(voiceAudioContext){
+    try{voiceAudioContext.close()}catch(_){}
+  }
+  voiceAudioContext=null;
+  voiceAnalyser=null;
+  voiceAudioData=null;
 }
 
 </script>
