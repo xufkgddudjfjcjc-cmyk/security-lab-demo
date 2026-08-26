@@ -609,6 +609,19 @@ body.dark .voice-person.speaking{background:#17251b}
   button,input{touch-action:manipulation}
 }
 
+
+/* ===== 云端开发者徽章 ===== */
+.cloud-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  margin-left:5px;padding:2px 6px;border-radius:999px;
+  background:linear-gradient(135deg,#eee8ff,#f7f2ff);
+  border:1px solid #cdb8ff;color:#6841b5;
+  font-size:9px;font-weight:800;vertical-align:middle;
+}
+.cloud-badge.developer{background:linear-gradient(135deg,#fff4c7,#fff9e8);border-color:#e8c95f;color:#8a6500}
+body.dark .cloud-badge{background:#29233a;border-color:#6e52a1;color:#d6c5ff}
+body.dark .cloud-badge.developer{background:#38301b;border-color:#8c7428;color:#ffe38a}
+
 </style>
 
 <meta name="theme-color" content="#f3f4f6">
@@ -1343,6 +1356,7 @@ function saveProfile(){
 }
 function setAvatar(el,url,name){el.innerHTML="";if(url){const im=new Image();im.src=url;im.onload=()=>el.appendChild(im);im.onerror=()=>el.textContent=(name||"游")[0]}else el.textContent=(name||"游")[0]}
 function openUser(name){
+  const devBadge=isCurrentUserDeveloper() && nickname!=="游客" && arguments[0]===nickname;
  $("userModalName").textContent=name;$("userModalBio").textContent=name===nickname?signature:"Security Lab 社区成员";setAvatar($("userBigAvatar"),name===nickname?avatarURL:"",name);window.__selectedUser=name;$("userModal").classList.add("show")
 }
 function closeUser(){$("userModal").classList.remove("show")}
@@ -1491,6 +1505,40 @@ function drawLottery(){
 }
 
 
+
+let cloudProfile=null;
+
+async function loadCloudProfile(){
+  if(!sb || !currentUser) return null;
+  try{
+    const {data,error}=await sb.from("profiles")
+      .select("id,username,avatar_url,badge,role")
+      .eq("id",currentUser.id)
+      .maybeSingle();
+    if(error) throw error;
+    cloudProfile=data||null;
+    if(cloudProfile?.role==="developer" || cloudProfile?.badge==="developer"){
+      localStorage.setItem("sl_cloud_developer","1");
+    }else{
+      localStorage.removeItem("sl_cloud_developer");
+    }
+    return cloudProfile;
+  }catch(e){
+    console.warn("读取 profiles 失败:",e);
+    return null;
+  }
+}
+
+function developerBadgeHtml(isDeveloper){
+  return isDeveloper ? '<span class="cloud-badge developer">💻 开发者</span>' : "";
+}
+
+function isCurrentUserDeveloper(){
+  return !!(cloudProfile?.role==="developer" || cloudProfile?.badge==="developer" ||
+    localStorage.getItem("sl_cloud_developer")==="1");
+}
+
+
 const badgeDefs=[
  {id:"welcome",icon:"👋",name:"初来乍到",desc:"第一次进入 Security Lab",cls:"blue"},
  {id:"chat",icon:"💬",name:"聊天达人",desc:"发送 100 条消息",cls:"green"},
@@ -1505,6 +1553,7 @@ function badgeUnlocked(id){
   const key="sl_badge_"+id;
   if(localStorage.getItem(key)==="1")return true;
   if(id==="welcome")return true;
+  if(id==="developer")return isCurrentUserDeveloper();
   if(id==="member")return !!currentUser;
   if(id==="chat")return parseInt(localStorage.getItem("sl_sent_count")||"0")>=100;
   if(id==="voice")return localStorage.getItem("sl_voice_joined")==="1";
