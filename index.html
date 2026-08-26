@@ -818,7 +818,10 @@ function makePeer(id,name){
       document.body.appendChild(a);
       voicePeers[id].audio=a;
     }
-    if(e.streams?.[0])a.srcObject=e.streams[0];
+    if(e.streams?.[0]){
+      a.srcObject=e.streams[0];
+      startRemoteLevelMonitor(id,e.streams[0]);
+    }
     a.play().catch(()=>{});
   };
 
@@ -839,6 +842,9 @@ function makePeer(id,name){
   const p=voicePeers[id];if(!p)return;
   try{p.pc.close()}catch(_){}
   if(p.audio)p.audio.remove();
+  if(p.levelTimer)cancelAnimationFrame(p.levelTimer);
+  try{p.source?.disconnect()}catch(_){}
+  try{p.analyser?.disconnect()}catch(_){}
   delete voicePeers[id];
   delete voicePendingIce[id];
 }
@@ -920,7 +926,7 @@ async function handleVoice(event,p){
       audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
       video:false
     });
-    startVoiceLevelMonitor();
+    try{await getVoiceAudioContext()}catch(_){}
     voiceRoom=sb.channel(voiceTopic(),{
       config:{broadcast:{self:false,ack:true},presence:{key:voiceId}}
     });
@@ -958,7 +964,6 @@ async function handleVoice(event,p){
       });
     });
     voiceJoined=true;
-    startVoiceNetworkMonitor();
     $("voiceJoin").textContent="📞 离开语音";
     $("voiceMute").disabled=false;
     voiceState("已加入语音");
@@ -969,6 +974,8 @@ async function handleVoice(event,p){
       online_at:new Date().toISOString()
     });
     renderVoiceList();
+    startVoiceLevelMonitor();
+    startVoiceNetworkMonitor();
     updateVoiceNetworkStatus();
     await voiceBroadcast("hello",{from:voiceId,name:nickname||"游客"});
 
@@ -1019,44 +1026,80 @@ async function toggleVoiceMute(){
 }
 
 
+function getVoiceAudioContext(){
+  if(!voiceAudioContext){
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)throw new Error("AudioContext 不支持");
+    voiceAudioContext=new Ctx();
+  }
+  if(voiceAudioContext.state==="suspended")voiceAudioContext.resume().catch(()=>{});
+  return voiceAudioContext;
+}
+
+function calcVoiceLevel(analyser,data){
+  analyser.getByteTimeDomainData(data);
+  let sum=0;
+  for(let i=0;i<data.length;i++){
+    const v=(data[i]-128)/128;
+    sum+=v*v;
+  }
+  const rms=Math.sqrt(sum/data.length);
+  return Math.min(100,Math.round(rms*500));
+}
+
 function startVoiceLevelMonitor(){
+  stopVoiceLevelMonitor();
+  if(!voiceStream || !voiceJoined)return;
+
   try{
-    if(!voiceStream || voiceAudioContext)return;
-    voiceAudioContext=new (window.AudioContext||window.webkitAudioContext)();
-    const source=voiceAudioContext.createMediaStreamSource(voiceStream);
-    voiceAnalyser=voiceAudioContext.createAnalyser();
+    const ctx=getVoiceAudioContext();
+    const source=ctx.createMediaStreamSource(voiceStream);
+    voiceAnalyser=ctx.createAnalyser();
     voiceAnalyser.fftSize=256;
     voiceAudioData=new Uint8Array(voiceAnalyser.fftSize);
     source.connect(voiceAnalyser);
 
     const tick=()=>{
       if(!voiceAnalyser || !voiceJoined)return;
-      voiceAnalyser.getByteTimeDomainData(voiceAudioData);
-      let sum=0;
-      for(let i=0;i<voiceAudioData.length;i++){
-        const v=(voiceAudioData[i]-128)/128;
-        sum+=v*v;
-      }
-      const rms=Math.sqrt(sum/voiceAudioData.length);
-      const level=Math.min(100,Math.round(rms*420));
+      const level=calcVoiceLevel(voiceAnalyser,voiceAudioData);
       const me=$("voice-level-"+voiceId);
       const person=$("voice-person-"+voiceId);
       if(me)me.style.width=level+"%";
-      if(person)person.classList.toggle("speaking",level>9);
+      if(person)person.classList.toggle("speaking",level>8);
       voiceLevelTimer=requestAnimationFrame(tick);
     };
     tick();
-  }catch(e){console.warn("voice level monitor",e)}
-}
-function stopVoiceLevelMonitor(){
-  if(voiceLevelTimer)cancelAnimationFrame(voiceLevelTimer);
-  voiceLevelTimer=null;
-  if(voiceAudioContext){
-    try{voiceAudioContext.close()}catch(_){}
+  }catch(e){
+    console.warn("local voice level",e);
   }
-  voiceAudioContext=null;
-  voiceAnalyser=null;
-  voiceAudioData=null;
+}
+
+function startRemoteLevelMonitor(id,stream){
+  try{
+    const p=voicePeers[id];
+    if(!p)return;
+    const ctx=getVoiceAudioContext();
+    if(p.source){try{p.source.disconnect()}catch(_){}}
+    p.source=ctx.createMediaStreamSource(stream);
+    p.analyser=ctx.createAnalyser();
+    p.analyser.fftSize=256;
+    p.levelData=new Uint8Array(p.analyser.fftSize);
+    p.source.connect(p.analyser);
+
+    const tick=()=>{
+      if(!voiceJoined || !voicePeers[id] || !p.analyser)return;
+      const level=calcVoiceLevel(p.analyser,p.levelData);
+      const el=$("voice-level-"+id);
+      const person=$("voice-person-"+id);
+      if(el)el.style.width=level+"%";
+      if(person)person.classList.toggle("speaking",level>8);
+      p.levelTimer=requestAnimationFrame(tick);
+    };
+    if(p.levelTimer)cancelAnimationFrame(p.levelTimer);
+    tick();
+  }catch(e){
+    console.warn("remote voice level",e);
+  }
 }
 
 
