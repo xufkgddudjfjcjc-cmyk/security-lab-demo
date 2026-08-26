@@ -2984,6 +2984,253 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v8-chat-css">
+.chat-sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:#d19a2a;box-shadow:0 0 8px currentColor}
+.chat-sync-dot.ok{background:#35c759;color:#35c759}
+.chat-sync-dot.err{background:#ff5f57;color:#ff5f57}
+.message.pending{opacity:.62}
+.message.pending .msg-time::after{content:" · 发送中";font-size:9px;color:#8aa0bc}
+.message.failed{opacity:.82}
+.message.failed .msg-time::after{content:" · 未同步";font-size:9px;color:#ff8b7d}
+.chat-retry{margin-top:6px;border:0;background:rgba(255,95,87,.12);color:#ff8b7d;padding:4px 8px;border-radius:8px;font-size:10px;cursor:pointer}
+@media(max-width:800px){
+  .chat-sync-dot{width:6px;height:6px}
+  .chat-retry{min-height:30px;padding:4px 10px}
+}
+</style>
+
+
+<style id="security-lab-v8-voice-css">
+.voice-device-note{font-size:10px;color:#7890aa;margin-top:7px;line-height:1.45}
+.voice-participant-tools{display:flex;gap:7px;margin-top:10px}
+.voice-participant-tools button{flex:1;min-height:38px;border-radius:10px}
+.voice-person .voice-state-badge{font-size:9px;color:#7890aa}
+.voice-person.reconnecting{opacity:.65}
+</style>
+
+
+<style id="security-lab-v8-voice-mobile">
+@media(max-width:800px){
+  #voiceModal .modal-card{
+    max-height:calc(88dvh - env(safe-area-inset-top)) !important;
+    padding-bottom:max(20px,env(safe-area-inset-bottom)) !important;
+  }
+  #voiceModal .voice-list{
+    max-height:42dvh !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior:contain !important;
+  }
+  #voiceModal .voice-actions{
+    position:sticky;
+    bottom:0;
+    padding-top:8px;
+    background:linear-gradient(180deg,transparent,rgba(8,14,24,.96) 28%);
+  }
+}
+</style>
+
+
+<style id="security-lab-v9-voice-bottom-sheet">
+@media(max-width:800px){
+  #voiceModal{
+    align-items:flex-end !important;
+    justify-content:center !important;
+    padding:0 !important;
+    background:rgba(2,7,16,.42) !important;
+    backdrop-filter:blur(13px) saturate(.75) !important;
+    -webkit-backdrop-filter:blur(13px) saturate(.75) !important;
+    overscroll-behavior:contain !important;
+  }
+
+  #voiceModal .voice-card{
+    width:100% !important;
+    max-width:none !important;
+    height:auto !important;
+    max-height:78dvh !important;
+    margin:0 !important;
+    padding:10px 16px max(18px,env(safe-area-inset-bottom)) !important;
+    border-radius:28px 28px 0 0 !important;
+    border:1px solid rgba(118,170,255,.18) !important;
+    border-bottom:0 !important;
+    background:
+      radial-gradient(circle at 18% 0%,rgba(72,126,255,.16),transparent 34%),
+      linear-gradient(180deg,rgba(18,29,48,.98),rgba(5,12,22,.985)) !important;
+    box-shadow:
+      0 -20px 70px rgba(0,0,0,.52),
+      0 -2px 22px rgba(79,126,255,.10),
+      inset 0 1px 0 rgba(255,255,255,.06) !important;
+    overflow:hidden !important;
+    animation:voiceSheetIn .28s cubic-bezier(.2,.85,.25,1) both !important;
+  }
+
+  .voice-sheet-handle{
+    width:70px !important;
+    height:5px !important;
+    border-radius:99px !important;
+    margin:2px auto 13px !important;
+    background:rgba(166,190,220,.34) !important;
+  }
+
+  #voiceModal .modal-head{
+    height:50px !important;
+    margin:0 !important;
+    padding:0 2px !important;
+    border:0 !important;
+  }
+
+  #voiceModal .modal-head>span{
+    font-size:20px !important;
+    font-weight:850 !important;
+    letter-spacing:.2px !important;
+    color:#eef5ff !important;
+  }
+
+  #voiceModal .close{
+    width:46px !important;
+    height:46px !important;
+    border-radius:16px !important;
+    background:rgba(96,121,155,.18) !important;
+    color:#dce8f8 !important;
+    font-size:26px !important;
+    border:1px solid rgba(145,175,215,.08) !important;
+  }
+
+  #voiceModal .voice-room{
+    margin:2px 0 12px !important;
+    padding:15px 16px !important;
+    border-radius:22px !important;
+    background:linear-gradient(145deg,rgba(19,40,63,.75),rgba(8,20,34,.78)) !important;
+    border:1px solid rgba(99,160,255,.14) !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.025) !important;
+  }
+
+  #voiceModal .voice-room-title{
+    font-size:17px !important;
+    color:#eef5ff !important;
+  }
+
+  #voiceModal .voice-state{
+    margin-top:6px !important;
+    color:#8fa7c3 !important;
+    font-size:12px !important;
+  }
+
+  #voiceModal #voiceNetwork{
+    margin-top:5px !important;
+    color:#d6a548 !important;
+    font-size:11px !important;
+  }
+
+  #voiceModal .voice-device-note{
+    display:none !important;
+  }
+
+  #voiceModal .voice-list{
+    max-height:38dvh !important;
+    min-height:105px !important;
+    overflow-y:auto !important;
+    padding:2px 1px 4px !important;
+    -webkit-overflow-scrolling:touch !important;
+    overscroll-behavior:contain !important;
+  }
+
+  #voiceModal .voice-person{
+    min-height:68px !important;
+    margin:6px 0 !important;
+    padding:10px 12px !important;
+    gap:12px !important;
+    border-radius:20px !important;
+    background:rgba(17,31,49,.56) !important;
+    border:1px solid rgba(104,156,225,.08) !important;
+  }
+
+  #voiceModal .voice-person.speaking{
+    background:rgba(25,52,56,.64) !important;
+    box-shadow:inset 0 0 0 1.5px rgba(53,199,89,.75),0 0 22px rgba(53,199,89,.07) !important;
+  }
+
+  #voiceModal .voice-person-avatar{
+    width:48px !important;
+    height:48px !important;
+    flex:0 0 48px !important;
+    border-radius:16px !important;
+    font-size:19px !important;
+    background:linear-gradient(135deg,#596cff,#7b55ff) !important;
+    box-shadow:0 7px 20px rgba(77,90,255,.22) !important;
+  }
+
+  #voiceModal .voice-person b{
+    color:#edf4ff !important;
+    font-size:15px !important;
+  }
+
+  #voiceModal .voice-connection{
+    margin-top:2px !important;
+    color:#879ab2 !important;
+    font-size:11px !important;
+  }
+
+  #voiceModal .voice-person .voice-level{
+    width:55px !important;
+    height:5px !important;
+    margin-top:7px !important;
+    background:rgba(220,231,245,.18) !important;
+  }
+
+  #voiceModal .voice-person .voice-level i{
+    background:linear-gradient(90deg,#e8eef7,#ffffff) !important;
+    box-shadow:0 0 8px rgba(255,255,255,.35) !important;
+  }
+
+  #voiceModal .voice-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1.15fr !important;
+    gap:10px !important;
+    margin-top:12px !important;
+    padding:0 !important;
+    background:none !important;
+  }
+
+  #voiceModal .voice-actions button{
+    height:58px !important;
+    min-height:58px !important;
+    border-radius:20px !important;
+    font-size:16px !important;
+    font-weight:750 !important;
+    border:1px solid rgba(105,156,226,.16) !important;
+    background:linear-gradient(145deg,rgba(25,43,66,.9),rgba(12,27,45,.92)) !important;
+    color:#e4edf9 !important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035) !important;
+  }
+
+  #voiceModal .voice-actions .voice-join{
+    background:linear-gradient(135deg,#5d86ff,#7b4dff) !important;
+    color:white !important;
+    border-color:rgba(155,171,255,.28) !important;
+    box-shadow:0 9px 28px rgba(93,93,255,.24),inset 0 1px 0 rgba(255,255,255,.15) !important;
+  }
+
+  #voiceModal .voice-actions button:active{
+    transform:scale(.975) !important;
+  }
+
+  #voiceModal .voice-empty{
+    min-height:90px !important;
+    display:grid !important;
+    place-items:center !important;
+    color:#71849b !important;
+    font-size:12px !important;
+  }
+}
+
+@keyframes voiceSheetIn{
+  from{transform:translateY(105%);opacity:.6}
+  to{transform:translateY(0);opacity:1}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3190,6 +3437,7 @@ button:active{
 <!-- 语音聊天室 -->
 <div class="modal" id="voiceModal" onclick="if(event.target===this)closeVoice()">
   <div class="modal-card voice-card">
+    <div class="voice-sheet-handle" aria-hidden="true"></div>
     <div class="modal-head">
       <span>🎙️ 语音聊天室</span>
       <button class="close" onclick="closeVoice()">×</button>
@@ -3197,7 +3445,7 @@ button:active{
     <div class="voice-room">
       <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
       <div class="voice-state" id="voiceState">未加入语音</div>
-      <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div>
+      <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div><div class="voice-device-note">首次加入会请求麦克风权限。语音使用 WebRTC，网络较差时会自动尝试重新连接。</div>
     </div>
     <div class="voice-list" id="voiceList">
       <div class="voice-empty">还没有人加入语音</div>
@@ -3533,29 +3781,49 @@ function setCloudStatus(text,color){
     realtime=null;
   }
 
-  realtime=sb.channel("sl-chat-"+Date.now())
+  realtime=sb.channel("sl-chat-live")
     .on("postgres_changes",
       {event:"INSERT",schema:"public",table:"messages"},
       payload=>{
         const row=payload.new||{};
         if(!row.channel || row.channel===channel){
-          loadPublicProfiles().finally(()=>loadMessages());
+          loadPublicProfiles().finally(()=>loadMessages({silent:true}));
         }
       })
     .on("postgres_changes",
       {event:"UPDATE",schema:"public",table:"messages"},
-      ()=>loadMessages())
+      ()=>loadMessages({silent:true}))
     .on("postgres_changes",
       {event:"DELETE",schema:"public",table:"messages"},
-      ()=>loadMessages())
+      ()=>loadMessages({silent:true}))
     .subscribe(status=>{
       console.log("Supabase Realtime:",status);
-      if(status==="SUBSCRIBED")setCloudStatus("云端已连接","#35a85a");
-      if(status==="CHANNEL_ERROR" || status==="TIMED_OUT"){
-        setCloudStatus("实时异常","#d9534f");
+      if(status==="SUBSCRIBED"){
+        setCloudStatus("云端已连接","#35a85a");
+        startChatPolling(false);
+      }else if(status==="CHANNEL_ERROR" || status==="TIMED_OUT"){
+        setCloudStatus("实时异常，自动轮询","#d19a2a");
+        startChatPolling(true);
       }
     });
-}async function loadMessages(){
+}
+
+let chatPollTimer=null;
+function startChatPolling(force=false){
+  if(chatPollTimer)clearInterval(chatPollTimer);
+  chatPollTimer=setInterval(()=>{
+    if(document.visibilityState==="visible" && (force || !realtime)){
+      loadMessages({silent:true});
+    }
+  },5000);
+}
+function stopChatPolling(){
+  if(chatPollTimer)clearInterval(chatPollTimer);
+  chatPollTimer=null;
+}
+
+async function loadMessages(options={}){
+  const silent=!!options.silent;
   const localData=messages.filter(m=>!m.channel||m.channel===channel);
 
   if(!sb){
@@ -3573,7 +3841,7 @@ function setCloudStatus(text,color){
 
     let result=await query;
 
-    // 兼容旧数据库：messages 表如果没有 channel 列，则读取全部消息。
+    // 兼容没有 channel 列的旧表。
     if(result.error && /channel/i.test(result.error.message||"")){
       result=await sb.from("messages")
         .select("id,username,message,created_at")
@@ -3583,63 +3851,142 @@ function setCloudStatus(text,color){
 
     if(result.error)throw result.error;
 
-    messages=result.data||[];
+    const cloudRows=result.data||[];
+
+    // 保留本机尚未同步的消息，避免网络抖动时消息瞬间消失。
+    const pending=messages.filter(m=>
+      String(m.id||"").startsWith("local-") &&
+      (!m.channel || m.channel===channel) &&
+      m.syncState==="pending"
+    );
+
+    messages=[...cloudRows,...pending];
+    messages.sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
     localStorage.setItem("sl_local_messages",JSON.stringify(messages));
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
     setCloudStatus("云端已连接","#35a85a");
   }catch(e){
     console.warn("读取 messages 失败:",e);
     setCloudStatus("连接异常","#d9534f");
+    if(!silent)toast("聊天同步失败，正在重试");
     renderMessages(localData);
   }
-}function formatMentions(text){
- let s=esc(text);
- s=s.replace(/@([\\w\\u4e00-\\u9fff-]+)/g,'<span class="mention">@$1</span>');
- return s;
 }
+
+function formatMentions(text){
+  let s=esc(text);
+  s=s.replace(/@([\w\u4e00-\u9fff-]+)/g,'<span class="mention">@$1</span>');
+  return s;
+}
+
 function renderMessages(data){
-  const box=$("messages");box.innerHTML="";
-  if(!data.length){box.innerHTML=`<div style="text-align:center;color:#9aa0a9;padding:80px 10px;font-size:13px">这里还没有消息<br><small style="font-size:10px">发送第一条消息吧</small></div>`;return}
+  const box=$("messages");
+  if(!box)return;
+
+  const nearBottom=box.scrollHeight-box.scrollTop-box.clientHeight<120;
+  box.innerHTML="";
+
+  if(!data.length){
+    box.innerHTML=`<div style="text-align:center;color:#9aa0a9;padding:80px 10px;font-size:13px">这里还没有消息<br><small style="font-size:10px">发送第一条消息吧</small></div>`;
+    return;
+  }
+
   let prev="";
   data.forEach((m,i)=>{
     const grouped=prev===m.username;
-    const row=document.createElement("article");row.className="message"+(grouped?" grouped":"");row.dataset.id=m.id;
+    const row=document.createElement("article");
+    row.className="message"+(grouped?" grouped":"")+(m.syncState==="pending"?" pending":"")+(m.syncState==="failed"?" failed":"");
+    row.dataset.id=m.id;
+
     const profile=getPublicProfile(m.username);
-    const avatar=document.createElement("div");avatar.className="msg-avatar";
+    const avatar=document.createElement("div");
+    avatar.className="msg-avatar";
     if(profile?.avatar_url){
-      const im=new Image();im.src=profile.avatar_url;im.alt="";
+      const im=new Image();
+      im.src=profile.avatar_url;
+      im.alt="";
       im.onload=()=>{avatar.innerHTML="";avatar.appendChild(im)};
       im.onerror=()=>avatar.textContent=(m.username||"游")[0];
-    }else avatar.textContent=(m.username||"游")[0];
-    const main=document.createElement("div");main.className="msg-main";
-    let reply=m.reply_to?`<div class="reply-box">回复 ${esc(m.reply_to.username||"用户")}：${esc(m.reply_to.message||"")}</div>`:"";
+    }else{
+      avatar.textContent=(m.username||"游")[0];
+    }
+
+    const main=document.createElement("div");
+    main.className="msg-main";
+
+    let reply=m.reply_to
+      ?`<div class="reply-box">回复 ${esc(m.reply_to.username||"用户")}：${esc(m.reply_to.message||"")}</div>`
+      :"";
+
     const badge=profileBadgeHtml(profile);
-    main.innerHTML=`<div class="msg-top"><span class="msg-user">${esc(m.username||"游客")}</span>${badge}${m.username===nickname?'<span class="msg-id">你</span>':""}<span class="msg-time">${time(m.created_at||Date.now())}</span></div>${reply}<div class="msg-text">${formatMentions(m.message||"")}</div>`;
+    main.innerHTML=
+      `<div class="msg-top">
+        <span class="msg-user">${esc(m.username||"游客")}</span>
+        ${badge}
+        ${m.username===nickname?'<span class="msg-id">你</span>':""}
+        <span class="msg-time">${time(m.created_at||Date.now())}</span>
+      </div>
+      ${reply}
+      <div class="msg-text">${formatMentions(m.message||"")}</div>`;
+
     if(m.image_data)main.innerHTML+=`<img class="msg-image" src="${m.image_data}" alt="图片">`;
     if(m.file_name)main.innerHTML+=`<div class="file-card"><div class="file-icon">📄</div><div><div class="file-name">${esc(m.file_name)}</div><div class="file-size">${size(m.file_size||0)}</div></div></div>`;
-    const acts=document.createElement("div");acts.className="msg-actions";
+
+    if(m.syncState==="failed"){
+      const retry=document.createElement("button");
+      retry.className="chat-retry";
+      retry.textContent="重新发送";
+      retry.onclick=()=>retryMessage(m);
+      main.appendChild(retry);
+    }
+
+    const acts=document.createElement("div");
+    acts.className="msg-actions";
     acts.innerHTML=`<button>↩</button><button>📋</button>${m.username===nickname?'<button>✏</button><button>🗑</button>':""}`;
-    acts.children[0].onclick=()=>replyMessage(m);acts.children[1].onclick=()=>copyText(m.message||"");
-    if(m.username===nickname){acts.children[2].onclick=()=>editMessage(m);acts.children[3].onclick=()=>deleteMessage(m)}
-    row.append(avatar,main,acts);row.addEventListener("contextmenu",e=>{e.preventDefault();showContext(e.clientX,e.clientY,m)});
-    main.querySelector(".msg-user").onclick=()=>openFullProfile(m.username||"游客");
-    box.appendChild(row);prev=m.username;
+    acts.children[0].onclick=()=>replyMessage(m);
+    acts.children[1].onclick=()=>copyText(m.message||"");
+    if(m.username===nickname){
+      acts.children[2].onclick=()=>editMessage(m);
+      acts.children[3].onclick=()=>deleteMessage(m);
+    }
+
+    row.append(avatar,main,acts);
+    row.addEventListener("contextmenu",e=>{
+      e.preventDefault();
+      showContext(e.clientX,e.clientY,m);
+    });
+
+    const userEl=main.querySelector(".msg-user");
+    if(userEl)userEl.onclick=()=>openFullProfile(m.username||"游客");
+
+    box.appendChild(row);
+    prev=m.username;
   });
-  box.scrollTop=box.scrollHeight;
+
+  if(nearBottom || data.some(m=>m.syncState==="pending")){
+    requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
+  }
 }
+
 async function sendMessage(){
-  localStorage.setItem("sl_sent_count",String(parseInt(localStorage.getItem("sl_sent_count")||"0")+1));
-  const input=$("messageInput"),text=input.value.trim();
+  const input=$("messageInput");
+  const text=input.value.trim();
   if(!text&&!attachment)return;
+
+  localStorage.setItem(
+    "sl_sent_count",
+    String(parseInt(localStorage.getItem("sl_sent_count")||"0")+1)
+  );
 
   const now=new Date().toISOString();
   const local={
-    id:"local-"+Date.now(),
+    id:"local-"+Date.now()+"-"+Math.random().toString(36).slice(2,7),
     username:nickname||"游客",
     message:text,
     created_at:now,
     channel,
-    reply_to:replying?{username:replying.username,message:replying.message}:null
+    reply_to:replying?{username:replying.username,message:replying.message}:null,
+    syncState:sb&&!dmMode?"pending":"local"
   };
 
   if(attachment){
@@ -3650,62 +3997,118 @@ async function sendMessage(){
     }
   }
 
+  // 立即显示，解决移动端网络稍慢时“点了没反应”的问题。
+  messages.push(local);
+  localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+  input.value="";
+  $("count").textContent="0 / 1000";
+  clearAttachment();
+  cancelReply();
+  renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+
+  if(!sb || dmMode){
+    local.syncState="local";
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    addNotification("消息已保存到本机");
+    return;
+  }
+
   try{
-    if(sb && !dmMode){
-      // 新表结构优先：带 channel。
-      let result=await sb.from("messages").insert([{
-        username:local.username,
-        message:local.message,
-        channel:channel
-      }]);
+    let payload={
+      username:local.username,
+      message:local.message,
+      channel:channel
+    };
 
-      // 如果旧表没有 channel，退回旧结构。
-      if(result.error && /channel/i.test(result.error.message||"")){
-        result=await sb.from("messages").insert([{
-          username:local.username,
-          message:local.message
-        }]);
-      }
+    let result=await sb.from("messages").insert([payload]).select("id,username,message,created_at,channel").single();
 
-      if(result.error)throw result.error;
-
-      input.value="";
-      $("count").textContent="0 / 1000";
-      clearAttachment();
-      cancelReply();
-      await loadMessages();
-      addNotification("消息已发送");
-      setCloudStatus("云端已连接","#35a85a");
-      return;
+    // 兼容旧 messages 表没有 channel 的情况。
+    if(result.error && /channel/i.test(result.error.message||"")){
+      result=await sb.from("messages")
+        .insert([{username:local.username,message:local.message}])
+        .select("id,username,message,created_at")
+        .single();
     }
 
-    // 私信/离线：保存本机。
-    messages.push(local);
+    if(result.error)throw result.error;
+
+    // 用服务器消息替换临时消息，避免重复。
+    const idx=messages.findIndex(x=>x.id===local.id);
+    if(idx>=0){
+      messages[idx]={...(result.data||{
+        id:local.id,
+        username:local.username,
+        message:local.message,
+        created_at:now,
+        channel
+      }),syncState:"synced"};
+    }
+
     localStorage.setItem("sl_local_messages",JSON.stringify(messages));
-    input.value="";
-    $("count").textContent="0 / 1000";
-    clearAttachment();
-    cancelReply();
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
-    addNotification("消息已保存到本机");
+    setCloudStatus("云端已连接","#35a85a");
+    addNotification("消息已发送");
   }catch(e){
     console.warn("发送失败:",e);
-    setCloudStatus("连接异常","#d9534f");
-    messages.push(local);
+    local.syncState="failed";
+    local.syncError=e?.message||"发送失败";
     localStorage.setItem("sl_local_messages",JSON.stringify(messages));
-    input.value="";
-    $("count").textContent="0 / 1000";
-    clearAttachment();
-    cancelReply();
+    setCloudStatus("发送失败","#d9534f");
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
-    toast("云端发送失败，已保存到本机");
+    toast("云端发送失败，可点“重新发送”");
   }
-}$("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
-$("messageInput").addEventListener("input",e=>{$("count").textContent=e.target.value.length+" / 1000"});
-$("search").addEventListener("input",e=>{
- const q=e.target.value.toLowerCase().trim();
- document.querySelectorAll(".message").forEach(x=>x.style.display=!q||x.textContent.toLowerCase().includes(q)?"flex":"none")
+}
+
+async function retryMessage(m){
+  if(!m || !sb || dmMode)return;
+  m.syncState="pending";
+  renderMessages(messages.filter(x=>!x.channel||x.channel===channel));
+
+  try{
+    let result=await sb.from("messages")
+      .insert([{username:m.username,message:m.message,channel:m.channel||channel}])
+      .select("id,username,message,created_at,channel")
+      .single();
+
+    if(result.error && /channel/i.test(result.error.message||"")){
+      result=await sb.from("messages")
+        .insert([{username:m.username,message:m.message}])
+        .select("id,username,message,created_at")
+        .single();
+    }
+    if(result.error)throw result.error;
+
+    messages=messages.filter(x=>x.id!==m.id);
+    messages.push({...result.data,syncState:"synced"});
+    messages.sort((a,b)=>new Date(a.created_at||0)-new Date(b.created_at||0));
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    renderMessages(messages.filter(x=>!x.channel||x.channel===channel));
+    toast("消息已重新发送");
+  }catch(e){
+    m.syncState="failed";
+    m.syncError=e?.message||"发送失败";
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    renderMessages(messages.filter(x=>!x.channel||x.channel===channel));
+    toast("重新发送失败");
+  }
+}
+
+$("messageInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
 });
+$("messageInput").addEventListener("input",e=>{
+  $("count").textContent=e.target.value.length+" / 1000";
+});
+$("search").addEventListener("input",e=>{
+  const q=e.target.value.toLowerCase().trim();
+  document.querySelectorAll(".message").forEach(x=>{
+    x.style.display=!q||x.textContent.toLowerCase().includes(q)?"flex":"none";
+  });
+});
+
 function replyMessage(m){replying=m;$("replyName").textContent=m.username;$("replyText").textContent=" · "+(m.message||"").slice(0,45);$("replying").classList.add("show");$("messageInput").focus()}
 function cancelReply(){$("replying").classList.remove("show");replying=null}
 function copyText(t){navigator.clipboard?.writeText(t);toast("已复制")}
@@ -4151,7 +4554,7 @@ if(localStorage.getItem("sl_dark")==="1"){
 /* ===== 第一阶段语音：WebRTC + Supabase Realtime ===== */
 let voiceRoom=null, voiceStream=null, voiceJoined=false, voiceMuted=false;
 let voiceStatsTimer=null;
-
+let voiceReconnectTimer=null;
 let voiceAudioContext=null, voiceAnalyser=null, voiceAudioData=null, voiceLevelTimer=null;
 const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()).toString().slice(0,36);
 const voicePeers={};
@@ -4164,6 +4567,7 @@ function openVoice(){
   $("voiceModal").classList.add("show");
   $("voiceRoomTitle").textContent="# "+($("chatName").textContent||"总聊天室");
   $("voiceState").textContent=voiceJoined?"已加入语音":"未加入语音";
+  updateVoiceNetworkStatus();
 }
 async function closeVoice(){
   if(voiceJoined)await leaveVoice();
@@ -4171,7 +4575,7 @@ async function closeVoice(){
 }
 function voiceState(t,err=false){
   $("voiceState").textContent=t;
-  $("voiceState").style.color=err?"#d9534f":"";
+  $("voiceState").style.color=err?"#ff7d72":"";
 }
 function renderVoiceList(){
   const box=$("voiceList");
@@ -4182,34 +4586,50 @@ function renderVoiceList(){
   const state=voiceRoom.presenceState();
   const users=[];
   Object.values(state||{}).forEach(arr=>(arr||[]).forEach(u=>users.push(u)));
+
   if(!users.length){
     box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';
     return;
   }
-  box.innerHTML=users.map(u=>`<div class="voice-person" id="voice-person-${esc(u.peerId)}">
-    <div class="voice-person-avatar">${esc((u.name||"游")[0])}</div>
-    <div style="min-width:0;flex:1">
-      <b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
-      <div class="voice-connection">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div>
-      <div class="voice-level"><i id="voice-level-${esc(u.peerId)}"></i></div>
-    </div>
-  </div>`).join("");
-}async function voiceBroadcast(event,payload){
-  if(!voiceRoom)return;
-  try{await voiceRoom.send({type:"broadcast",event,payload})}catch(e){console.warn("voice",e)}
+
+  box.innerHTML=users.map(u=>`
+    <div class="voice-person ${voicePeers[u.peerId]?'':'reconnecting'}" id="voice-person-${esc(u.peerId)}">
+      <div class="voice-person-avatar">${esc((u.name||"游")[0])}</div>
+      <div style="min-width:0;flex:1">
+        <b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
+        <div class="voice-connection">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div>
+        <div class="voice-level"><i id="voice-level-${esc(u.peerId)}"></i></div>
+      </div>
+    </div>`).join("");
 }
+async function voiceBroadcast(event,payload){
+  if(!voiceRoom)return;
+  try{
+    await voiceRoom.send({type:"broadcast",event,payload});
+  }catch(e){
+    console.warn("voice broadcast",e);
+  }
+}
+
 function makePeer(id,name){
   if(voicePeers[id])return voicePeers[id];
 
   const pc=new RTCPeerConnection({
     iceServers:[
       {urls:"stun:stun.l.google.com:19302"},
-      {urls:"stun:stun1.l.google.com:19302"}
-    ]
+      {urls:"stun:stun1.l.google.com:19302"},
+      {urls:"stun:stun.cloudflare.com:3478"}
+    ],
+    iceCandidatePoolSize:10
   });
 
   voicePendingIce[id]=voicePendingIce[id]||[];
-  voicePeers[id]={pc,name,audio:null,remoteDescriptionSet:false};
+  voicePeers[id]={
+    pc,name,audio:null,
+    remoteDescriptionSet:false,
+    connectedAt:0,
+    reconnecting:false
+  };
 
   if(voiceStream){
     voiceStream.getTracks().forEach(t=>pc.addTrack(t,voiceStream));
@@ -4226,54 +4646,92 @@ function makePeer(id,name){
   };
 
   pc.ontrack=e=>{
-    let a=voicePeers[id].audio;
+    const p=voicePeers[id];
+    if(!p)return;
+
+    let a=p.audio;
     if(!a){
       a=document.createElement("audio");
       a.autoplay=true;
       a.playsInline=true;
-      a.muted=true;
       a.setAttribute("playsinline","");
-      a.style.display="none";
+      a.style.position="fixed";
+      a.style.width="1px";
+      a.style.height="1px";
+      a.style.opacity="0.001";
+      a.style.pointerEvents="none";
+      a.volume=1;
       document.body.appendChild(a);
-      voicePeers[id].audio=a;
+      p.audio=a;
     }
+
     if(e.streams?.[0]){
       const remoteStream=e.streams[0];
       a.srcObject=remoteStream;
-      // iOS Safari 经常会阻止异步到达的 WebRTC <audio>.play()。
-      // 语音加入按钮本身属于用户手势，因此提前恢复 AudioContext，
-      // 再把远端 MediaStream 接到 destination，避免依赖 autoplay。
+
+      // iOS：优先让原生 audio 播放；同时保留 AudioContext 分析。
+      a.muted=false;
+      const playPromise=a.play();
+      if(playPromise?.catch)playPromise.catch(()=>{
+        toast("语音已连接，请再次点一下“语音”按钮以启用声音");
+      });
+
       try{
         const ctx=getVoiceAudioContext();
         if(ctx.state==="suspended")ctx.resume().catch(()=>{});
-        if(!voicePeers[id].remoteSource){
-          voicePeers[id].remoteSource=ctx.createMediaStreamSource(remoteStream);
-          voicePeers[id].remoteSource.connect(ctx.destination);
+        if(!p.remoteSource){
+          p.remoteSource=ctx.createMediaStreamSource(remoteStream);
+          p.remoteSource.connect(ctx.destination);
         }
       }catch(err){
         console.warn("remote audio context",err);
       }
+
       startRemoteLevelMonitor(id,remoteStream);
     }
-    a.play().catch(()=>{});
   };
 
   pc.onconnectionstatechange=()=>{
-    updateVoiceNetworkStatus();
-    if(pc.connectionState==="connected"){
-      setVoiceNetwork("WebRTC 直连 ✓","ok");
+    const p=voicePeers[id];
+    const state=pc.connectionState;
+
+    if(state==="connected"){
+      if(p)p.connectedAt=Date.now();
+      if(p)p.reconnecting=false;
+      setVoiceNetwork("WebRTC 已连接 ✓","ok");
+      renderVoiceList();
+    }else if(state==="failed"){
+      if(p)p.reconnecting=true;
+      renderVoiceList();
+      // ICE restart：先尝试重新协商，再彻底移除。
+      restartPeerConnection(id).catch(()=>removePeer(id));
+    }else if(state==="disconnected"){
+      if(p)p.reconnecting=true;
+      renderVoiceList();
+      setVoiceNetwork("连接暂时中断，正在恢复…","warn");
+      setTimeout(()=>{
+        if(voicePeers[id]?.pc.connectionState==="disconnected"){
+          restartPeerConnection(id).catch(()=>removePeer(id));
+        }
+      },1500);
     }
-    if(["failed","closed"].includes(pc.connectionState))removePeer(id);
+    updateVoiceNetworkStatus();
   };
 
   pc.oniceconnectionstatechange=()=>{
+    if(pc.iceConnectionState==="failed"){
+      restartPeerConnection(id).catch(()=>{});
+    }
     updateVoiceNetworkStatus();
   };
 
   return voicePeers[id];
-}function removePeer(id){
-  const p=voicePeers[id];if(!p)return;
-  try{p.pc.close()}catch(_){}
+}
+
+function removePeer(id){
+  const p=voicePeers[id];
+  if(!p)return;
+  try{p.pc.ontrack=null;p.pc.onicecandidate=null;p.pc.close()}catch(_){}
   if(p.audio)p.audio.remove();
   if(p.levelTimer)cancelAnimationFrame(p.levelTimer);
   try{p.source?.disconnect()}catch(_){}
@@ -4281,14 +4739,40 @@ function makePeer(id,name){
   try{p.remoteSource?.disconnect()}catch(_){}
   delete voicePeers[id];
   delete voicePendingIce[id];
+  renderVoiceList();
 }
-async function sendOffer(id,name){
+
+async function sendOffer(id,name,iceRestart=false){
   const p=makePeer(id,name);
-  if(p.pc.signalingState!=="stable")return;
-  const offer=await p.pc.createOffer({offerToReceiveAudio:true});
+  if(p.pc.signalingState!=="stable" && !iceRestart)return;
+
+  const offer=await p.pc.createOffer(
+    iceRestart ? {iceRestart:true,offerToReceiveAudio:true} :
+    {offerToReceiveAudio:true}
+  );
   await p.pc.setLocalDescription(offer);
-  await voiceBroadcast("offer",{from:voiceId,to:id,name:nickname||"游客",description:offer});
+  await voiceBroadcast("offer",{
+    from:voiceId,
+    to:id,
+    name:nickname||"游客",
+    description:offer,
+    iceRestart:!!iceRestart
+  });
 }
+
+async function restartPeerConnection(id){
+  const p=voicePeers[id];
+  if(!p || !voiceJoined)return;
+  try{
+    await sendOffer(id,p.name||"用户",true);
+    p.reconnecting=false;
+    renderVoiceList();
+  }catch(e){
+    console.warn("voice restart",e);
+    removePeer(id);
+  }
+}
+
 async function handleVoice(event,p){
   if(!p||p.to!==voiceId||p.from===voiceId)return;
 
@@ -4296,10 +4780,19 @@ async function handleVoice(event,p){
     if(event==="offer"){
       const peer=makePeer(p.from,p.name||"用户");
 
+      // 处理 simultaneous offer：只有一方负责 rollback，避免 iOS/Chrome 卡在 have-local-offer。
+      if(peer.pc.signalingState==="have-local-offer"){
+        if(voiceId<p.from){
+          return;
+        }
+        try{
+          await peer.pc.setLocalDescription({type:"rollback"});
+        }catch(_){}
+      }
+
       await peer.pc.setRemoteDescription(p.description);
       peer.remoteDescriptionSet=true;
 
-      // 处理在 remoteDescription 设置前抵达的 ICE。
       const queued=voicePendingIce[p.from]||[];
       for(const candidate of queued){
         try{await peer.pc.addIceCandidate(candidate)}catch(_){}
@@ -4319,6 +4812,8 @@ async function handleVoice(event,p){
     }else if(event==="answer"){
       const peer=voicePeers[p.from];
       if(!peer)return;
+
+      if(peer.pc.signalingState!=="have-local-offer")return;
 
       await peer.pc.setRemoteDescription(p.description);
       peer.remoteDescriptionSet=true;
@@ -4348,30 +4843,58 @@ async function handleVoice(event,p){
     }
   }catch(e){
     console.warn("voice signal",e);
-    voiceState("语音连接建立失败",true);
+    voiceState("语音连接建立失败："+(e.message||""),true);
   }
-}async function joinVoice(){
+}
+
+async function joinVoice(){
   if(voiceJoined)return;
-  if(!sb){voiceState("云端未连接，暂时不能加入",true);return}
+  if(!sb){
+    voiceState("云端未连接，暂时不能加入",true);
+    toast("请先连接云端");
+    return;
+  }
+
   try{
-    if(!navigator.mediaDevices?.getUserMedia)throw new Error("浏览器不支持麦克风");
+    if(!window.isSecureContext){
+      throw new Error("语音需要 HTTPS 安全连接");
+    }
+    if(!navigator.mediaDevices?.getUserMedia){
+      throw new Error("浏览器不支持麦克风");
+    }
+
     voiceState("正在请求麦克风…");
     voiceStream=await navigator.mediaDevices.getUserMedia({
-      audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
+      audio:{
+        echoCancellation:true,
+        noiseSuppression:true,
+        autoGainControl:true,
+        channelCount:1
+      },
       video:false
     });
-    try{await getVoiceAudioContext()}catch(_){}
+
+    await getVoiceAudioContext();
+
     voiceRoom=sb.channel(voiceTopic(),{
-      config:{broadcast:{self:false,ack:true},presence:{key:voiceId}}
+      config:{
+        broadcast:{self:false,ack:true},
+        presence:{key:voiceId}
+      }
     });
+
     voiceRoom
       .on("broadcast",{event:"hello"},({payload})=>{
-        if(payload?.from&&voiceId<payload.from)sendOffer(payload.from,payload.name).catch(()=>{});
+        if(payload?.from&&voiceId<payload.from){
+          sendOffer(payload.from,payload.name).catch(e=>console.warn("hello offer",e));
+        }
       })
       .on("broadcast",{event:"offer"},({payload})=>handleVoice("offer",payload))
       .on("broadcast",{event:"answer"},({payload})=>handleVoice("answer",payload))
       .on("broadcast",{event:"ice"},({payload})=>handleVoice("ice",payload))
-      .on("broadcast",{event:"leave"},({payload})=>{if(payload?.from)removePeer(payload.from)})
+      .on("broadcast",{event:"leave"},({payload})=>{
+        if(payload?.from)removePeer(payload.from);
+      })
       .on("presence",{event:"sync"},()=>{
         renderVoiceList();
         updateVoiceNetworkStatus();
@@ -4380,8 +4903,8 @@ async function handleVoice(event,p){
         renderVoiceList();
         updateVoiceNetworkStatus();
         (newPresences||[]).forEach(u=>{
-          if(u?.peerId && u.peerId!==voiceId && voiceId<u.peerId){
-            sendOffer(u.peerId,u.name||"用户").catch(e=>console.warn("presence offer",e));
+          if(u?.peerId&&u.peerId!==voiceId&&voiceId<u.peerId){
+            sendOffer(u.peerId,u.name||"用户").catch(()=>{});
           }
         });
       })
@@ -4390,13 +4913,20 @@ async function handleVoice(event,p){
         renderVoiceList();
         updateVoiceNetworkStatus();
       });
+
     await new Promise((resolve,reject)=>{
-      const timer=setTimeout(()=>reject(new Error("语音连接超时")),10000);
+      const timer=setTimeout(()=>reject(new Error("Realtime 连接超时")),12000);
       voiceRoom.subscribe(async s=>{
-        if(s==="SUBSCRIBED"){clearTimeout(timer);resolve()}
-        else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){clearTimeout(timer);reject(new Error("Realtime 连接失败"))}
+        if(s==="SUBSCRIBED"){
+          clearTimeout(timer);
+          resolve();
+        }else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
+          clearTimeout(timer);
+          reject(new Error("Realtime 连接失败"));
+        }
       });
     });
+
     voiceJoined=true;
     $("voiceJoin").textContent="📞 离开语音";
     $("voiceMute").disabled=false;
@@ -4407,61 +4937,96 @@ async function handleVoice(event,p){
       muted:false,
       online_at:new Date().toISOString()
     });
+
     renderVoiceList();
     startVoiceLevelMonitor();
     startVoiceNetworkMonitor();
     updateVoiceNetworkStatus();
+
     await voiceBroadcast("hello",{from:voiceId,name:nickname||"游客"});
 
-    // 保险：如果对方已在房间，但 join 事件发生在本机监听器建立前，
-    // 通过当前 Presence 状态再次发起一次 offer。
     const current=voiceRoom.presenceState();
     Object.values(current||{}).flat().forEach(u=>{
-      if(u?.peerId && u.peerId!==voiceId && voiceId<u.peerId){
+      if(u?.peerId&&u.peerId!==voiceId&&voiceId<u.peerId){
         sendOffer(u.peerId,u.name||"用户").catch(()=>{});
       }
     });
+
+    toast("已加入语音");
   }catch(e){
     console.warn("join voice",e);
     voiceState("加入失败："+(e.message||"未知错误"),true);
     const em=e?.message||"未知错误";
-    if(/NotAllowedError|Permission denied/i.test(em)) toast("麦克风权限被拒绝，请在 iPhone 设置中允许此网站使用麦克风");
-    else toast("语音加入失败，请检查麦克风权限和网络");
-    if(voiceRoom){try{await sb.removeChannel(voiceRoom)}catch(_){}}
+    if(/NotAllowedError|Permission denied/i.test(em)){
+      toast("麦克风权限被拒绝，请允许此网站使用麦克风");
+    }else{
+      toast("语音加入失败："+em);
+    }
+    if(voiceRoom){
+      try{await sb.removeChannel(voiceRoom)}catch(_){}
+    }
     voiceRoom=null;
-    if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
+    if(voiceStream){
+      voiceStream.getTracks().forEach(t=>t.stop());
+      voiceStream=null;
+    }
   }
 }
+
 async function leaveVoice(){
+  if(voiceReconnectTimer)clearTimeout(voiceReconnectTimer);
+  voiceReconnectTimer=null;
+
   if(voiceRoom)await voiceBroadcast("leave",{from:voiceId});
   Object.keys(voicePeers).forEach(removePeer);
+
   if(voiceRoom){
     try{await voiceRoom.untrack()}catch(_){}
     try{await sb.removeChannel(voiceRoom)}catch(_){}
   }
-  voiceRoom=null;voiceJoined=false;voiceMuted=false;
+
+  voiceRoom=null;
+  voiceJoined=false;
+  voiceMuted=false;
+
   stopVoiceNetworkMonitor();
-  if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
+
+  if(voiceStream){
+    voiceStream.getTracks().forEach(t=>t.stop());
+    voiceStream=null;
+  }
+
   stopVoiceLevelMonitor();
+
   $("voiceJoin").textContent="🎙️ 加入语音";
   $("voiceMute").disabled=true;
   $("voiceMute").textContent="🎤 静音";
   voiceState("已离开语音");
   renderVoiceList();
 }
+
 async function toggleVoice(){
-  localStorage.setItem("sl_voice_joined","1");if(voiceJoined)await leaveVoice();else await joinVoice()}
+  if(voiceJoined)await leaveVoice();
+  else await joinVoice();
+}
+
 async function toggleVoiceMute(){
   if(!voiceStream||!voiceJoined)return;
   voiceMuted=!voiceMuted;
   voiceStream.getAudioTracks().forEach(t=>t.enabled=!voiceMuted);
   $("voiceMute").textContent=voiceMuted?"🔇 取消静音":"🎤 静音";
+
   if(voiceRoom){
-    try{await voiceRoom.track({peerId:voiceId,name:nickname||"游客",muted:voiceMuted})}catch(_){}
+    try{
+      await voiceRoom.track({
+        peerId:voiceId,
+        name:nickname||"游客",
+        muted:voiceMuted
+      });
+    }catch(_){}
     renderVoiceList();
   }
 }
-
 
 function getVoiceAudioContext(){
   if(!voiceAudioContext){
@@ -4469,7 +5034,9 @@ function getVoiceAudioContext(){
     if(!Ctx)throw new Error("AudioContext 不支持");
     voiceAudioContext=new Ctx();
   }
-  if(voiceAudioContext.state==="suspended")voiceAudioContext.resume().catch(()=>{});
+  if(voiceAudioContext.state==="suspended"){
+    voiceAudioContext.resume().catch(()=>{});
+  }
   return voiceAudioContext;
 }
 
@@ -4496,9 +5063,7 @@ function stopVoiceLevelMonitor(){
 }
 
 function startVoiceLevelMonitor(){
-  stopVoiceLevelMonitor();
-  if(!voiceStream || !voiceJoined)return;
-
+  if(!voiceStream||!voiceJoined)return;
   try{
     const ctx=getVoiceAudioContext();
     const source=ctx.createMediaStreamSource(voiceStream);
@@ -4508,7 +5073,7 @@ function startVoiceLevelMonitor(){
     source.connect(voiceAnalyser);
 
     const tick=()=>{
-      if(!voiceAnalyser || !voiceJoined)return;
+      if(!voiceAnalyser||!voiceJoined)return;
       const level=calcVoiceLevel(voiceAnalyser,voiceAudioData);
       const me=$("voice-level-"+voiceId);
       const person=$("voice-person-"+voiceId);
@@ -4535,7 +5100,7 @@ function startRemoteLevelMonitor(id,stream){
     p.source.connect(p.analyser);
 
     const tick=()=>{
-      if(!voiceJoined || !voicePeers[id] || !p.analyser)return;
+      if(!voiceJoined||!voicePeers[id]||!p.analyser)return;
       const level=calcVoiceLevel(p.analyser,p.levelData);
       const el=$("voice-level-"+id);
       const person=$("voice-person-"+id);
@@ -4549,7 +5114,6 @@ function startRemoteLevelMonitor(id,stream){
     console.warn("remote voice level",e);
   }
 }
-
 
 function setVoiceNetwork(text,kind){
   const el=$("voiceNetwork");
@@ -4566,53 +5130,31 @@ async function updateVoiceNetworkStatus(){
     setVoiceNetwork("未检测","warn");
     return;
   }
+
   const peers=Object.values(voicePeers);
   const presenceUsers=voiceRoom?Object.values(voiceRoom.presenceState()||{}).flat():[];
   const otherUsers=presenceUsers.filter(u=>u?.peerId&&u.peerId!==voiceId);
+
   if(!peers.length){
-    if(otherUsers.length){
-      setVoiceNetwork("发现其他成员，正在建立连接…","warn");
-    }else{
-      setVoiceNetwork("已加入，等待其他成员","warn");
-    }
+    setVoiceNetwork(
+      otherUsers.length?"发现成员，正在建立连接…":"已加入，等待其他成员",
+      "warn"
+    );
     return;
   }
 
-  let connected=0,relay=0,checking=0,failed=0;
+  let connected=0,checking=0,failed=0;
   for(const p of peers){
     const s=p.pc.connectionState;
     if(s==="connected")connected++;
     else if(s==="checking"||s==="new")checking++;
     else if(s==="failed"||s==="disconnected")failed++;
-
-    try{
-      const stats=await p.pc.getStats();
-      stats.forEach(r=>{
-        if(r.type==="candidate-pair" && r.state==="succeeded"){
-          if(r.localCandidateId){
-            const local=stats.get(r.localCandidateId);
-            if(local?.candidateType==="relay")relay++;
-          }
-          if(r.remoteCandidateId){
-            const remote=stats.get(r.remoteCandidateId);
-            if(remote?.candidateType==="relay")relay++;
-          }
-        }
-      });
-    }catch(_){}
   }
 
-  if(failed>0){
-    setVoiceNetwork("连接异常，可能需要 TURN","err");
-  }else if(relay>0){
-    setVoiceNetwork("TURN 中继连接 ✓","ok");
-  }else if(connected>0){
-    setVoiceNetwork("WebRTC 直连 ✓","ok");
-  }else if(checking>0){
-    setVoiceNetwork("正在建立连接…","warn");
-  }else{
-    setVoiceNetwork("等待连接…","warn");
-  }
+  if(failed>0)setVoiceNetwork("连接异常，正在恢复…","err");
+  else if(connected>0)setVoiceNetwork(`已连接 ${connected} 人 ✓`,"ok");
+  else if(checking>0)setVoiceNetwork("正在建立连接…","warn");
+  else setVoiceNetwork("等待连接…","warn");
 }
 
 function startVoiceNetworkMonitor(){
@@ -4625,7 +5167,6 @@ function stopVoiceNetworkMonitor(){
   voiceStatsTimer=null;
   setVoiceNetwork("未检测","warn");
 }
-
 
 /* ===== 奖励仓库 ===== */
 const rewardInventoryKey="sl_reward_inventory_v1";
@@ -6209,6 +6750,35 @@ with check (auth.uid() = user_id);
   else bind();
 })();
 </script>
+
+
+<script id="security-lab-v9-voice-sheet-js">
+(function(){
+  const voiceModal=document.getElementById("voiceModal");
+  if(!voiceModal)return;
+
+  const observer=new MutationObserver(()=>{
+    if(voiceModal.classList.contains("show")){
+      document.documentElement.classList.add("voice-sheet-open");
+      document.body.classList.add("voice-sheet-open");
+    }else{
+      document.documentElement.classList.remove("voice-sheet-open");
+      document.body.classList.remove("voice-sheet-open");
+    }
+  });
+  observer.observe(voiceModal,{attributes:true,attributeFilter:["class"]});
+})();
+</script>
+<style>
+html.voice-sheet-open,body.voice-sheet-open{
+  overscroll-behavior:none;
+}
+@media(max-width:800px){
+  body.voice-sheet-open{
+    overflow:hidden !important;
+  }
+}
+</style>
 
 </body>
 </html>
