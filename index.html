@@ -3294,6 +3294,164 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v12-voice-final">
+@media(max-width:800px){
+  #voiceModal .voice-card{
+    max-height:82dvh!important;
+  }
+  #voiceModal .voice-room{
+    position:relative;
+    overflow:hidden;
+  }
+  #voiceModal .voice-room:after{
+    content:"";
+    position:absolute;
+    width:180px;height:180px;
+    right:-100px;top:-110px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(91,140,255,.18),transparent 68%);
+    pointer-events:none;
+  }
+  #voiceModal .voice-person{
+    position:relative;
+    transition:transform .18s ease,background .18s ease,box-shadow .18s ease,border-color .18s ease;
+  }
+  #voiceModal .voice-person.connected{
+    border-color:rgba(73,213,139,.13)!important;
+  }
+  #voiceModal .voice-person.connecting{
+    border-color:rgba(214,165,72,.16)!important;
+  }
+  #voiceModal .voice-person.reconnecting{
+    border-color:rgba(255,107,97,.13)!important;
+  }
+  #voiceModal .voice-person.speaking{
+    transform:translateY(-1px);
+    background:linear-gradient(135deg,rgba(23,55,52,.78),rgba(14,31,45,.82))!important;
+    border-color:rgba(53,199,89,.36)!important;
+    box-shadow:0 0 0 1px rgba(53,199,89,.08),0 10px 32px rgba(53,199,89,.10),inset 0 1px 0 rgba(255,255,255,.04)!important;
+  }
+  #voiceModal .voice-person-avatar{
+    position:relative;
+  }
+  #voiceModal .voice-live-dot{
+    position:absolute;
+    right:-2px;bottom:-2px;
+    width:11px;height:11px;
+    border-radius:50%;
+    background:#596b82;
+    border:2px solid #102035;
+    box-sizing:border-box;
+  }
+  #voiceModal .voice-person.connected .voice-live-dot{
+    background:#35c759;
+    box-shadow:0 0 0 0 rgba(53,199,89,.55);
+  }
+  #voiceModal .voice-person.speaking .voice-live-dot{
+    animation:v12LiveDot 1s ease-out infinite;
+  }
+  .voice-person-name{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0;
+  }
+  .voice-person-name b{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .voice-state-pill{
+    flex:0 0 auto;
+    padding:3px 6px;
+    border-radius:999px;
+    font-size:8px;
+    font-weight:700;
+    color:#7f93aa;
+    background:rgba(123,145,170,.08);
+    border:1px solid rgba(123,145,170,.10);
+  }
+  .voice-person.connected .voice-state-pill{
+    color:#65d987;
+    background:rgba(53,199,89,.08);
+    border-color:rgba(53,199,89,.14);
+  }
+  .voice-person.reconnecting .voice-state-pill{
+    color:#e1a765;
+  }
+  .voice-level-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:6px;
+  }
+  #voiceModal .voice-person .voice-level{
+    flex:1;
+    max-width:72px;
+    width:auto!important;
+    height:4px!important;
+    margin:0!important;
+    background:rgba(215,229,245,.12)!important;
+  }
+  #voiceModal .voice-person .voice-level i{
+    background:linear-gradient(90deg,#8da4ff,#65e8a1)!important;
+    border-radius:99px;
+  }
+  .voice-wave{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    height:10px;
+    opacity:.25;
+  }
+  .voice-wave i{
+    width:2px;height:4px;
+    border-radius:2px;
+    background:#8fa7c3;
+  }
+  .voice-person.speaking .voice-wave{
+    opacity:1;
+  }
+  .voice-person.speaking .voice-wave i{
+    background:#6ee394;
+    animation:v12Wave .65s ease-in-out infinite alternate;
+  }
+  .voice-person.speaking .voice-wave i:nth-child(2){animation-delay:.12s}
+  .voice-person.speaking .voice-wave i:nth-child(3){animation-delay:.24s}
+  .voice-person.speaking .voice-wave i:nth-child(4){animation-delay:.08s}
+  .voice-person.speaking .voice-wave i:nth-child(5){animation-delay:.2s}
+  #voiceModal .voice-actions button{
+    -webkit-tap-highlight-color:transparent;
+  }
+  #voiceModal .voice-actions .voice-join{
+    position:relative;
+    overflow:hidden;
+  }
+  #voiceModal .voice-actions .voice-join:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    transform:translateX(-120%);
+    background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.18) 50%,transparent 75%);
+    animation:v12Shine 3.8s ease-in-out infinite;
+  }
+}
+@keyframes v12LiveDot{
+  0%{box-shadow:0 0 0 0 rgba(53,199,89,.55)}
+  70%{box-shadow:0 0 0 7px rgba(53,199,89,0)}
+  100%{box-shadow:0 0 0 0 rgba(53,199,89,0)}
+}
+@keyframes v12Wave{
+  from{height:3px}
+  to{height:10px}
+}
+@keyframes v12Shine{
+  0%,65%,100%{transform:translateX(-120%)}
+  82%{transform:translateX(120%)}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -4722,16 +4880,36 @@ function renderVoiceList(){
     return;
   }
 
-  box.innerHTML=users.map(u=>`
-    <div class="voice-person ${voicePeers[u.peerId]?'':'reconnecting'}" id="voice-person-${esc(u.peerId)}">
-      <div class="voice-person-avatar">${esc((u.name||"游")[0])}</div>
-      <div style="min-width:0;flex:1">
-        <b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
-        <div class="voice-connection">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div>
-        <div class="voice-level"><i id="voice-level-${esc(u.peerId)}"></i></div>
-      </div>
-    </div>`).join("");
+  box.innerHTML=users.map(u=>{
+    const peer=u.peerId===voiceId?null:voicePeers[u.peerId];
+    const connected=u.peerId===voiceId || peer?.pc?.connectionState==="connected";
+    const connecting=!!peer && !connected && ["new","checking","connecting"].includes(peer.pc.connectionState);
+    const failed=!!peer && ["failed","disconnected"].includes(peer.pc.connectionState);
+    const cls=connected?"connected":(failed?"reconnecting":(connecting?"connecting":"reconnecting"));
+    const status=connected?"已连接":(failed?"连接恢复中":(connecting?"连接中":"等待连接"));
+    return `
+      <div class="voice-person ${cls}" id="voice-person-${esc(u.peerId)}">
+        <div class="voice-person-avatar">
+          ${esc((u.name||"游")[0])}
+          <i class="voice-live-dot"></i>
+        </div>
+        <div style="min-width:0;flex:1">
+          <div class="voice-person-name">
+            <b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
+            <span class="voice-state-pill">${status}</span>
+          </div>
+          <div class="voice-connection">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div>
+          <div class="voice-level-wrap">
+            <div class="voice-level"><i id="voice-level-${esc(u.peerId)}"></i></div>
+            <div class="voice-wave" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
 }
+
 async function voiceBroadcast(event,payload){
   if(!voiceRoom){
     setDiag("broadcast","无语音频道","err");
@@ -5263,11 +5441,12 @@ function startVoiceLevelMonitor(){
 
     const tick=()=>{
       if(!voiceAnalyser||!voiceJoined)return;
-      const level=calcVoiceLevel(voiceAnalyser,voiceAudioData);
+      const raw=calcVoiceLevel(voiceAnalyser,voiceAudioData);
+      const level=Math.max(0,Math.min(100,Math.round(raw*.82)));
       const me=$("voice-level-"+voiceId);
       const person=$("voice-person-"+voiceId);
       if(me)me.style.width=level+"%";
-      if(person)person.classList.toggle("speaking",level>8);
+      if(person)person.classList.toggle("speaking",!voiceMuted && level>7);
       voiceLevelTimer=requestAnimationFrame(tick);
     };
     tick();
@@ -5290,11 +5469,12 @@ function startRemoteLevelMonitor(id,stream){
 
     const tick=()=>{
       if(!voiceJoined||!voicePeers[id]||!p.analyser)return;
-      const level=calcVoiceLevel(p.analyser,p.levelData);
+      const raw=calcVoiceLevel(p.analyser,p.levelData);
+      const level=Math.max(0,Math.min(100,Math.round(raw*.82)));
       const el=$("voice-level-"+id);
       const person=$("voice-person-"+id);
       if(el)el.style.width=level+"%";
-      if(person)person.classList.toggle("speaking",level>8);
+      if(person)person.classList.toggle("speaking",level>7);
       p.levelTimer=requestAnimationFrame(tick);
     };
     if(p.levelTimer)cancelAnimationFrame(p.levelTimer);
