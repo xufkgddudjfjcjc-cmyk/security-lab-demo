@@ -3184,12 +3184,31 @@ function lotteryDateKey(){
   const d=new Date();
   return `sl_lottery_${lotteryUserKey()}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
-function updateLotteryUI(){
-  const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
-  const remaining=Math.max(0,100-count);
-  $("lotteryCount").textContent=`今日免费次数：${remaining} / 100`;
-  $("lotteryButton").disabled=remaining<=0;
-  $("lotteryButton").textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
+async function updateLotteryUI(){
+  let remaining=0;
+
+  // 登录用户：从 Supabase 获取当天剩余次数
+  if(typeof currentUser!=="undefined" && currentUser?.id && sb){
+    try{
+      const {data,error}=await sb.rpc("get_lottery_remaining");
+      if(!error && typeof data==="number") remaining=Math.max(0,data);
+      else if(error) console.warn("获取云端抽奖次数失败：",error);
+    }catch(e){
+      console.warn("获取云端抽奖次数异常：",e);
+    }
+  }else{
+    // 游客继续使用本机 100 次
+    const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
+    remaining=Math.max(0,100-count);
+  }
+
+  const countEl=$("lotteryCount");
+  const button=$("lotteryButton");
+  if(!countEl || !button)return;
+
+  countEl.textContent=`今日免费次数：${remaining} / 100`;
+  button.disabled=remaining<=0;
+  button.textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
 }
 function openLottery(){$("lotteryModal").classList.add("show");$("lotteryResult").textContent="点击下面按钮开始抽奖";updateLotteryUI()}
 function closeLottery(){$("lotteryModal").classList.remove("show")}
@@ -3223,55 +3242,59 @@ function cyberLotteryBurst(kind){
   setTimeout(()=>layer.remove(),1200);
 }
 
-async function saveLotteryWinToCloud(win){
-  if(!currentUser || !sb) return false;
-
-  const key=String(win.badge || win.id);
-  try{
-    /* 奖励仓库：兼容当前 Supabase user_rewards 表结构 */
-    const {error:rewardError}=await sb.from("user_rewards").insert({
-      user_id:currentUser.id,
-      reward_id:key,
-      source:"lottery"
-    });
-    if(rewardError) throw rewardError;
-
-    /* 如果抽到徽章，同时写入云端 user_badges */
-    if(win.badge){
-      const {error:badgeError}=await sb.from("user_badges").upsert({
-        user_id:currentUser.id,
-        badge_id:win.badge
-      },{onConflict:"user_id,badge_id"});
-      if(badgeError) console.warn("云端徽章保存失败：",badgeError);
-    }
-
-    return true;
-  }catch(e){
-    console.warn("云端抽奖奖励保存失败：",e);
-    return false;
-  }
-}
-
 async function drawLottery(){
-  const key=lotteryDateKey();
-  const countKey=key+"_count";
-  const count=parseInt(localStorage.getItem(countKey)||"0");
-  if(count>=100){
-    toast("今天的 100 次抽奖已经用完");
-    updateLotteryUI();
-    return;
+  const btn=$("lotteryButton");
+  if(!btn || btn.disabled)return;
+
+  let cloudDraw=false;
+  let count=0;
+  let countKey=null;
+
+  // 登录用户：先在云端原子扣除一次。
+  // 这样清除浏览器缓存、换设备也不会恢复次数。
+  if(typeof currentUser!=="undefined" && currentUser?.id && sb){
+    btn.disabled=true;
+    try{
+      const {data,error}=await sb.rpc("use_lottery_draw");
+      if(error){
+        console.error("云端抽奖次数错误：",error);
+        toast("⚠️ 云端抽奖次数读取失败，请稍后重试");
+        await updateLotteryUI();
+        return;
+      }
+      if(data!==true){
+        toast("今天的 100 次抽奖已经用完");
+        await updateLotteryUI();
+        return;
+      }
+      cloudDraw=true;
+    }catch(e){
+      console.error("云端抽奖异常：",e);
+      toast("⚠️ 网络异常，请稍后重试");
+      await updateLotteryUI();
+      return;
+    }
+  }else{
+    // 游客：继续使用本机 100 次
+    const key=lotteryDateKey();
+    countKey=key+"_count";
+    count=parseInt(localStorage.getItem(countKey)||"0");
+    if(count>=100){
+      toast("今天的 100 次抽奖已经用完");
+      await updateLotteryUI();
+      return;
+    }
+    btn.disabled=true;
   }
 
-  const btn=$("lotteryButton");
   const result=$("lotteryResult");
   const machine=$("lotteryMachine");
   const slots=[...$("lotteryReel").querySelectorAll(".lottery-slot")];
 
-  btn.disabled=true;
   result.classList.add("rolling");
   result.classList.remove("win-result");
   result.textContent="🎰 正在抽取……";
-  machine.classList.remove("win","epic","legendary");
+  machine.classList.remove("win");
   machine.classList.add("rolling");
 
   const total=lotteryPrizes.reduce((s,p)=>s+p.weight,0);
@@ -3283,12 +3306,12 @@ async function drawLottery(){
   }
 
   const icons=["🎁","⭐","💎","🏆","🎫","🍀","🎟️","🎉","🔥","🌟"];
-  const start=performance.now();
+  const startTime=performance.now();
   const duration=2800;
   let lastStep=-1;
 
   function spin(now){
-    const elapsed=now-start;
+    const elapsed=now-startTime;
     const progress=Math.min(elapsed/duration,1);
     const step=Math.floor(elapsed/55);
 
@@ -3305,69 +3328,55 @@ async function drawLottery(){
 
     if(progress<1){
       requestAnimationFrame(spin);
-    }else{
-      slots.forEach((slot,i)=>{
-        slot.style.filter="none";
-        slot.textContent=(i===1||i===2||i===3)?win.emoji:icons[(i+3)%icons.length];
-        slot.classList.toggle("center",i===2);
-      });
-
-      machine.classList.remove("rolling");
-      machine.classList.add("win");
-      if(win.rarity==="史诗") machine.classList.add("epic");
-      if(win.rarity==="传说") machine.classList.add("legendary");
-
-      /* 登录用户：真正写入 Supabase */
-      if(currentUser && sb){
-        const saved=await saveLotteryWinToCloud(win);
-        if(saved){
-          toast("☁️ 奖励已同步到云端仓库");
-        }else{
-          toast("⚠️ 云端保存失败，奖励仅保留本机记录");
-        }
-      }
-
-      /* 保留本机仓库作为游客/云端失败时的兜底 */
-      await addRewardToInventory(win);
-
-      setTimeout(()=>cyberLotteryBurst(
-        win.rarity==="传说"?"legendary":
-        win.rarity==="史诗"?"epic":"normal"
-      ),80);
-
-      const rarityClass=
-        win.rarity==="史诗"?"lottery-rarity-epic":
-        (win.rarity==="传说"?"lottery-rarity-legendary":"");
-
-      result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
-      result.classList.remove("rolling");
-      result.classList.add("win-result");
-
-      localStorage.setItem(countKey,String(count+1));
-      localStorage.setItem(
-        "sl_lottery_total",
-        String(parseInt(localStorage.getItem("sl_lottery_total")||"0")+1)
-      );
-      localStorage.setItem("sl_lottery_won","1");
-
-      /* 触发已有成就/徽章系统 */
-      if(typeof evaluateAchievements==="function"){
-        try{ await evaluateAchievements(); }catch(e){}
-      }
-
-      updateLotteryUI();
-      btn.disabled=false;
-      toast("🎉 抽奖完成！");
-
-      setTimeout(()=>{
-        machine.classList.remove("win","epic","legendary");
-        result.classList.remove("win-result");
-      },1200);
+      return;
     }
+
+    slots.forEach((slot,i)=>{
+      slot.style.filter="none";
+      slot.textContent=(i===1||i===2||i===3)?win.emoji:icons[(i+3)%icons.length];
+      slot.classList.toggle("center",i===2);
+    });
+
+    machine.classList.remove("rolling","epic","legendary");
+    machine.classList.add("win");
+    if(win.rarity==="史诗")machine.classList.add("epic");
+    if(win.rarity==="传说")machine.classList.add("legendary");
+
+    // 中奖奖励进入现有奖励仓库；登录用户会同步到 Supabase
+    addRewardToInventory(win);
+
+    setTimeout(()=>cyberLotteryBurst(
+      win.rarity==="传说"?"legendary":
+      win.rarity==="史诗"?"epic":"normal"
+    ),80);
+
+    const rarityClass=win.rarity==="史诗"
+      ?"lottery-rarity-epic"
+      :(win.rarity==="传说"?"lottery-rarity-legendary":"");
+
+    result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
+    result.classList.remove("rolling");
+    result.classList.add("win-result");
+
+    // 游客本地计数；登录用户的次数已经由 RPC 在云端扣除
+    if(!cloudDraw && countKey){
+      localStorage.setItem(countKey,String(count+1));
+      localStorage.setItem("sl_lottery_total",String(parseInt(localStorage.getItem("sl_lottery_total")||"0")+1));
+    }
+
+    localStorage.setItem("sl_lottery_won","1");
+    updateLotteryUI();
+    toast("🎉 抽奖完成！");
+
+    setTimeout(()=>{
+      machine.classList.remove("win");
+      result.classList.remove("win-result");
+    },1200);
   }
 
   requestAnimationFrame(spin);
 }
+
 
 let cloudProfile=null;
 
@@ -4029,46 +4038,23 @@ async function getRewardInventory(){
   if(currentUser && sb){
     try{
       const {data,error}=await sb.from("user_rewards")
-        .select("id,user_id,reward_id,obtained_at,source")
+        .select("id,user_id,reward_id,reward_type,reward_name,reward_icon,quantity,created_at,updated_at")
         .eq("user_id",currentUser.id)
-        .order("obtained_at",{ascending:false});
-
+        .order("created_at",{ascending:false});
       if(!error && Array.isArray(data)){
-        let catalog={};
-        try{
-          const {data:cats}=await sb.from("reward_catalog")
-            .select("id,name,description,rarity,icon");
-          (cats||[]).forEach(x=>catalog[x.id]=x);
-        }catch(e){}
-
-        return data.map(x=>{
-          const c=catalog[x.reward_id]||{};
-          const isBadge=String(x.reward_id).startsWith("epic_") ||
-                        String(x.reward_id).startsWith("legend_");
-          return {
-            key:x.reward_id,
-            id:x.reward_id,
-            type:isBadge?"badge":"reward",
-            icon:c.icon||(
-              x.reward_id==="common"?"🎫":
-              x.reward_id==="rare"?"⭐":"🎁"
-            ),
-            name:c.name||(
-              x.reward_id==="common"?"普通 · 100 积分":
-              x.reward_id==="rare"?"稀有 · 500 积分":
-              x.reward_id
-            ),
-            desc:c.description||c.rarity||x.source||"抽奖获得",
-            count:1,
-            earnedAt:x.obtained_at
-          };
-        });
+        return data.map(x=>({
+          key:x.reward_id,
+          id:x.reward_id,
+          type:x.reward_type||"reward",
+          icon:x.reward_icon||"🎁",
+          name:x.reward_name||"未知奖励",
+          desc:x.reward_type==="badge"?"徽章奖励":"抽奖获得",
+          count:Number(x.quantity)||1,
+          earnedAt:x.created_at
+        }));
       }
-
       if(error) console.warn("读取云端奖励失败：",error);
-    }catch(e){
-      console.warn("读取云端奖励异常：",e);
-    }
+    }catch(e){console.warn("读取云端奖励异常：",e)}
   }
   return getLocalRewardInventory();
 }
@@ -4077,27 +4063,48 @@ async function saveCloudReward(reward){
   if(!currentUser || !sb) return false;
 
   const key=String(reward.badge||reward.id||reward.name);
+  const type=reward.badge?"badge":(
+    reward.id==="common"||reward.id==="rare"?"points":"reward"
+  );
+  const row={
+    user_id:currentUser.id,
+    reward_id:key,
+    reward_type:type,
+    reward_name:reward.name||"未知奖励",
+    reward_icon:reward.emoji||reward.icon||"🎁",
+    quantity:1,
+    updated_at:new Date().toISOString()
+  };
 
   try{
-    const {error}=await sb.from("user_rewards").insert({
-      user_id:currentUser.id,
-      reward_id:key,
-      source:"lottery"
-    });
+    const {data:old,error:findError}=await sb.from("user_rewards")
+      .select("id,quantity")
+      .eq("user_id",currentUser.id)
+      .eq("reward_id",key)
+      .maybeSingle();
 
-    if(error) throw error;
+    if(findError) throw findError;
 
-    if(reward.badge){
-      const {error:badgeError}=await sb.from("user_badges").upsert({
-        user_id:currentUser.id,
-        badge_id:reward.badge
-      },{onConflict:"user_id,badge_id"});
-      if(badgeError) console.warn("保存云端徽章失败：",badgeError);
+    if(old){
+      const {error}=await sb.from("user_rewards")
+        .update({
+          quantity:(Number(old.quantity)||0)+1,
+          reward_name:row.reward_name,
+          reward_icon:row.reward_icon,
+          reward_type:row.reward_type,
+          updated_at:row.updated_at
+        })
+        .eq("id",old.id)
+        .eq("user_id",currentUser.id);
+      if(error) throw error;
+    }else{
+      const {error}=await sb.from("user_rewards").insert(row);
+      if(error) throw error;
     }
-
     return true;
   }catch(e){
     console.warn("保存云端奖励失败：",e);
+    toast("⚠️ 奖励云端保存失败，正在保留本机记录");
     return false;
   }
 }
@@ -4105,8 +4112,10 @@ async function saveCloudReward(reward){
 async function addRewardToInventory(reward){
   if(!reward) return;
 
-  /* 抽奖主流程已经负责写入云端；这里仅刷新云端仓库 */
+  /* 登录用户直接进入云端仓库 */
   if(currentUser && sb){
+    const ok=await saveCloudReward(reward);
+    if(ok) toast("🎒 奖励已存入云端仓库");
     if(typeof renderRewardInventory==="function") await renderRewardInventory();
     return;
   }
