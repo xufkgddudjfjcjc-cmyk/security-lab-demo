@@ -2200,6 +2200,27 @@ button:active{
 }
 </style>
 
+
+<style id="security-achievements-v1">
+.achievement-card{width:min(620px,calc(100vw - 22px))!important;max-height:88vh;overflow:auto!important;border-radius:30px!important}
+.achievement-title{font-size:22px;font-weight:950;color:#eef8ff}
+.achievement-sub{margin-top:5px;color:#7089a4;font-size:10px}
+.achievement-progress-wrap{margin:16px 0;padding:12px 14px;border-radius:17px;background:rgba(17,33,53,.75);border:1px solid rgba(102,163,228,.12);color:#7590aa;font-size:9px}
+.achievement-progress-wrap b{color:#eaf7ff;font-size:16px}
+.achievement-progress{height:6px;border-radius:999px;background:rgba(80,115,150,.14);margin-top:9px;overflow:hidden}
+.achievement-progress i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#48dfff,#765bff);box-shadow:0 0 13px rgba(75,199,255,.4);transition:width .5s ease}
+.achievement-list{display:grid;gap:9px}
+.achievement-item{display:flex;gap:11px;align-items:center;padding:12px;border-radius:18px;background:rgba(15,29,48,.82);border:1px solid rgba(104,158,227,.12)}
+.achievement-item.unlocked{border-color:rgba(68,239,158,.24);background:rgba(20,65,54,.28)}
+.achievement-icon{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;font-size:23px;background:rgba(48,93,157,.14)}
+.achievement-info{flex:1;min-width:0}
+.achievement-name{color:#e6f4ff;font-size:11px;font-weight:950}
+.achievement-desc{color:#7189a3;font-size:9px;margin-top:3px}
+.achievement-progress-text{color:#72cfff;font-size:9px;font-weight:900;margin-top:6px}
+.achievement-reward{color:#ffd66b;font-size:9px;font-weight:900;white-space:nowrap}
+.achievement-locked{filter:grayscale(.7);opacity:.72}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -4434,6 +4455,143 @@ async function claimCheckin(){
 
 
 const SECURITY_LAB_CHECKIN_SQL='create table if not exists public.user_checkins (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  last_checkin date,\n  streak integer not null default 0,\n  total_days integer not null default 0,\n  updated_at timestamptz not null default now()\n);\n\nalter table public.user_checkins enable row level security;\n\ncreate policy "Users can view their own checkin"\non public.user_checkins for select to authenticated\nusing (auth.uid() = user_id);\n\ncreate policy "Users can insert their own checkin"\non public.user_checkins for insert to authenticated\nwith check (auth.uid() = user_id);\n\ncreate policy "Users can update their own checkin"\non public.user_checkins for update to authenticated\nusing (auth.uid() = user_id)\nwith check (auth.uid() = user_id);';
+
+const SECURITY_LAB_ACHIEVEMENTS=[
+ {id:"chat_10",icon:"💬",name:"初次发言",desc:"发送 10 条消息",goal:10,metric:"messages",reward:50},
+ {id:"chat_100",icon:"🗣️",name:"聊天达人",desc:"发送 100 条消息",goal:100,metric:"messages",reward:100},
+ {id:"chat_500",icon:"🔥",name:"话题王者",desc:"发送 500 条消息",goal:500,metric:"messages",reward:300},
+ {id:"chat_1000",icon:"💎",name:"社区元老",desc:"发送 1000 条消息",goal:1000,metric:"messages",reward:800},
+ {id:"lottery_100",icon:"🎯",name:"百抽挑战者",desc:"累计抽奖 100 次",goal:100,metric:"lottery",reward:100},
+ {id:"lottery_500",icon:"🎰",name:"抽奖狂热者",desc:"累计抽奖 500 次",goal:500,metric:"lottery",reward:500},
+ {id:"lottery_1000",icon:"🏆",name:"千抽收藏家",desc:"累计抽奖 1000 次",goal:1000,metric:"lottery",reward:1200},
+ {id:"badge_5",icon:"🏅",name:"徽章收藏家",desc:"拥有 5 个徽章",goal:5,metric:"badges",reward:150},
+ {id:"badge_10",icon:"🎖️",name:"徽章大师",desc:"拥有 10 个徽章",goal:10,metric:"badges",reward:400},
+ {id:"checkin_7",icon:"🔥",name:"坚持一周",desc:"连续签到 7 天",goal:7,metric:"streak",reward:150},
+ {id:"checkin_30",icon:"🌟",name:"坚持不懈",desc:"连续签到 30 天",goal:30,metric:"streak",reward:800},
+ {id:"points_1000",icon:"💰",name:"积分新贵",desc:"累计获得 1000 积分",goal:1000,metric:"earned",reward:100},
+ {id:"points_5000",icon:"💎",name:"积分富豪",desc:"累计获得 5000 积分",goal:5000,metric:"earned",reward:500}
+];
+
+const localAchievementKey="sl_achievements_v1";
+
+function getLocalAchievements(){
+  try{return JSON.parse(localStorage.getItem(localAchievementKey)||"{}")}catch(e){return {}}
+}
+function saveLocalAchievements(x){localStorage.setItem(localAchievementKey,JSON.stringify(x))}
+
+async function getAchievementRows(){
+  if(currentUser&&sb){
+    try{
+      const {data,error}=await sb.from("user_achievements").select("achievement_id,progress,unlocked_at").eq("user_id",currentUser.id);
+      if(!error)return data||[];
+    }catch(e){}
+  }
+  const x=getLocalAchievements();
+  return Object.entries(x).map(([achievement_id,v])=>({achievement_id,progress:v.progress||0,unlocked_at:v.unlocked_at||null}));
+}
+
+async function achievementMetrics(){
+  const badges=JSON.parse(localStorage.getItem("sl_owned_badges")||"[]");
+  const checkin=await getCheckinState();
+  const points=await getUserPoints();
+  return {
+    messages:Number(localStorage.getItem("sl_sent_count")||0),
+    lottery:Number(localStorage.getItem("sl_lottery_total")||0),
+    badges:badges.length,
+    streak:Number(checkin.streak||0),
+    earned:currentUser&&sb?null:Number(points||0)
+  };
+}
+
+async function evaluateAchievements(){
+  const metrics=await achievementMetrics();
+  const rows=await getAchievementRows();
+  const existing=new Map(rows.map(x=>[x.achievement_id,x]));
+  let changed=false;
+
+  for(const a of SECURITY_LAB_ACHIEVEMENTS){
+    let progress=metrics[a.metric];
+    if(progress===null||progress===undefined) progress=0;
+    progress=Math.min(a.goal,Number(progress)||0);
+    const old=existing.get(a.id);
+    const wasUnlocked=!!old?.unlocked_at;
+    if(progress>=a.goal&&!wasUnlocked){
+      const unlockedAt=new Date().toISOString();
+      if(currentUser&&sb){
+        const {error}=await sb.from("user_achievements").upsert({
+          user_id:currentUser.id,achievement_id:a.id,progress:a.goal,unlocked_at:unlockedAt
+        },{onConflict:"user_id,achievement_id"});
+        if(!error){
+          await addPoints(a.reward,"成就："+a.name);
+          toast("🏆 解锁成就："+a.name);
+        }
+      }else{
+        const local=getLocalAchievements();
+        local[a.id]={progress:a.goal,unlocked_at:unlockedAt};
+        saveLocalAchievements(local);
+        await addPoints(a.reward,"成就："+a.name);
+        toast("🏆 解锁成就："+a.name);
+      }
+      changed=true;
+    }else{
+      if(currentUser&&sb){
+        await sb.from("user_achievements").upsert({
+          user_id:currentUser.id,achievement_id:a.id,progress,unlocked_at:old?.unlocked_at||null
+        },{onConflict:"user_id,achievement_id"});
+      }else{
+        const local=getLocalAchievements();
+        if(!local[a.id]||local[a.id].progress!==progress){
+          local[a.id]={progress,unlocked_at:local[a.id]?.unlocked_at||null};
+          saveLocalAchievements(local);
+        }
+      }
+    }
+  }
+  return changed;
+}
+
+async function openAchievements(){
+  $("achievementModal")?.classList.add("show");
+  await evaluateAchievements();
+  await renderAchievements();
+}
+function closeAchievements(){$("achievementModal")?.classList.remove("show")}
+
+async function renderAchievements(){
+  const list=$("achievementList");
+  if(!list)return;
+  const rows=await getAchievementRows();
+  const map=new Map(rows.map(x=>[x.achievement_id,x]));
+  let unlocked=0;
+
+  list.innerHTML=SECURITY_LAB_ACHIEVEMENTS.map(a=>{
+    const row=map.get(a.id);
+    const progress=Math.min(a.goal,Number(row?.progress)||0);
+    const done=!!row?.unlocked_at;
+    if(done)unlocked++;
+    const pct=Math.round(progress/a.goal*100);
+    return `<div class="achievement-item ${done?"unlocked":"achievement-locked"}">
+      <div class="achievement-icon">${a.icon}</div>
+      <div class="achievement-info">
+        <div class="achievement-name">${esc(a.name)}</div>
+        <div class="achievement-desc">${esc(a.desc)}</div>
+        <div class="achievement-progress-text">${progress} / ${a.goal} · ${pct}%</div>
+      </div>
+      <div class="achievement-reward">+${a.reward} 💰</div>
+    </div>`;
+  }).join("");
+
+  $("achievementUnlocked").textContent=unlocked;
+  $("achievementTotal").textContent=SECURITY_LAB_ACHIEVEMENTS.length;
+  $("achievementProgressBar").style.width=(unlocked/SECURITY_LAB_ACHIEVEMENTS.length*100)+"%";
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(()=>evaluateAchievements(),1500);
+});
+
+
+const SECURITY_LAB_ACHIEVEMENT_SQL='create table if not exists public.user_achievements (\n  id bigint generated by default as identity primary key,\n  user_id uuid not null references auth.users(id) on delete cascade,\n  achievement_id text not null,\n  progress integer not null default 0,\n  unlocked_at timestamptz,\n  created_at timestamptz not null default now(),\n  unique(user_id, achievement_id)\n);\n\nalter table public.user_achievements enable row level security;\n\ncreate policy "Users can view their own achievements"\non public.user_achievements for select to authenticated\nusing (auth.uid() = user_id);\n\ncreate policy "Users can insert their own achievements"\non public.user_achievements for insert to authenticated\nwith check (auth.uid() = user_id);\n\ncreate policy "Users can update their own achievements"\non public.user_achievements for update to authenticated\nusing (auth.uid() = user_id)\nwith check (auth.uid() = user_id);';
 </script>
 
 <!-- 奖励仓库 -->
@@ -4577,5 +4735,20 @@ with check (auth.uid() = user_id);
 </div>
 
 <button class="points-pill" style="border:0;cursor:pointer" onclick="openCheckin()">🔥 签到</button>
+<button class="points-pill" style="border:0;cursor:pointer" onclick="openAchievements()">🏆 成就</button>
+
+<div class="modal" id="achievementModal" onclick="if(event.target===this)closeAchievements()">
+  <div class="modal-card achievement-card">
+    <button class="close" onclick="closeAchievements()">×</button>
+    <div class="achievement-title">🏆 成就中心</div>
+    <div class="achievement-sub">完成目标，领取积分与稀有奖励</div>
+    <div class="achievement-progress-wrap">
+      <div><b id="achievementUnlocked">0</b> / <span id="achievementTotal">0</span> 已解锁</div>
+      <div class="achievement-progress"><i id="achievementProgressBar"></i></div>
+    </div>
+    <div class="achievement-list" id="achievementList"></div>
+  </div>
+</div>
+
 </body>
 </html>
