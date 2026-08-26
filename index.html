@@ -624,6 +624,14 @@ body.dark .voice-person.speaking{background:#17251b}
 body.dark .cloud-badge{background:#29233a;border-color:#6e52a1;color:#d6c5ff}
 body.dark .cloud-badge.developer{background:#38301b;border-color:#8c7428;color:#ffe38a}
 
+
+.lottery-rarity-epic{color:#7d4bd6;font-weight:900;text-shadow:0 0 10px rgba(125,75,214,.45)}
+.lottery-rarity-legendary{color:#b8860b;font-weight:900;text-shadow:0 0 12px rgba(255,193,7,.6)}
+.lottery-machine.epic{box-shadow:0 0 35px rgba(125,75,214,.65)}
+.lottery-machine.legendary{box-shadow:0 0 45px rgba(255,193,7,.85);animation:legendPulse .8s ease-in-out infinite alternate}
+@keyframes legendPulse{from{transform:scale(1)}to{transform:scale(1.035)}}
+.lottery-result-badge{font-size:18px;margin-top:8px}
+
 </style>
 
 <meta name="theme-color" content="#f3f4f6">
@@ -1423,10 +1431,14 @@ function resetChatBackground(){
   localStorage.removeItem("sl_chat_bg");localStorage.removeItem("sl_chat_bg_color");applyChatBackgroundStyle();closeBackgroundSettings();toast("已恢复默认聊天背景")
 }
 const lotteryPrizes=[
- {emoji:"🏆",name:"一等奖 · 高级会员体验",weight:2},
- {emoji:"💎",name:"二等奖 · 1000 积分",weight:8},
- {emoji:"⭐",name:"三等奖 · 500 积分",weight:20},
- {emoji:"🎫",name:"幸运奖 · 100 积分",weight:70}
+  {id:"common",emoji:"🎫",name:"普通 · 100 积分",weight:5,rarity:"普通"},
+  {id:"rare",emoji:"⭐",name:"稀有 · 500 积分",weight:15,rarity:"稀有"},
+  {id:"epic_void",emoji:"🟣",name:"史诗徽章 · 虚空行者",weight:10,rarity:"史诗",badge:"epic_void"},
+  {id:"epic_galaxy",emoji:"🌌",name:"史诗徽章 · 星河守望者",weight:10,rarity:"史诗",badge:"epic_galaxy"},
+  {id:"epic_eye",emoji:"🔮",name:"史诗徽章 · 深渊之眼",weight:10,rarity:"史诗",badge:"epic_eye"},
+  {id:"legend_king",emoji:"👑",name:"传说徽章 · 传奇王者",weight:15,rarity:"传说",badge:"legend_king"},
+  {id:"legend_creator",emoji:"🌟",name:"传说徽章 · 创世者",weight:15,rarity:"传说",badge:"legend_creator"},
+  {id:"legend_eternal",emoji:"💫",name:"传说徽章 · 永恒之星",weight:20,rarity:"传说",badge:"legend_eternal"}
 ];
 function lotteryUserKey(){
   if(typeof currentUser!=="undefined" && currentUser?.id) return "user_"+currentUser.id;
@@ -1438,8 +1450,8 @@ function lotteryDateKey(){
 }
 function updateLotteryUI(){
   const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
-  const remaining=Math.max(0,10-count);
-  $("lotteryCount").textContent=`今日免费次数：${remaining} / 10`;
+  const remaining=Math.max(0,100-count);
+  $("lotteryCount").textContent=`今日免费次数：${remaining} / 100`;
   $("lotteryButton").disabled=remaining<=0;
   $("lotteryButton").textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
 }
@@ -1449,8 +1461,8 @@ function drawLottery(){
   const key=lotteryDateKey();
   const countKey=key+"_count";
   const count=parseInt(localStorage.getItem(countKey)||"0");
-  if(count>=10){
-    toast("今天的 10 次抽奖已经用完");
+  if(count>=100){
+    toast("今天的 100 次抽奖已经用完");
     updateLotteryUI();
     return;
   }
@@ -1507,9 +1519,12 @@ function drawLottery(){
         slot.classList.toggle("center",i===2);
       });
 
-      machine.classList.remove("rolling");
+      machine.classList.remove("rolling","epic","legendary");
       machine.classList.add("win");
-      result.innerHTML=`🎉 恭喜你抽中：<b>${esc(win.emoji+" "+win.name)}</b>`;
+      if(win.rarity==="史诗") machine.classList.add("epic");
+      if(win.rarity==="传说") machine.classList.add("legendary");
+      const rarityClass=win.rarity==="史诗"?"lottery-rarity-epic":(win.rarity==="传说"?"lottery-rarity-legendary":"");
+      result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
       result.classList.remove("rolling");
       result.classList.add("win-result");
 
@@ -1608,6 +1623,16 @@ const badgeDefs=[
  {id:"early",icon:"⚡",name:"活跃用户",desc:"连续活跃 7 天",cls:"red"},
  {id:"developer",icon:"💻",name:"开发者",desc:"管理员授予",cls:"purple"}
 ];
+
+const lotteryBadgeDefs=[
+ {id:"epic_void",icon:"🟣",name:"虚空行者",desc:"抽奖获得史诗徽章",cls:"purple"},
+ {id:"epic_galaxy",icon:"🌌",name:"星河守望者",desc:"抽奖获得史诗徽章",cls:"purple"},
+ {id:"epic_eye",icon:"🔮",name:"深渊之眼",desc:"抽奖获得史诗徽章",cls:"purple"},
+ {id:"legend_king",icon:"👑",name:"传奇王者",desc:"抽奖获得传说徽章",cls:"gold"},
+ {id:"legend_creator",icon:"🌟",name:"创世者",desc:"抽奖获得传说徽章",cls:"gold"},
+ {id:"legend_eternal",icon:"💫",name:"永恒之星",desc:"抽奖获得传说徽章",cls:"gold"}
+];
+
 function badgeUnlocked(id){
   const key="sl_badge_"+id;
   if(localStorage.getItem(key)==="1")return true;
