@@ -249,7 +249,7 @@ body.dark .lottery-result.win-result{background:#17251b;color:#79d99a}
 }
 .lottery-result.rolling{color:#5865f2;font-weight:800}
 
-.lottery-card{width:min(520px,94vw)}
+.lottery-card{width:min(520px,94vw);max-height:88dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}.lottery-card *{touch-action:auto}
 .lottery-banner{padding:18px;border-radius:14px;background:linear-gradient(135deg,#5865f2,#7c3aed);color:#fff;text-align:center;margin-bottom:14px}
 .lottery-banner .gift{font-size:38px}.lottery-banner h3{margin:5px 0;font-size:20px}.lottery-banner p{margin:0;font-size:11px;opacity:.9}
 .lottery-prizes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -2317,37 +2317,6 @@ button:active{
 .notification-empty{text-align:center;padding:42px 10px;color:#637c96;font-size:10px}
 </style>
 
-
-<style id="lottery-scroll-fix-v1">
-/* 抽奖弹窗：允许鼠标滚轮/触摸手势在弹窗内部滚动 */
-body.lottery-open-lock{
-  overflow:hidden !important;
-}
-#lotteryModal{
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling:touch !important;
-  touch-action:pan-y !important;
-  overscroll-behavior:contain !important;
-  align-items:flex-start !important;
-  padding-top:max(12px, env(safe-area-inset-top)) !important;
-  padding-bottom:max(12px, env(safe-area-inset-bottom)) !important;
-}
-#lotteryModal .lottery-card{
-  max-height:calc(100dvh - 24px) !important;
-  overflow-y:auto !important;
-  overflow-x:hidden !important;
-  -webkit-overflow-scrolling:touch !important;
-  touch-action:pan-y !important;
-  overscroll-behavior:contain !important;
-  scrollbar-width:thin;
-}
-@media(max-width:760px){
-  #lotteryModal .lottery-card{
-    max-height:calc(100dvh - 18px) !important;
-    width:calc(100vw - 24px) !important;
-  }
-}
-</style>
 </head>
 <body>
 <div class="app">
@@ -2505,7 +2474,7 @@ body.lottery-open-lock{
  <div class="modal-card lottery-card">
   <div class="modal-head"><span>🎁 抽奖活动</span><button class="close" onclick="closeLottery()">×</button></div>
   <div class="lottery-banner"><div class="gift">🎁</div>
-<button class="reward-inventory-open" onclick="openRewardInventory()">🎒 奖励仓库</button><h3>Security Lab 幸运抽奖</h3><p>每位用户每天 100 次免费抽奖 · 游客也可以参加</p></div>
+<button class="reward-inventory-open" onclick="openRewardInventory()">🎒 奖励仓库</button><h3>Security Lab 幸运抽奖</h3><p>登录用户每天 100 次云端抽奖 · 游客也可以参加</p></div>
   <div class="lottery-machine" id="lotteryMachine">
    <div class="lottery-pointer">▼</div>
    <div class="lottery-reel" id="lotteryReel">
@@ -3215,219 +3184,115 @@ function lotteryDateKey(){
   const d=new Date();
   return `sl_lottery_${lotteryUserKey()}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
-async function updateLotteryUI(){
-  let remaining=0;
-
-  // 登录用户：从 Supabase 获取当天剩余次数
-  if(typeof currentUser!=="undefined" && currentUser?.id && sb){
+async function getLotteryRemaining(){
+  if(currentUser && sb){
     try{
       const {data,error}=await sb.rpc("get_lottery_remaining");
-      if(!error && typeof data==="number") remaining=Math.max(0,data);
-      else if(error) console.warn("获取云端抽奖次数失败：",error);
-    }catch(e){
-      console.warn("获取云端抽奖次数异常：",e);
-    }
-  }else{
-    // 游客继续使用本机 100 次
-    const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
-    remaining=Math.max(0,100-count);
+      if(!error && typeof data === "number") return Math.max(0,Number(data));
+    }catch(e){console.warn("云端抽奖次数读取失败",e)}
   }
-
-  const countEl=$("lotteryCount");
-  const button=$("lotteryButton");
-  if(!countEl || !button)return;
-
-  countEl.textContent=`今日免费次数：${remaining} / 100`;
-  button.disabled=remaining<=0;
-  button.textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
+  const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
+  return Math.max(0,100-count);
 }
-function openLottery(){
-  // 先关闭设置面板，避免两个弹窗叠加导致无法点击
-  if(typeof closeSettings === "function") closeSettings();
 
-  const modal=$("lotteryModal");
-  if(!modal) return;
-
-  // 抽奖弹窗始终置于最上层
-  modal.style.zIndex="300";
-  modal.classList.add("show");
-
-  const result=$("lotteryResult");
-  if(result) result.textContent="点击下面按钮开始抽奖";
-
-  // 等弹窗显示后再刷新次数，避免异步刷新影响点击
-  setTimeout(()=>{
-    if(typeof updateLotteryUI === "function") updateLotteryUI();
-  },30);
+async function updateLotteryUI(){
+  const remaining=await getLotteryRemaining();
+  $("lotteryCount").textContent=`今日免费次数：${remaining} / 100`;
+  $("lotteryButton").disabled=remaining<=0;
+  $("lotteryButton").textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
 }
-function closeLottery(){
-  const modal=$("lotteryModal");
-  if(modal) modal.classList.remove("show");
-}
+function openLottery(){closeSettings();$("lotteryModal").classList.add("show");$("lotteryResult").textContent="点击下面按钮开始抽奖";updateLotteryUI()}
+function closeLottery(){$("lotteryModal").classList.remove("show")}
 
 function cyberLotteryBurst(kind){
   const machine=document.querySelector(".lottery-machine");
   if(!machine) return;
   let layer=machine.querySelector(".lottery-particles");
-  if(!layer){
-    layer=document.createElement("div");
-    layer.className="lottery-particles";
-    machine.appendChild(layer);
-  }
+  if(!layer){layer=document.createElement("div");layer.className="lottery-particles";machine.appendChild(layer)}
   layer.innerHTML="";
   const count=kind==="legendary"?48:(kind==="epic"?34:20);
   for(let i=0;i<count;i++){
-    const p=document.createElement("i");
-    p.className="lottery-particle";
+    const p=document.createElement("i");p.className="lottery-particle";
     const angle=Math.random()*Math.PI*2;
     const distance=(kind==="legendary"?130:kind==="epic"?105:85)+Math.random()*80;
-    p.style.left="50%";
-    p.style.top="50%";
+    p.style.left="50%";p.style.top="50%";
     p.style.setProperty("--dx",`${Math.cos(angle)*distance}px`);
     p.style.setProperty("--dy",`${Math.sin(angle)*distance}px`);
     p.style.animationDelay=`${Math.random()*90}ms`;
-    if(kind==="legendary") p.style.color=Math.random()>.35?"#ffd75a":"#fff4b0";
-    else if(kind==="epic") p.style.color=Math.random()>.35?"#ad7cff":"#e5ccff";
+    if(kind==="legendary")p.style.color=Math.random()>.35?"#ffd75a":"#fff4b0";
+    else if(kind==="epic")p.style.color=Math.random()>.35?"#ad7cff":"#e5ccff";
     else p.style.color=Math.random()>.4?"#54cfff":"#ffffff";
     layer.appendChild(p);
   }
   setTimeout(()=>layer.remove(),1200);
 }
 
-async function drawLottery(){
-  const btn=$("lotteryButton");
-  if(!btn || btn.disabled)return;
-
-  let cloudDraw=false;
-  let count=0;
-  let countKey=null;
-
-  // 登录用户：先在云端原子扣除一次。
-  // 这样清除浏览器缓存、换设备也不会恢复次数。
-  if(typeof currentUser!=="undefined" && currentUser?.id && sb){
-    btn.disabled=true;
+async function reserveLotteryDraw(){
+  if(currentUser && sb){
     try{
       const {data,error}=await sb.rpc("use_lottery_draw");
-      if(error){
-        console.error("云端抽奖次数错误：",error);
-        toast("⚠️ 云端抽奖次数读取失败，请稍后重试");
-        await updateLotteryUI();
-        return;
-      }
-      if(data!==true){
-        toast("今天的 100 次抽奖已经用完");
-        await updateLotteryUI();
-        return;
-      }
-      cloudDraw=true;
-    }catch(e){
-      console.error("云端抽奖异常：",e);
-      toast("⚠️ 网络异常，请稍后重试");
-      await updateLotteryUI();
-      return;
-    }
-  }else{
-    // 游客：继续使用本机 100 次
-    const key=lotteryDateKey();
-    countKey=key+"_count";
-    count=parseInt(localStorage.getItem(countKey)||"0");
-    if(count>=100){
-      toast("今天的 100 次抽奖已经用完");
-      await updateLotteryUI();
-      return;
-    }
-    btn.disabled=true;
+      if(error){console.warn("云端抽奖扣次失败",error);toast("⚠️ 云端抽奖次数暂时无法读取");return false}
+      return data===true;
+    }catch(e){console.warn(e);toast("⚠️ 网络异常，请稍后重试");return false}
   }
+  const key=lotteryDateKey(), countKey=key+"_count";
+  const count=parseInt(localStorage.getItem(countKey)||"0");
+  if(count>=100)return false;
+  localStorage.setItem(countKey,String(count+1));
+  return true;
+}
 
-  const result=$("lotteryResult");
-  const machine=$("lotteryMachine");
+async function drawLottery(){
+  const btn=$("lotteryButton");
+  if(btn.disabled)return;
+  btn.disabled=true;
+
+  const reserved=await reserveLotteryDraw();
+  if(!reserved){toast("今天的 100 次抽奖已经用完");await updateLotteryUI();return}
+
+  const result=$("lotteryResult"), machine=$("lotteryMachine");
   const slots=[...$("lotteryReel").querySelectorAll(".lottery-slot")];
+  result.classList.add("rolling");result.classList.remove("win-result");result.textContent="🎰 正在抽取……";
+  machine.classList.remove("win");machine.classList.add("rolling");
 
-  result.classList.add("rolling");
-  result.classList.remove("win-result");
-  result.textContent="🎰 正在抽取……";
-  machine.classList.remove("win");
-  machine.classList.add("rolling");
-
-  const total=lotteryPrizes.reduce((s,p)=>s+p.weight,0);
+  const total=lotteryPrizes.reduce((sum,p)=>sum+p.weight,0);
   let n=Math.random()*total;
   let win=lotteryPrizes[lotteryPrizes.length-1];
-  for(const p of lotteryPrizes){
-    n-=p.weight;
-    if(n<=0){win=p;break}
-  }
+  for(const prize of lotteryPrizes){n-=prize.weight;if(n<=0){win=prize;break}}
 
   const icons=["🎁","⭐","💎","🏆","🎫","🍀","🎟️","🎉","🔥","🌟"];
-  const startTime=performance.now();
-  const duration=2800;
-  let lastStep=-1;
+  const start=performance.now(),duration=2800;let lastStep=-1;
 
-  function spin(now){
-    const elapsed=now-startTime;
-    const progress=Math.min(elapsed/duration,1);
-    const step=Math.floor(elapsed/55);
+  async function spin(now){
+    const elapsed=now-start,progress=Math.min(elapsed/duration,1),step=Math.floor(elapsed/55);
+    if(step!==lastStep){lastStep=step;slots.forEach((slot,i)=>{slot.textContent=icons[(step+i)%icons.length];slot.classList.toggle("center",i===2)})}
+    const blur=Math.max(0,1-progress*1.2);slots.forEach(slot=>slot.style.filter=`blur(${blur}px)`);
+    if(progress<1){requestAnimationFrame(spin);return}
 
-    if(step!==lastStep){
-      lastStep=step;
-      slots.forEach((slot,i)=>{
-        slot.textContent=icons[(step+i)%icons.length];
-        slot.classList.toggle("center",i===2);
-      });
-    }
-
-    const blur=Math.max(0,1-progress*1.2);
-    slots.forEach(slot=>slot.style.filter=`blur(${blur}px)`);
-
-    if(progress<1){
-      requestAnimationFrame(spin);
-      return;
-    }
-
-    slots.forEach((slot,i)=>{
-      slot.style.filter="none";
-      slot.textContent=(i===1||i===2||i===3)?win.emoji:icons[(i+3)%icons.length];
-      slot.classList.toggle("center",i===2);
-    });
-
-    machine.classList.remove("rolling","epic","legendary");
-    machine.classList.add("win");
+    slots.forEach((slot,i)=>{slot.style.filter="none";slot.textContent=(i===1||i===2||i===3)?win.emoji:icons[(i+3)%icons.length];slot.classList.toggle("center",i===2)});
+    machine.classList.remove("rolling","epic","legendary");machine.classList.add("win");
     if(win.rarity==="史诗")machine.classList.add("epic");
     if(win.rarity==="传说")machine.classList.add("legendary");
 
-    // 中奖奖励进入现有奖励仓库；登录用户会同步到 Supabase
-    addRewardToInventory(win);
+    // 积分奖励真正进入积分系统；徽章/奖励进入奖励仓库
+    if(win.id==="common") addPoints(100,"抽奖：普通奖励");
+    else if(win.id==="rare") addPoints(500,"抽奖：稀有奖励");
+    else addRewardToInventory(win);
 
-    setTimeout(()=>cyberLotteryBurst(
-      win.rarity==="传说"?"legendary":
-      win.rarity==="史诗"?"epic":"normal"
-    ),80);
-
-    const rarityClass=win.rarity==="史诗"
-      ?"lottery-rarity-epic"
-      :(win.rarity==="传说"?"lottery-rarity-legendary":"");
-
+    setTimeout(()=>cyberLotteryBurst(win.rarity==="传说"?"legendary":win.rarity==="史诗"?"epic":"normal"),80);
+    const rarityClass=win.rarity==="史诗"?"lottery-rarity-epic":(win.rarity==="传说"?"lottery-rarity-legendary":"");
     result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
-    result.classList.remove("rolling");
-    result.classList.add("win-result");
-
-    // 游客本地计数；登录用户的次数已经由 RPC 在云端扣除
-    if(!cloudDraw && countKey){
-      localStorage.setItem(countKey,String(count+1));
-      localStorage.setItem("sl_lottery_total",String(parseInt(localStorage.getItem("sl_lottery_total")||"0")+1));
-    }
-
+    result.classList.remove("rolling");result.classList.add("win-result");
+    localStorage.setItem("sl_lottery_total",String(parseInt(localStorage.getItem("sl_lottery_total")||"0")+1));
     localStorage.setItem("sl_lottery_won","1");
-    updateLotteryUI();
+    await updateLotteryUI();
     toast("🎉 抽奖完成！");
-
-    setTimeout(()=>{
-      machine.classList.remove("win");
-      result.classList.remove("win-result");
-    },1200);
+    if(typeof evaluateAchievements==="function")evaluateAchievements();
+    setTimeout(()=>{machine.classList.remove("win");result.classList.remove("win-result")},1200);
   }
-
   requestAnimationFrame(spin);
 }
+
 
 
 let cloudProfile=null;
