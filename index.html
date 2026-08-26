@@ -1991,6 +1991,112 @@ button:active{
 }
 </style>
 
+
+<style id="security-full-profile-v1">
+.full-profile-card{
+  width:min(500px,calc(100vw - 28px)) !important;
+  max-height:min(88vh,760px);
+  overflow:auto !important;
+  padding:0 !important;
+  border-radius:30px !important;
+  position:relative;
+}
+.full-profile-cover{
+  height:145px;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(66,232,255,.32),transparent 32%),
+    radial-gradient(circle at 80% 30%,rgba(139,92,255,.30),transparent 35%),
+    linear-gradient(135deg,#08172a,#10183a 50%,#160c2a);
+  position:relative;
+  overflow:hidden;
+}
+.full-profile-cover:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(77,163,255,.09) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(77,163,255,.09) 1px,transparent 1px);
+  background-size:28px 28px;
+  mask-image:linear-gradient(to bottom,black,transparent);
+}
+.full-profile-close{
+  position:absolute !important;
+  top:14px;right:14px;
+  z-index:5;
+  border-radius:50% !important;
+}
+.full-profile-avatar-wrap{
+  position:relative;
+  margin:-48px 0 0 25px;
+  width:96px;height:96px;
+  z-index:3;
+}
+.full-profile-avatar{
+  width:96px;height:96px;border-radius:28px;
+  display:grid;place-items:center;
+  overflow:hidden;
+  font-size:32px;font-weight:900;color:#fff;
+  background:linear-gradient(135deg,#4d8dff,#744dff);
+  border:5px solid #0b1423;
+  box-shadow:0 0 0 1px rgba(103,170,255,.28),0 0 32px rgba(66,157,255,.3);
+}
+.full-profile-avatar img{
+  width:100%;height:100%;object-fit:cover;
+}
+.full-profile-online{
+  position:absolute;right:3px;bottom:3px;
+  width:17px;height:17px;border-radius:50%;
+  background:#3ff0a0;border:4px solid #0b1423;
+  box-shadow:0 0 12px rgba(63,240,160,.65);
+}
+.full-profile-main{padding:12px 22px 22px}
+.full-profile-name{
+  color:#f2f8ff;font-size:22px;font-weight:950;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+}
+.full-profile-id{color:#67809d;font-size:10px;margin-top:3px}
+.full-profile-signature{
+  color:#8fa7c0;font-size:12px;line-height:1.6;margin:10px 0 15px;
+}
+.full-profile-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;
+  margin-bottom:18px;
+}
+.full-profile-stats>div{
+  padding:11px 5px;text-align:center;
+  border-radius:16px;
+  background:rgba(20,35,55,.75);
+  border:1px solid rgba(103,158,231,.13);
+}
+.full-profile-stats b{
+  display:block;color:#e9f5ff;font-size:17px;
+}
+.full-profile-stats small{
+  display:block;color:#66809c;font-size:8px;margin-top:3px;
+}
+.full-profile-section-title{
+  color:#bcd3ea;font-size:11px;font-weight:950;
+  margin:14px 0 8px;
+}
+.full-profile-badges,.full-profile-achievements{
+  display:flex;flex-wrap:wrap;gap:7px;
+  min-height:38px;
+}
+.profile-achievement{
+  padding:8px 10px;border-radius:14px;
+  background:rgba(26,42,65,.82);
+  border:1px solid rgba(102,155,225,.14);
+  color:#b8cde2;font-size:9px;
+}
+.full-profile-actions{margin-top:18px}
+@media(max-width:760px){
+  .full-profile-card{width:calc(100vw - 20px)!important;border-radius:27px!important}
+  .full-profile-cover{height:125px}
+  .full-profile-stats{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -2147,7 +2253,8 @@ button:active{
 <div class="modal" id="lotteryModal" onclick="if(event.target===this)closeLottery()">
  <div class="modal-card lottery-card">
   <div class="modal-head"><span>🎁 抽奖活动</span><button class="close" onclick="closeLottery()">×</button></div>
-  <div class="lottery-banner"><div class="gift">🎁</div><h3>Security Lab 幸运抽奖</h3><p>每位用户每天 10 次免费抽奖 · 游客也可以参加</p></div>
+  <div class="lottery-banner"><div class="gift">🎁</div>
+<button class="reward-inventory-open" onclick="openRewardInventory()">🎒 奖励仓库</button><h3>Security Lab 幸运抽奖</h3><p>每位用户每天 10 次免费抽奖 · 游客也可以参加</p></div>
   <div class="lottery-machine" id="lotteryMachine">
    <div class="lottery-pointer">▼</div>
    <div class="lottery-reel" id="lotteryReel">
@@ -2457,7 +2564,7 @@ function renderMembers(){
     const p=getPublicProfile(n);
     const badge=profileBadgeHtml(p);
     const av=p?.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : esc(n[0]||"U");
-    return `<div class="member" onclick="openUser('${esc(n)}')"><div style="position:relative"><div class="avatar">${av}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)} ${badge}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`;
+    return `<div class="member" onclick="openFullProfile('${esc(n)}')"><div style="position:relative"><div class="avatar">${av}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)} ${badge}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`;
   }).join("");
 }
 function setCloudStatus(text,color){
@@ -2617,7 +2724,7 @@ function renderMessages(data){
     acts.children[0].onclick=()=>replyMessage(m);acts.children[1].onclick=()=>copyText(m.message||"");
     if(m.username===nickname){acts.children[2].onclick=()=>editMessage(m);acts.children[3].onclick=()=>deleteMessage(m)}
     row.append(avatar,main,acts);row.addEventListener("contextmenu",e=>{e.preventDefault();showContext(e.clientX,e.clientY,m)});
-    main.querySelector(".msg-user").onclick=()=>openUser(m.username||"游客");
+    main.querySelector(".msg-user").onclick=()=>openFullProfile(m.username||"游客");
     box.appendChild(row);prev=m.username;
   });
   box.scrollTop=box.scrollHeight;
@@ -2962,6 +3069,7 @@ function drawLottery(){
       machine.classList.add("win");
       if(win.rarity==="史诗") machine.classList.add("epic");
       if(win.rarity==="传说") machine.classList.add("legendary");
+      addRewardToInventory(win);
       setTimeout(()=>cyberLotteryBurst(win.rarity==="传说"?"legendary":win.rarity==="史诗"?"epic":"normal"),80);
       const rarityClass=win.rarity==="史诗"?"lottery-rarity-epic":(win.rarity==="传说"?"lottery-rarity-legendary":"");
       result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
@@ -3626,6 +3734,223 @@ function stopVoiceNetworkMonitor(){
   setVoiceNetwork("未检测","warn");
 }
 
+
+/* ===== 奖励仓库 ===== */
+const rewardInventoryKey="sl_reward_inventory_v1";
+let rewardInventoryTab="all";
+
+function getRewardInventory(){
+  try{
+    return JSON.parse(localStorage.getItem(rewardInventoryKey)||"[]");
+  }catch(e){return []}
+}
+function saveRewardInventory(items){
+  localStorage.setItem(rewardInventoryKey,JSON.stringify(items));
+}
+function addRewardToInventory(reward){
+  if(!reward) return;
+  const items=getRewardInventory();
+  const key=String(reward.badge||reward.id||reward.name);
+  let item=items.find(x=>String(x.key)===key);
+  if(item) item.count=(item.count||1)+1;
+  else items.push({
+    key,
+    id:reward.id||key,
+    badge:reward.badge||"",
+    type:reward.badge?"badge":(reward.id==="common"||reward.id==="rare"?"points":"reward"),
+    icon:reward.emoji||reward.icon||"🎁",
+    name:reward.name||"未知奖励",
+    desc:reward.desc||reward.rarity||"抽奖获得",
+    count:1,
+    earnedAt:new Date().toISOString()
+  });
+  saveRewardInventory(items);
+  if(typeof renderRewardInventory==="function") renderRewardInventory();
+}
+function openRewardInventory(){
+  const modal=$("rewardInventoryModal");
+  if(!modal) return;
+  modal.classList.add("show");
+  renderRewardInventory();
+}
+function closeRewardInventory(){
+  $("rewardInventoryModal")?.classList.remove("show");
+}
+function switchRewardTab(tab,btn){
+  rewardInventoryTab=tab;
+  document.querySelectorAll(".reward-tabs button").forEach(b=>b.classList.remove("active"));
+  btn?.classList.add("active");
+  renderRewardInventory();
+}
+function renderRewardInventory(){
+  const list=$("rewardInventoryList");
+  if(!list) return;
+  const items=getRewardInventory();
+  const total=items.reduce((n,x)=>n+(Number(x.count)||1),0);
+  const badges=items.filter(x=>x.type==="badge").reduce((n,x)=>n+(Number(x.count)||1),0);
+  const points=items.filter(x=>x.type==="points").reduce((n,x)=>n+(Number(x.count)||1),0);
+  $("inventoryTotal").textContent=total;
+  $("inventoryBadges").textContent=badges;
+  $("inventoryPoints").textContent=points;
+
+  const shown=items.filter(x=>{
+    if(rewardInventoryTab==="badge") return x.type==="badge";
+    if(rewardInventoryTab==="points") return x.type==="points";
+    return true;
+  });
+  if(!shown.length){
+    list.innerHTML='<div class="reward-empty">🎒 仓库还是空的<br><small>去抽奖获得你的第一份奖励吧</small></div>';
+    return;
+  }
+  list.innerHTML=shown.map(x=>`
+    <div class="reward-item">
+      <div class="reward-item-icon">${x.icon}</div>
+      <div class="reward-item-info">
+        <div class="reward-item-name">${esc(x.name)}</div>
+        <div class="reward-item-desc">${esc(x.desc||"")}</div>
+      </div>
+      <div class="reward-item-count">×${Number(x.count)||1}</div>
+    </div>
+  `).join("");
+}
+
+
+async function openFullProfile(name){
+  const p=getPublicProfile(name)||{};
+  window.__fullProfileName=name;
+  window.__fullProfileProfile=p;
+
+  const modal=$("fullProfileModal");
+  if(!modal) return;
+
+  const avatar=$("fullProfileAvatar");
+  avatar.innerHTML="";
+  if(p.avatar_url){
+    const im=new Image();
+    im.src=p.avatar_url; im.alt="";
+    im.onload=()=>{avatar.innerHTML="";avatar.appendChild(im)};
+    im.onerror=()=>avatar.textContent=(name||"U")[0];
+  }else{
+    avatar.textContent=(name||"U")[0]||"U";
+  }
+
+  $("fullProfileName").innerHTML=esc(name)+" "+profileBadgeHtml(p);
+  $("fullProfileId").textContent=p.id ? "@"+name : "游客账号";
+  $("fullProfileSignature").textContent=name===nickname
+    ? (signature||"这个人很神秘，还没有填写简介。")
+    : "Security Lab 社区成员";
+  $("fullProfileOnline").style.display=(name===nickname || !!p.id)?"block":"none";
+
+  $("profileMsgCount").textContent="—";
+  $("profileLotteryCount").textContent="—";
+  $("profileBadgeCount").textContent="0";
+  $("profilePoints").textContent="—";
+  $("fullProfileBadges").innerHTML='<div class="profile-badges-empty">正在读取云端徽章…</div>';
+  $("fullProfileAchievements").innerHTML='<div class="profile-badges-empty">正在读取…</div>';
+
+  modal.classList.add("show");
+
+  await renderPublicUserBadges(name,p);
+  const badgeCount=$("userBadgeCount")?.textContent || "0";
+  $("profileBadgeCount").textContent=badgeCount;
+
+  // 当前用户可读取本机统计；其他用户保留云端身份信息。
+  if(name===nickname){
+    $("profileMsgCount").textContent=localStorage.getItem("sl_sent_count")||"0";
+    $("profileLotteryCount").textContent=localStorage.getItem("sl_lottery_total")||"0";
+    $("profilePoints").textContent=localStorage.getItem("sl_points")||"0";
+  }
+
+  const achievements=[];
+  const sent=Number(localStorage.getItem("sl_sent_count")||0);
+  const draws=Number(localStorage.getItem("sl_lottery_total")||0);
+  if(name===nickname){
+    if(sent>=10) achievements.push("💬 初次发言");
+    if(sent>=100) achievements.push("🗣️ 聊天达人");
+    if(sent>=500) achievements.push("🔥 话题王者");
+    if(draws>=100) achievements.push("🎯 百抽挑战者");
+    if(draws>=500) achievements.push("🎰 抽奖狂热者");
+  }
+  $("fullProfileAchievements").innerHTML=achievements.length
+    ? achievements.map(x=>`<div class="profile-achievement">${x}</div>`).join("")
+    : '<div class="profile-badges-empty">暂无已展示成就</div>';
+}
+
+function closeFullProfile(){
+  $("fullProfileModal")?.classList.remove("show");
+}
+function startDMFromFullProfile(){
+  const n=window.__fullProfileName;
+  closeFullProfile();
+  if(n) startDM();
+}
+function mentionFromFullProfile(){
+  const n=window.__fullProfileName;
+  closeFullProfile();
+  if(n) mentionUser();
+}
+
 </script>
+
+<!-- 奖励仓库 -->
+<div class="modal" id="rewardInventoryModal" onclick="if(event.target===this)closeRewardInventory()">
+  <div class="modal-card reward-inventory-card">
+    <div class="modal-head">
+      <span>🎒 奖励仓库</span>
+      <button class="close" onclick="closeRewardInventory()">×</button>
+    </div>
+    <div class="reward-inventory-summary">
+      <div><b id="inventoryTotal">0</b><small>全部奖励</small></div>
+      <div><b id="inventoryBadges">0</b><small>徽章</small></div>
+      <div><b id="inventoryPoints">0</b><small>积分</small></div>
+    </div>
+    <div class="reward-tabs">
+      <button class="active" onclick="switchRewardTab('all',this)">全部</button>
+      <button onclick="switchRewardTab('badge',this)">🏅 徽章</button>
+      <button onclick="switchRewardTab('points',this)">🎫 积分</button>
+    </div>
+    <div id="rewardInventoryList" class="reward-inventory-list"></div>
+  </div>
+</div>
+
+
+<div class="modal" id="fullProfileModal" onclick="if(event.target===this)closeFullProfile()">
+  <div class="modal-card full-profile-card">
+    <div class="full-profile-cover" id="fullProfileCover"></div>
+    <button class="close full-profile-close" onclick="closeFullProfile()">×</button>
+    <div class="full-profile-avatar-wrap">
+      <div class="full-profile-avatar" id="fullProfileAvatar">U</div>
+      <span class="full-profile-online" id="fullProfileOnline"></span>
+    </div>
+    <div class="full-profile-main">
+      <div class="full-profile-name" id="fullProfileName">用户</div>
+      <div class="full-profile-id" id="fullProfileId">@user</div>
+      <div class="full-profile-signature" id="fullProfileSignature">Security Lab 社区成员</div>
+
+      <div class="full-profile-stats">
+        <div><b id="profileMsgCount">0</b><small>消息</small></div>
+        <div><b id="profileLotteryCount">0</b><small>抽奖</small></div>
+        <div><b id="profileBadgeCount">0</b><small>徽章</small></div>
+        <div><b id="profilePoints">0</b><small>积分</small></div>
+      </div>
+
+      <div class="full-profile-section-title">🎖️ 徽章</div>
+      <div class="full-profile-badges" id="fullProfileBadges">
+        <div class="profile-badges-empty">正在读取…</div>
+      </div>
+
+      <div class="full-profile-section-title">🏆 成就</div>
+      <div class="full-profile-achievements" id="fullProfileAchievements">
+        <div class="profile-badges-empty">暂无成就</div>
+      </div>
+
+      <div class="row-btn full-profile-actions">
+        <button class="primary" onclick="startDMFromFullProfile()">💬 私信</button>
+        <button class="primary" style="background:#101b2d;color:#a9c0d9" onclick="mentionFromFullProfile()">@ 提及</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
