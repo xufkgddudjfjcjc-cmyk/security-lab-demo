@@ -2864,6 +2864,63 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v6-mobile-actions-css">
+@media (max-width:800px){
+  /* 原来的底部小按钮容易被抽屉/遮罩层影响，移动端改为独立浮层按钮 */
+  .userbar-actions{
+    display:none !important;
+  }
+
+  #mobileQuickActions{
+    position:fixed !important;
+    left:max(14px,env(safe-area-inset-left)) !important;
+    bottom:calc(78px + env(safe-area-inset-bottom)) !important;
+    width:calc(min(88vw,340px) - 28px) !important;
+    height:52px !important;
+    z-index:9999 !important;
+    display:flex !important;
+    justify-content:flex-end !important;
+    align-items:center !important;
+    gap:8px !important;
+    pointer-events:none !important;
+  }
+
+  #mobileQuickActions button{
+    pointer-events:auto !important;
+    width:46px !important;
+    height:46px !important;
+    border:1px solid rgba(120,176,255,.22) !important;
+    border-radius:15px !important;
+    background:rgba(18,28,45,.96) !important;
+    color:#dbeaff !important;
+    font-size:22px !important;
+    display:grid !important;
+    place-items:center !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.38),inset 0 0 18px rgba(91,140,255,.05) !important;
+    backdrop-filter:blur(18px) !important;
+    -webkit-backdrop-filter:blur(18px) !important;
+    touch-action:manipulation !important;
+    -webkit-tap-highlight-color:transparent !important;
+  }
+
+  #mobileQuickActions button:active{
+    transform:scale(.90) !important;
+    background:rgba(56,94,160,.96) !important;
+  }
+
+  #mobileQuickSettings{order:1}
+  #mobileQuickProfile{order:2}
+
+  #settingsModal,#profileModal{
+    z-index:10000 !important;
+  }
+}
+@media (min-width:801px){
+  #mobileQuickActions{display:none !important}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -5998,6 +6055,64 @@ with check (auth.uid() = user_id);
     document.addEventListener('DOMContentLoaded', bindUserbarButtons);
   }else{
     bindUserbarButtons();
+  }
+})();
+</script>
+
+
+<div id="mobileQuickActions" aria-label="快速操作">
+  <button id="mobileQuickSettings" type="button" aria-label="设置">⚙️</button>
+  <button id="mobileQuickProfile" type="button" aria-label="我的资料">⋯</button>
+</div>
+
+
+<script id="security-lab-v6-mobile-actions-js">
+(function(){
+  function showModal(id){
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.classList.add('show');
+    el.style.display='flex';
+    el.style.pointerEvents='auto';
+  }
+
+  function bind(){
+    var settings=document.getElementById('mobileQuickSettings');
+    var profile=document.getElementById('mobileQuickProfile');
+
+    if(settings && !settings.dataset.bound){
+      settings.addEventListener('touchend',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        showModal('settingsModal');
+      },{passive:false});
+      settings.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        showModal('settingsModal');
+      });
+      settings.dataset.bound='1';
+    }
+
+    if(profile && !profile.dataset.bound){
+      profile.addEventListener('touchend',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        showModal('profileModal');
+      },{passive:false});
+      profile.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        showModal('profileModal');
+      });
+      profile.dataset.bound='1';
+    }
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',bind);
+  }else{
+    bind();
   }
 })();
 </script>
