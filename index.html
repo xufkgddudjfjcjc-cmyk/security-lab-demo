@@ -2269,6 +2269,13 @@ button:active{
 .event-empty{text-align:center;padding:45px 10px;color:#637c96;font-size:10px}
 </style>
 
+
+<style id="cloud-events-v2">
+.event-countdown{min-width:58px;text-align:right}
+.event-time{letter-spacing:.15px}
+.event-item[data-status="ended"]{opacity:.55}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -4709,11 +4716,137 @@ async function renderLeaderboard(){
 
 const SECURITY_LAB_STATS_SQL='create table if not exists public.user_stats (\n  user_id uuid primary key references auth.users(id) on delete cascade,\n  display_name text,\n  avatar_url text,\n  messages integer not null default 0,\n  lottery_count integer not null default 0,\n  badge_count integer not null default 0,\n  points integer not null default 0,\n  streak integer not null default 0,\n  updated_at timestamptz not null default now()\n);\n\nalter table public.user_stats enable row level security;\n\ncreate policy "Anyone can view leaderboard stats"\non public.user_stats for select to authenticated\nusing (true);\n\ncreate policy "Users can insert own stats"\non public.user_stats for insert to authenticated\nwith check (auth.uid() = user_id);\n\ncreate policy "Users can update own stats"\non public.user_stats for update to authenticated\nusing (auth.uid() = user_id)\nwith check (auth.uid() = user_id);';
 
-const SECURITY_LAB_EVENTS=[
+const DEFAULT_LAB_EVENTS=[
  {id:"cyber_week",name:"Cyber Week",icon:"⚡",desc:"累计完成 10 次抽奖，领取 500 积分与限定徽章。",goal:10,metric:"lottery",points:500,badge:"event_cyber"},
  {id:"badge_hunt",name:"徽章猎人",icon:"🏅",desc:"在活动期间获得 3 个不同徽章。",goal:3,metric:"badges",points:600,badge:"event_hunter"},
  {id:"chat_rush",name:"Neon Chat Rush",icon:"💬",desc:"发送 100 条消息，解锁活动奖励。",goal:100,metric:"messages",points:300,badge:"event_chat"}
 ];
+let SECURITY_LAB_EVENTS=[...DEFAULT_LAB_EVENTS];
+
+async function loadCloudEvents(){
+  const cloudStatus=$('eventCloudStatus'); if(cloudStatus) cloudStatus.textContent=(currentUser&&sb)?'☁️ 云端':'📱 本机';
+  if(!currentUser || !sb){
+    SECURITY_LAB_EVENTS=[...DEFAULT_LAB_EVENTS];
+    return;
+  }
+  try{
+    const {data,error}=await sb.from("lab_events")
+      .select("event_id,name,description,icon,starts_at,ends_at,reward_points,reward_badge_id,active")
+      .eq("active",true)
+      .order("starts_at",{ascending:true});
+    if(!error && Array.isArray(data) && data.length){
+      SECURITY_LAB_EVENTS=data.map(x=>({
+        id:x.event_id,
+        name:x.name,
+        icon:x.icon||"🎁",
+        desc:x.description||"",
+        goal:10,
+        metric:"lottery",
+        points:Number(x.reward_points)||0,
+        badge:x.reward_badge_id||"",
+        startsAt:x.starts_at,
+        endsAt:x.ends_at
+      }));
+    }else{
+      SECURITY_LAB_EVENTS=[...DEFAULT_LAB_EVENTS];
+    }
+  }catch(e){
+    console.warn("读取云端活动失败",e);
+    SECURITY_LAB_EVENTS=[...DEFAULT_LAB_EVENTS];
+  }
+}
+
+function eventMetric(e){
+  if(e.metric==="lottery") return Number(localStorage.getItem("sl_lottery_total")||0);
+  if(e.metric==="messages") return Number(localStorage.getItem("sl_sent_count")||0);
+  if(e.metric==="badges") return Number($("userBadgeCount")?.textContent||0);
+  return 0;
+}
+function eventStatus(e){
+  const now=Date.now();
+  const s=e.startsAt?new Date(e.startsAt).getTime():0;
+  const end=e.endsAt?new Date(e.endsAt).getTime():0;
+  if(s && now<s)return "upcoming";
+  if(end && now>=end)return "ended";
+  return "active";
+}
+function eventCountdown(e){
+  const now=Date.now();
+  const s=e.startsAt?new Date(e.startsAt).getTime():0;
+  const end=e.endsAt?new Date(e.endsAt).getTime():0;
+  let diff=eventStatus(e)==="upcoming"?s-now:end-now;
+  if(diff<0)diff=0;
+  const d=Math.floor(diff/86400000); diff-=d*86400000;
+  const h=Math.floor(diff/3600000); diff-=h*3600000;
+  const m=Math.floor(diff/60000); diff-=m*60000;
+  const sec=Math.floor(diff/1000);
+  return `${d?d+"天 ":""}${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+
+async function openEvents(){
+  $("eventCenterModal")?.classList.add("show");
+  await loadCloudEvents();
+  await renderEvents();
+  if(eventTimer)clearInterval(eventTimer);
+  eventTimer=setInterval(renderEventCountdowns,1000);
+}
+function closeEvents(){
+  $("eventCenterModal")?.classList.remove("show");
+  if(eventTimer){clearInterval(eventTimer);eventTimer=null}
+}
+async function renderEvents(){
+  const list=$("eventList"); if(!list)return;
+  if(!SECURITY_LAB_EVENTS.length){
+    list.innerHTML='<div class="event-empty">📭 当前没有活动</div>';
+    return;
+  }
+  list.innerHTML=SECURITY_LAB_EVENTS.map(e=>{
+    const status=eventStatus(e);
+    const progress=Math.min(e.goal,eventMetric(e));
+    const pct=Math.round(progress/e.goal*100);
+    const claimed=localStorage.getItem("sl_event_claim_"+e.id)==="1";
+    const statusText=status==="upcoming"?"即将开始":status==="ended"?"已结束":"进行中";
+    return `<div class="event-item">
+      <div class="event-head">
+        <div class="event-icon">${e.icon}</div>
+        <div style="flex:1">
+          <div class="event-name">${esc(e.name)}</div>
+          <div class="event-desc">${esc(e.desc)}</div>
+        </div>
+        <div class="event-countdown" data-event-countdown="${e.id}">${statusText}</div>
+      </div>
+      <div class="event-time">⏳ <span data-event-time="${e.id}">${status==="upcoming"?"距离开始 ":"剩余 "}${eventCountdown(e)}</span></div>
+      <div class="event-bar"><i style="width:${pct}%"></i></div>
+      <div class="event-foot">
+        <div class="event-reward">🎁 ${e.points} 积分${e.badge?" + 限定徽章":""} · ${progress}/${e.goal}</div>
+        <button class="event-claim" ${status!=="active"||progress<e.goal||claimed?"disabled":""} onclick="claimEvent('${e.id}')">${claimed?"✅ 已领取":status==="upcoming"?"未开始":status==="ended"?"已结束":"领取奖励"}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function renderEventCountdowns(){
+  SECURITY_LAB_EVENTS.forEach(e=>{
+    const s=eventStatus(e);
+    const el=document.querySelector(`[data-event-countdown="${e.id}"]`);
+    const tm=document.querySelector(`[data-event-time="${e.id}"]`);
+    if(el)el.textContent=s==="upcoming"?"即将开始":s==="ended"?"已结束":"进行中";
+    if(tm)tm.textContent=s==="upcoming"?"距离开始 "+eventCountdown(e):s==="ended"?"活动已结束":"剩余 "+eventCountdown(e);
+  });
+}
+async function claimEvent(id){
+  const e=SECURITY_LAB_EVENTS.find(x=>x.id===id); if(!e)return;
+  if(eventStatus(e)!=="active"){toast("活动当前不可领取");return}
+  if(eventMetric(e)<e.goal){toast("还没有完成活动");return}
+  if(localStorage.getItem("sl_event_claim_"+id)==="1"){toast("已经领取过了");return}
+  await addPoints(e.points,"活动："+e.name);
+  if(e.badge){
+    await addRewardToInventory({id:e.badge,badge:e.badge,name:e.name+" 限定徽章",emoji:e.icon,desc:"限时活动限定奖励",rarity:"限定"});
+  }
+  localStorage.setItem("sl_event_claim_"+id,"1");
+  toast("🎁 活动奖励已领取");
+  await renderEvents();
+}
+
 
 let eventTimer=null;
 
@@ -4771,6 +4904,8 @@ async function claimEvent(id){
 
 
 const SECURITY_LAB_EVENT_SQL='create table if not exists public.lab_events (\n  id bigint generated by default as identity primary key,\n  event_id text unique not null,\n  name text not null,\n  description text,\n  icon text,\n  starts_at timestamptz not null,\n  ends_at timestamptz not null,\n  reward_points integer not null default 0,\n  reward_badge_id text,\n  active boolean not null default true\n);\n\ncreate table if not exists public.user_event_progress (\n  id bigint generated by default as identity primary key,\n  event_id text not null references public.lab_events(event_id) on delete cascade,\n  user_id uuid not null references auth.users(id) on delete cascade,\n  progress integer not null default 0,\n  claimed boolean not null default false,\n  updated_at timestamptz not null default now(),\n  unique(event_id,user_id)\n);\n\nalter table public.lab_events enable row level security;\nalter table public.user_event_progress enable row level security;\n\ncreate policy "Anyone can view active events"\non public.lab_events for select to authenticated\nusing (active = true);\n\ncreate policy "Users can view own event progress"\non public.user_event_progress for select to authenticated\nusing (auth.uid() = user_id);\n\ncreate policy "Users can insert own event progress"\non public.user_event_progress for insert to authenticated\nwith check (auth.uid() = user_id);\n\ncreate policy "Users can update own event progress"\non public.user_event_progress for update to authenticated\nusing (auth.uid() = user_id)\nwith check (auth.uid() = user_id);';
+
+const SECURITY_LAB_CLOUD_EVENTS_SQL='create table if not exists public.lab_events (\n  id bigint generated by default as identity primary key,\n  event_id text unique not null,\n  name text not null,\n  description text,\n  icon text,\n  starts_at timestamptz not null,\n  ends_at timestamptz not null,\n  reward_points integer not null default 0,\n  reward_badge_id text,\n  active boolean not null default true\n);\nalter table public.lab_events enable row level security;\ncreate policy "Anyone can view active events" on public.lab_events for select to authenticated using (active=true);'
 </script>
 
 <!-- 奖励仓库 -->
@@ -4951,7 +5086,7 @@ with check (auth.uid() = user_id);
 <div class="modal" id="eventCenterModal" onclick="if(event.target===this)closeEvents()">
   <div class="modal-card event-card">
     <button class="close" onclick="closeEvents()">×</button>
-    <div class="event-title">🎁 限时活动</div>
+    <div class="event-title">🎁 限时活动 <small id="eventCloudStatus" style="font-size:9px;color:#62d7ff;margin-left:7px">☁️ 云端</small></div>
     <div class="event-sub">完成活动任务，领取限定奖励</div>
     <div id="eventList" class="event-list"></div>
   </div>
