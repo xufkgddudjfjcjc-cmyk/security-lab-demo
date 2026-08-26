@@ -174,29 +174,133 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 }
 </style>
 
-<style id="security-lab-animation-pack">
-@keyframes slFadeUp{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-@keyframes slPop{0%{opacity:0;transform:scale(.92) translateY(8px)}70%{opacity:1;transform:scale(1.015)}100%{transform:scale(1)}}
-@keyframes slPulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.12)}50%{box-shadow:0 0 0 9px rgba(59,130,246,0)}}
-@keyframes slDot{0%,100%{opacity:.55;transform:scale(.82)}50%{opacity:1;transform:scale(1.18)}}
-@keyframes slScan{0%{transform:translateY(-100%);opacity:0}15%{opacity:.8}85%{opacity:.35}100%{transform:translateY(100%);opacity:0}}
-@keyframes slFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.sidebar,.chat,.profile{animation:slFadeUp .7s cubic-bezier(.22,1,.36,1) both}
-.sidebar{animation-delay:.05s}.chat{animation-delay:.11s}.profile{animation-delay:.17s}
-.message{animation:slFadeUp .32s cubic-bezier(.22,1,.36,1) both}
-.green-dot{animation:slDot 1.8s ease-in-out infinite}
-button:not(:disabled){transition:transform .16s cubic-bezier(.22,1,.36,1),filter .2s,box-shadow .2s}
-button:not(:disabled):active{transform:scale(.95)}
-.modal.show .modal-box,.settings-modal.show .settings-card,.widget-box{animation:slPop .38s cubic-bezier(.22,1,.36,1) both}
-.weather,.user-card{animation:slFloat 5s ease-in-out infinite}
-.send{animation:slPulse 2.4s ease-in-out infinite}.send:active{animation:none}
-.map-widget,.weather-chart{position:relative}
-.map-widget::after,.weather-chart::after{content:"";position:absolute;left:0;right:0;height:2px;top:0;background:linear-gradient(90deg,transparent,rgba(100,190,255,.55),transparent);animation:slScan 4.5s ease-in-out infinite;pointer-events:none}
-.mobile-tools-overlay:not([hidden]) .mobile-tools-panel{animation:slPop .4s cubic-bezier(.22,1,.36,1) both}
-.mobile-tools-grid button{animation:slFadeUp .35s cubic-bezier(.22,1,.36,1) both}
-.mobile-tools-grid button:nth-child(2){animation-delay:.035s}.mobile-tools-grid button:nth-child(3){animation-delay:.07s}.mobile-tools-grid button:nth-child(4){animation-delay:.105s}.mobile-tools-grid button:nth-child(5){animation-delay:.14s}.mobile-tools-grid button:nth-child(6){animation-delay:.175s}.mobile-tools-grid button:nth-child(7){animation-delay:.21s}.mobile-tools-grid button:nth-child(8){animation-delay:.245s}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-</style></head>
+
+<style id="kook-ui">
+.app{
+  display:grid;
+  grid-template-columns:68px 230px minmax(0,1fr);
+  gap:0;
+  padding:0;
+  height:100vh;
+}
+.server-bar{
+  width:68px;height:100vh;padding:14px 10px;
+  background:#11151d;border-right:1px solid rgba(255,255,255,.05);
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  overflow-y:auto;
+}
+.server-icon{
+  width:46px;height:46px;border:0;border-radius:16px;
+  background:#202632;color:#dbe8ff;display:grid;place-items:center;
+  font-size:21px;transition:border-radius .2s,background .2s,transform .2s;
+}
+.server-icon:hover{background:#2d3748;border-radius:13px}
+.server-icon.active{
+  background:linear-gradient(135deg,#3b82f6,#6366f1);
+  border-radius:13px;box-shadow:0 8px 25px rgba(59,130,246,.28)
+}
+.server-divider{width:32px;height:1px;background:rgba(255,255,255,.08);margin:3px 0}
+.add-server{color:#69e6a4}
+
+.sidebar{
+  width:auto;height:100vh;border:0;border-radius:0;padding:0;
+  background:linear-gradient(180deg,#171b23,#12161d);
+  box-shadow:none;backdrop-filter:none;display:flex;flex-direction:column;
+}
+.server-header{
+  height:62px;padding:0 15px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06);
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.server-header .brand-name{font-size:15px;color:#f1f5f9}
+.server-header .sub{color:#737f91}
+.server-more{width:30px;height:30px;border:0;background:transparent;color:#8995a7;font-size:18px}
+.channel-section{padding:14px 9px 0}
+.channel-section-title{
+  height:27px;padding:0 8px;display:flex;align-items:center;
+  justify-content:space-between;color:#7f8a9c;font-size:11px;font-weight:800;
+}
+.channel-section-title button{border:0;background:transparent;color:#8c98aa;font-size:17px}
+.channel{
+  height:38px;margin:2px 0;padding:0 10px;border:0;border-radius:7px;
+  background:transparent;color:#8995a7;display:flex;align-items:center;
+  gap:9px;font-size:13px;transition:background .15s,color .15s;
+}
+.channel:hover{background:rgba(255,255,255,.055);color:#dbe4f0}
+.channel.active{background:#2b3442;color:#fff;border:0}
+.channel-icon{width:20px;color:#7f8b9d;font-size:18px}
+.channel.active .channel-icon{color:#cbd5e1}
+.channel-count{margin-left:auto;color:#ef536d}
+.soon{margin-left:auto;font-size:8px;color:#596575}
+
+.current-user{
+  margin-top:auto;min-height:62px;padding:9px;display:flex;align-items:center;
+  gap:9px;background:#10141b;border-top:1px solid rgba(255,255,255,.05);
+}
+.current-user-avatar{
+  width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;font-weight:800;overflow:hidden;
+}
+.current-user-avatar img{width:100%;height:100%;object-fit:cover}
+.current-user-info{min-width:0;flex:1;display:flex;flex-direction:column}
+.current-user-info b{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px}
+.current-user-info span{color:#55d98a;font-size:9px;margin-top:2px}
+.current-user button{border:0;background:transparent;color:#7e8999;font-size:16px}
+
+.chat{
+  height:100vh;border:0;border-radius:0;background:#1b1f27;
+  box-shadow:none;backdrop-filter:none;min-width:0;
+}
+.header{
+  height:62px;padding:0 20px;background:#1b1f27;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.chat-name{font-size:15px}
+.desc{color:#717d8e}
+.messages{padding:20px 25px;background:#1b1f27}
+.message{padding:7px 10px;margin-bottom:3px;border-radius:7px}
+.message:hover{background:rgba(255,255,255,.025)}
+.avatar{width:40px;height:40px;border-radius:11px}
+.user{font-size:13px}.time{color:#606b7a}
+.text{color:#c4ccd8;font-size:13px;line-height:1.55}
+.actions{opacity:0;transition:opacity .15s}
+.message:hover .actions{opacity:1}
+.input-area{padding:10px 20px 18px;background:#1b1f27;border-top:0}
+.input-box{
+  min-height:48px;border:0;border-radius:9px;background:#10141b;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.035);
+}
+.message-input{font-size:13px}.attach{background:transparent;color:#7f8a9b}
+.send{width:36px;height:36px;border-radius:9px;background:#5865f2;animation:none}
+.send:hover{filter:brightness(1.12)}
+.search{background:#10141b;border:0;color:#dbe4f0;height:32px}
+.legacy-profile{display:none !important}
+.mobile-channel-button{
+  display:none;width:34px;height:34px;border:0;border-radius:9px;
+  background:#252c38;color:#dce6f5;font-size:18px;flex-shrink:0;
+}
+@media(max-width:650px){
+  .app{display:grid;grid-template-columns:64px minmax(0,1fr);height:100vh;padding:0}
+  .server-bar{display:flex}
+  .sidebar{
+    position:fixed;left:64px;top:0;bottom:0;width:240px;z-index:5000;
+    transform:translateX(-100%);transition:transform .25s ease;
+    box-shadow:15px 0 40px rgba(0,0,0,.4);
+  }
+  .sidebar.mobile-open{transform:translateX(0)}
+  .chat{grid-column:2;width:calc(100vw - 64px);height:100vh}
+  .header{height:58px;padding:0 10px}
+  .mobile-channel-button{display:block}
+  .tools .search{display:none}
+  .header-online{display:none}
+  .messages{padding:14px 9px}
+  .message{padding:7px 4px}
+  .input-area{padding:7px 8px calc(8px + env(safe-area-inset-bottom))}
+  .meta{display:none}
+}
+</style>
+
+</head>
 <body>
 <!-- 移动端功能菜单 -->
 <button id="mobileToolsBtn" class="mobile-tools-btn" aria-label="打开功能菜单">☰</button>
@@ -225,74 +329,153 @@ button:not(:disabled):active{transform:scale(.95)}
 <div id="boot"><div class="boot"><div class="logo"></div><div class="boot-name">SECURITY LAB</div><div class="boot-line"></div></div></div>
 
 <div class="app">
-<aside class="sidebar">
-  <div class="brand"><div class="logo"></div><div><div class="brand-name">Security Lab</div><div class="sub">Community</div></div></div>
-  <div class="section">CHANNELS</div>
-  <div class="channel active" onclick="switchChannel('general','总聊天室',this)"><span class="channel-icon">#</span><span>总聊天室</span><span class="channel-count">●</span></div>
-  <div class="channel" onclick="switchChannel('tech','技术交流',this)"><span class="channel-icon">#</span><span>技术交流</span></div>
-  <div class="channel" onclick="switchChannel('chat','随便聊聊',this)"><span class="channel-icon">#</span><span>随便聊聊</span></div>
-  <div class="channel" onclick="switchChannel('security','安全公告',this)"><span class="channel-icon">#</span><span>安全公告</span></div>
-  <div class="channel" onclick="switchChannel('share','分享区',this)"><span class="channel-icon">#</span><span>分享区</span></div>
-  <div class="online"><span class="dot"></span><span id="serverStatus">本地模式</span><br><span style="color:#6585a8">在线成员约 <b id="onlineCount">1</b></span></div>
-</aside>
 
-<main class="chat">
-<header class="header">
-  <div class="title"><div class="hash">#</div><div><div id="chatName" class="chat-name">总聊天室</div><div id="chatDescription" class="desc">Security Lab Community</div></div></div>
-  <div class="tools">
-    <input id="messageSearch" class="search" type="search" placeholder="搜索当前消息">
-    <button class="tool" title="刷新" onclick="loadMessages()">↻</button>
-    <button id="notifyBtn" class="tool" title="通知" onclick="toggleNotifications()">🔔</button>
-    <span><span class="dot"></span><span id="connectionText">在线</span></span>
-  </div>
-</header>
+  <!-- 服务器栏 -->
+  <aside class="server-bar">
+    <button class="server-icon active" onclick="selectServer('Security Lab',this)">🛡️</button>
+    <button class="server-icon" onclick="selectServer('安全实验室',this)">🧪</button>
+    <button class="server-icon" onclick="selectServer('技术交流',this)">💻</button>
+    <div class="server-divider"></div>
+    <button class="server-icon add-server" onclick="showToast('创建服务器功能即将加入')">＋</button>
+  </aside>
 
-<section id="messages" class="messages"></section>
+  <!-- 频道栏 -->
+  <aside class="sidebar">
+    <div class="server-header">
+      <div>
+        <div class="brand-name">Security Lab</div>
+        <div class="sub">Community</div>
+      </div>
+      <button class="server-more">⌄</button>
+    </div>
 
-<div class="input-area">
-  <div id="attachmentPreview" class="attachment-preview"><img id="attachmentThumb"><span id="attachmentName"></span><button class="remove-attachment" onclick="removeAttachment()">✕</button></div>
-  <div class="input-box">
-    <button class="attach" title="上传图片或文件" onclick="document.getElementById('fileInput').click()">＋</button>
-    <input id="fileInput" class="file-input" type="file" accept="image/*,.txt,.pdf,.zip,.rar,.md,.json">
-    <input id="messageInput" class="message-input" maxlength="500" autocomplete="off" placeholder="发送消息...">
-    <button id="sendButton" class="send">➤</button>
-  </div>
-  <div class="meta"><span>无需登录 · 本地/云端聊天</span><span id="charCount">0 / 500</span></div>
-</div>
-</main>
+    <div class="channel-section">
+      <div class="channel-section-title">
+        <span>文字频道</span>
+        <button onclick="showToast('创建频道功能即将加入')">＋</button>
+      </div>
 
-<aside class="profile">
-<div class="profile-title">PROFILE</div>
-<div class="card">
-  <div class="user-main"><div id="bigAvatar" class="big-avatar">游</div><div><div id="profileName" style="font-weight:800">游客</div><div id="profileSignature" class="signature">Security Lab Member</div><div style="color:#54e29a;font-size:10px;margin-top:5px"><span class="dot"></span>在线</div></div></div>
-  <button class="btn" onclick="openProfile()">✏️ 编辑个人资料</button>
-  <button class="btn" onclick="openSettings()">⚙️ 设置中心</button>
-  <button class="btn" onclick="openSecurityLab()">🛡️ 安全实验室</button>
-  <div class="divider"></div>
-  <div class="row">📍 <span id="location">获取位置中...</span></div>
-  <div class="row">🕐 <span id="localTime">--:--:--</span></div>
-  <div class="row">💬 <span id="messageStat">0 条本机消息</span></div>
-</div>
+      <div class="channel active" onclick="switchChannel('general','总聊天室',this)">
+        <span class="channel-icon">#</span><span>总聊天室</span><span class="channel-count">●</span>
+      </div>
+      <div class="channel" onclick="switchChannel('tech','技术交流',this)">
+        <span class="channel-icon">#</span><span>技术交流</span>
+      </div>
+      <div class="channel" onclick="switchChannel('chat','随便聊聊',this)">
+        <span class="channel-icon">#</span><span>随便聊聊</span>
+      </div>
+      <div class="channel" onclick="switchChannel('security','安全公告',this)">
+        <span class="channel-icon">#</span><span>安全公告</span>
+      </div>
+      <div class="channel" onclick="switchChannel('share','分享区',this)">
+        <span class="channel-icon">#</span><span>分享区</span>
+      </div>
+    </div>
 
-<div class="profile-title" style="margin-top:22px">WEATHER</div>
-<div class="weather">
-<div class="weather-top"><div id="temperature" class="temp">--°</div><div id="weatherIcon" class="weather-icon">🌤️</div></div>
-<div id="weatherCity" class="weather-city">获取天气中...</div>
-<div class="weather-detail"><div class="small">💧 湿度<strong id="humidity">--%</strong></div><div class="small">💨 风速<strong id="wind">-- km/h</strong></div></div>
-<div id="weatherStatus" style="margin-top:12px;color:#7794b5;font-size:10px">正在获取天气...</div>
-</div>
+    <div class="channel-section">
+      <div class="channel-section-title"><span>社区</span></div>
+      <div class="channel">
+        <span class="channel-icon">🔊</span><span>语音频道</span><span class="soon">暂未开放</span>
+      </div>
+    </div>
 
-<div class="profile-title" style="margin-top:22px">COMMUNITY</div>
-<div class="feature-card">
- <div style="font-weight:800">社区状态</div>
- <div class="feature-grid">
-  <div class="feature"><b id="totalMessages">0</b>本机消息</div>
-  <div class="feature"><b id="channelCount">5</b>频道</div>
-  <div class="feature"><b id="memberCount">1</b>在线成员</div>
-  <div class="feature"><b>24/7</b>可用</div>
- </div>
-</div>
-</aside>
+    <div class="current-user">
+      <div id="currentUserAvatar" class="current-user-avatar">游</div>
+      <div class="current-user-info">
+        <b id="currentUserName">游客</b>
+        <span>在线</span>
+      </div>
+      <button onclick="openSettings()" title="设置">⚙️</button>
+    </div>
+  </aside>
+
+  <!-- 聊天区 -->
+  <main class="chat">
+    <header class="header">
+      <button class="mobile-channel-button" onclick="toggleMobileSidebar()" aria-label="频道">☰</button>
+
+      <div class="title">
+        <div class="hash">#</div>
+        <div>
+          <div id="chatName" class="chat-name">总聊天室</div>
+          <div id="chatDescription" class="desc">Security Lab Community</div>
+        </div>
+      </div>
+
+      <div class="tools">
+        <input id="messageSearch" class="search" type="search" placeholder="搜索消息">
+        <button class="tool" title="刷新" onclick="loadMessages()">↻</button>
+        <button id="notifyBtn" class="tool" title="通知" onclick="toggleNotifications()">🔔</button>
+        <span class="header-online"><span class="dot"></span><span id="connectionText">在线</span></span>
+      </div>
+    </header>
+
+    <section id="messages" class="messages"></section>
+
+    <div class="input-area">
+      <div id="attachmentPreview" class="attachment-preview">
+        <img id="attachmentThumb">
+        <span id="attachmentName"></span>
+        <button class="remove-attachment" onclick="removeAttachment()">✕</button>
+      </div>
+
+      <div class="input-box">
+        <button class="attach" title="上传图片或文件" onclick="document.getElementById('fileInput').click()">＋</button>
+        <input id="fileInput" class="file-input" type="file" accept="image/*,.txt,.pdf,.zip,.rar,.md,.json">
+        <input id="messageInput" class="message-input" maxlength="500" autocomplete="off" placeholder="发送消息...">
+        <button id="sendButton" class="send">➤</button>
+      </div>
+
+      <div class="meta">
+        <span>无需登录 · 本地/云端聊天</span>
+        <span id="charCount">0 / 500</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- 保留原资料/天气 DOM，隐藏常驻显示，供现有 JS 使用 -->
+  <aside class="profile legacy-profile">
+    <div class="profile-title">PROFILE</div>
+    <div class="card">
+      <div class="user-main">
+        <div id="bigAvatar" class="big-avatar">游</div>
+        <div>
+          <div id="profileName" style="font-weight:800">游客</div>
+          <div id="profileSignature" class="signature">Security Lab Member</div>
+          <div style="color:#54e29a;font-size:10px;margin-top:5px"><span class="dot"></span>在线</div>
+        </div>
+      </div>
+      <button class="btn" onclick="openProfile()">✏️ 编辑个人资料</button>
+      <button class="btn" onclick="openSettings()">⚙️ 设置中心</button>
+      <button class="btn" onclick="openSecurityLab()">🛡️ 安全实验室</button>
+      <div class="divider"></div>
+      <div class="row">📍 <span id="location">获取位置中...</span></div>
+      <div class="row">🕐 <span id="localTime">--:--:--</span></div>
+      <div class="row">💬 <span id="messageStat">0 条本机消息</span></div>
+    </div>
+
+    <div class="profile-title" style="margin-top:22px">WEATHER</div>
+    <div class="weather">
+      <div class="weather-top"><div id="temperature" class="temp">--°</div><div id="weatherIcon" class="weather-icon">🌤️</div></div>
+      <div id="weatherCity" class="weather-city">获取天气中...</div>
+      <div class="weather-detail">
+        <div class="small">💧 湿度<strong id="humidity">--%</strong></div>
+        <div class="small">💨 风速<strong id="wind">-- km/h</strong></div>
+      </div>
+      <div id="weatherStatus" style="margin-top:12px;color:#7794b5;font-size:10px">正在获取天气...</div>
+    </div>
+
+    <div class="profile-title" style="margin-top:22px">COMMUNITY</div>
+    <div class="feature-card">
+      <div style="font-weight:800">社区状态</div>
+      <div class="feature-grid">
+        <div class="feature"><b id="totalMessages">0</b>本机消息</div>
+        <div class="feature"><b id="channelCount">5</b>频道</div>
+        <div class="feature"><b id="memberCount">1</b>在线成员</div>
+        <div class="feature"><b>24/7</b>可用</div>
+      </div>
+    </div>
+  </aside>
 </div>
 
 
@@ -367,7 +550,22 @@ let localMessages=JSON.parse(localStorage.getItem("security_lab_messages")||"[]"
 function updateProfile(){
  $("profileName").textContent=nickname;$("profileSignature").textContent=signature;
  const a=$("bigAvatar");a.replaceChildren();
- if(avatarURL){const img=new Image();img.src=avatarURL;img.onload=()=>a.appendChild(img);img.onerror=()=>a.textContent=nickname[0]||"游"}else a.textContent=nickname[0]||"游";
+ const mini=$("currentUserAvatar"); if(mini){mini.replaceChildren();}
+ if(avatarURL){
+   const img=new Image();img.src=avatarURL;
+   img.onload=()=>{
+     a.appendChild(img.cloneNode(true));
+     if(mini) mini.appendChild(img);
+   };
+   img.onerror=()=>{
+     a.textContent=nickname[0]||"游";
+     if(mini) mini.textContent=nickname[0]||"游";
+   };
+ }else{
+   a.textContent=nickname[0]||"游";
+   if(mini) mini.textContent=nickname[0]||"游";
+ }
+ const nameEl=$("currentUserName"); if(nameEl) nameEl.textContent=nickname;
  updateStats();
 }
 function updateStats(){ $("messageStat").textContent=localMessages.length+" 条本机消息";$("totalMessages").textContent=localMessages.length;$("memberCount").textContent=$("onlineCount").textContent }
@@ -538,6 +736,16 @@ updateProfile();applySettings();renderNotifications();loadWeather();
 setInterval(()=>{$("onlineCount").textContent=String(Math.max(1,Math.floor(1+Math.random()*6)));updateStats()},15000);
 setTimeout(()=>$("boot").classList.add("hide"),3600);
 (async()=>{await initSupabase();subscribeRealtime();await loadMessages()})();
+
+function toggleMobileSidebar(){
+  document.querySelector(".sidebar")?.classList.toggle("mobile-open");
+}
+function selectServer(name,el){
+  document.querySelectorAll(".server-icon").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+  showToast("已切换到 "+name);
+  if(window.innerWidth<=650) document.querySelector(".sidebar")?.classList.remove("mobile-open");
+}
 
 // 手机端功能菜单
 (function(){
