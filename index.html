@@ -3272,6 +3272,28 @@ button:active{
 #chatDiagnostics b{color:#35c759}
 </style>
 
+
+<style id="security-lab-v11-status-css">
+#voiceModal .voice-network-ok{color:#35c759!important}
+#voiceModal .voice-network-warn{color:#d6a548!important}
+#voiceModal .voice-network-err{color:#ff6b61!important}
+.voice-diagnostics b.ok{color:#35c759!important}
+.voice-diagnostics b.err{color:#ff6b61!important}
+.voice-diagnostics b.wait{color:#d6a548!important}
+</style>
+
+
+<style id="security-lab-v11-speaking">
+@media(max-width:800px){
+  #voiceModal .voice-person.speaking .voice-person-avatar{
+    box-shadow:0 0 0 2px rgba(53,199,89,.65),0 8px 24px rgba(53,199,89,.16)!important;
+  }
+  #voiceModal .voice-person.speaking .voice-connection{
+    color:#68d784!important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -4616,6 +4638,36 @@ const voicePendingIce={};
 
 
 const voiceDiagState={cloud:"wait",presence:"wait",broadcast:"wait",offer:"wait",answer:"wait",ice:"wait",webrtc:"wait"};
+const voiceDiag={offersSent:0,offersReceived:0,answersSent:0,answersReceived:0,iceSent:0,iceReceived:0,iceCompleted:0};
+function setVoiceDiagFromReality(){
+  const peers=Object.values(voicePeers);
+  const connected=peers.filter(p=>p.pc.connectionState==="connected").length;
+  const connecting=peers.filter(p=>["new","checking","connecting"].includes(p.pc.connectionState)).length;
+  const failed=peers.filter(p=>["failed","disconnected","closed"].includes(p.pc.connectionState)).length;
+
+  setDiag("offer",voiceDiag.offersReceived||voiceDiag.offersSent
+    ? `${voiceDiag.offersReceived?"收"+voiceDiag.offersReceived:""}${voiceDiag.offersSent?" 发"+voiceDiag.offersSent:""}`.trim()
+    : "—", (voiceDiag.offersReceived||voiceDiag.offersSent)?"ok":"wait");
+
+  setDiag("answer",voiceDiag.answersReceived||voiceDiag.answersSent
+    ? `${voiceDiag.answersReceived?"收"+voiceDiag.answersReceived:""}${voiceDiag.answersSent?" 发"+voiceDiag.answersSent:""}`.trim()
+    : "—", (voiceDiag.answersReceived||voiceDiag.answersSent)?"ok":"wait");
+
+  if(voiceDiag.iceCompleted>=Math.max(1,connected)){
+    setDiag("ice","已完成","ok");
+  }else if(voiceDiag.iceReceived||voiceDiag.iceSent){
+    setDiag("ice","交换中","wait");
+  }
+
+  if(connected>0){
+    setDiag("webrtc",`已连接 ${connected} 人`,"ok");
+  }else if(failed>0){
+    setDiag("webrtc","连接异常","err");
+  }else if(connecting>0){
+    setDiag("webrtc","连接中","wait");
+  }
+}
+
 
 function setDiag(name,text,state="wait"){
   voiceDiagState[name]=state;
@@ -4689,9 +4741,10 @@ async function voiceBroadcast(event,payload){
     const res=await voiceRoom.send({type:"broadcast",event,payload});
     if(res==="ok" || res===undefined){
       setDiag("broadcast","正常","ok");
-      if(event==="offer")setDiag("offer","已发送","ok");
-      if(event==="answer")setDiag("answer","已发送","ok");
-      if(event==="ice")setDiag("ice","交换中","wait");
+      if(event==="offer")voiceDiag.offersSent++;
+      if(event==="answer")voiceDiag.answersSent++;
+      if(event==="ice")voiceDiag.iceSent++;
+      setVoiceDiagFromReality();
       return true;
     }
     setDiag("broadcast","失败","err");
@@ -4729,14 +4782,14 @@ function makePeer(id,name){
 
   pc.onicecandidate=e=>{
     if(e.candidate){
-      setDiag("ice","交换中","wait");
       voiceBroadcast("ice",{
         from:voiceId,
         to:id,
         candidate:e.candidate
       });
     }else{
-      setDiag("ice","完成","ok");
+      voiceDiag.iceCompleted++;
+      setVoiceDiagFromReality();
     }
   };
 
@@ -4793,25 +4846,26 @@ function makePeer(id,name){
     if(state==="connected"){
       if(p)p.connectedAt=Date.now();
       if(p)p.reconnecting=false;
-      setDiag("webrtc",`已连接 ${countVoicePeers()} 人`,"ok");
-      setVoiceNetwork("WebRTC 已连接 ✓","ok");
+      setVoiceDiagFromReality();
+      setVoiceNetwork(`已连接 ${Object.values(voicePeers).filter(x=>x.pc.connectionState==="connected").length} 人 ✓`,"ok");
       renderVoiceList();
-    }else if(state==="connecting"){
-      setDiag("webrtc","连接中","wait");
-      setVoiceNetwork("WebRTC 正在连接…","warn");
+    }else if(state==="connecting" || state==="checking"){
+      setVoiceDiagFromReality();
+      setVoiceNetwork("正在建立语音连接…","warn");
     }else if(state==="new"){
-      setDiag("webrtc","已发现用户，等待协商","wait");
+      setVoiceDiagFromReality();
       setVoiceNetwork("已发现成员，正在协商…","warn");
     }else if(state==="failed"){
-      setDiag("webrtc","连接失败","err");
+      setVoiceDiagFromReality();
       if(p)p.reconnecting=true;
       renderVoiceList();
+      setVoiceNetwork("连接失败，正在自动恢复…","err");
       restartPeerConnection(id).catch(()=>removePeer(id));
     }else if(state==="disconnected"){
-      setDiag("webrtc","连接中断","err");
+      setVoiceDiagFromReality();
       if(p)p.reconnecting=true;
       renderVoiceList();
-      setVoiceNetwork("连接暂时中断，正在恢复…","warn");
+      setVoiceNetwork("连接中断，正在自动恢复…","warn");
       setTimeout(()=>{
         if(voicePeers[id]?.pc.connectionState==="disconnected"){
           restartPeerConnection(id).catch(()=>removePeer(id));
@@ -4882,6 +4936,8 @@ async function handleVoice(event,p){
 
   try{
     if(event==="offer"){
+      voiceDiag.offersReceived++;
+      setVoiceDiagFromReality();
       const peer=makePeer(p.from,p.name||"用户");
 
       // 处理 simultaneous offer：只有一方负责 rollback，避免 iOS/Chrome 卡在 have-local-offer。
@@ -4897,7 +4953,9 @@ async function handleVoice(event,p){
       await peer.pc.setRemoteDescription(p.description);
       peer.remoteDescriptionSet=true;
       setDiag("answer","已收到","ok");
+      setVoiceDiagFromReality();
       setDiag("offer","已收到","ok");
+      setVoiceDiagFromReality();
 
       const queued=voicePendingIce[p.from]||[];
       for(const candidate of queued){
@@ -4917,6 +4975,8 @@ async function handleVoice(event,p){
       });
 
     }else if(event==="answer"){
+      voiceDiag.answersReceived++;
+      setVoiceDiagFromReality();
       const peer=voicePeers[p.from];
       if(!peer)return;
 
@@ -4932,6 +4992,8 @@ async function handleVoice(event,p){
       voicePendingIce[p.from]=[];
 
     }else if(event==="ice"){
+      voiceDiag.iceReceived++;
+      setVoiceDiagFromReality();
       const peer=voicePeers[p.from];
 
       if(!peer || !peer.remoteDescriptionSet){
@@ -4956,6 +5018,14 @@ async function handleVoice(event,p){
 
 async function joinVoice(){
   if(voiceJoined)return;
+  voiceDiag.offersSent=0;
+  voiceDiag.offersReceived=0;
+  voiceDiag.answersSent=0;
+  voiceDiag.answersReceived=0;
+  voiceDiag.iceSent=0;
+  voiceDiag.iceReceived=0;
+  voiceDiag.iceCompleted=0;
+  resetVoiceDiagnostics();
   if(!sb){
     voiceState("云端未连接，暂时不能加入",true);
     toast("请先连接云端");
@@ -5056,6 +5126,8 @@ async function joinVoice(){
     });
 
     renderVoiceList();
+    const initialPresenceCount=Object.values(voiceRoom.presenceState()||{}).flat().length;
+    setDiag("presence",`${initialPresenceCount} 人`,"ok");
     startVoiceLevelMonitor();
     startVoiceNetworkMonitor();
     updateVoiceNetworkStatus();
@@ -5252,29 +5324,28 @@ async function updateVoiceNetworkStatus(){
   const presenceUsers=voiceRoom?Object.values(voiceRoom.presenceState()||{}).flat():[];
   const otherUsers=presenceUsers.filter(u=>u?.peerId&&u.peerId!==voiceId);
 
-  if(!peers.length){
-    if(otherUsers.length){
-      setDiag("presence",`${otherUsers.length+1} 人`,"ok");
-      setDiag("webrtc","等待 Offer/Answer","wait");
-      setVoiceNetwork("已发现成员，正在协商…","warn");
-    }else{
-      setVoiceNetwork("已加入，等待其他成员","warn");
-    }
-    return;
+  const connected=peers.filter(p=>p.pc.connectionState==="connected").length;
+  const connecting=peers.filter(p=>["new","checking","connecting"].includes(p.pc.connectionState)).length;
+  const failed=peers.filter(p=>["failed","disconnected"].includes(p.pc.connectionState)).length;
+
+  if(connected>0){
+    setVoiceNetwork(`已连接 ${connected} 人 ✓`,"ok");
+    setDiag("webrtc",`已连接 ${connected} 人`,"ok");
+  }else if(failed>0){
+    setVoiceNetwork("连接异常，正在恢复…","err");
+    setDiag("webrtc","连接异常","err");
+  }else if(connecting>0){
+    setVoiceNetwork("正在建立语音连接…","warn");
+    setDiag("webrtc","连接中","wait");
+  }else if(otherUsers.length){
+    setDiag("presence",`${otherUsers.length+1} 人`,"ok");
+    setVoiceNetwork("已发现成员，正在协商…","warn");
+    setDiag("webrtc","等待协商","wait");
+  }else{
+    setVoiceNetwork("已加入，等待其他成员","warn");
   }
 
-  let connected=0,checking=0,failed=0;
-  for(const p of peers){
-    const s=p.pc.connectionState;
-    if(s==="connected")connected++;
-    else if(s==="checking"||s==="new")checking++;
-    else if(s==="failed"||s==="disconnected")failed++;
-  }
-
-  if(failed>0)setVoiceNetwork("连接异常，正在恢复…","err");
-  else if(connected>0)setVoiceNetwork(`已连接 ${connected} 人 ✓`,"ok");
-  else if(checking>0)setVoiceNetwork("正在建立连接…","warn");
-  else setVoiceNetwork("等待连接…","warn");
+  setVoiceDiagFromReality();
 }
 
 function startVoiceNetworkMonitor(){
