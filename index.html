@@ -104,6 +104,63 @@ textarea.field{height:90px;padding:10px;resize:vertical}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,15px);opacity:0;pointer-events:none;z-index:200;background:#202225;color:#fff;border-radius:9px;padding:9px 14px;font-size:12px;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
 .context-menu{position:fixed;z-index:150;display:none;background:#fff;border:1px solid #dddfe3;border-radius:9px;box-shadow:0 8px 30px rgba(0,0,0,.16);padding:5px;min-width:140px}.context-menu.show{display:block}.context-menu button{display:block;width:100%;padding:8px 10px;text-align:left;background:#fff;border-radius:6px;color:#444;font-size:11px}.context-menu button:hover{background:#f0f1f3}.context-menu .red{color:#d33}
 
+
+/* ===== 登录 / 游客入口 ===== */
+.auth-gate{
+  position:fixed;inset:0;z-index:500;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(88,101,242,.22),transparent 35%),
+    radial-gradient(circle at 90% 90%,rgba(71,82,196,.18),transparent 35%),
+    #f4f5f7;
+}
+.auth-gate.show{display:flex}
+.auth-card{
+  width:min(420px,94vw);
+  padding:28px 24px 22px;
+  border-radius:24px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 24px 70px rgba(32,34,37,.18);
+  border:1px solid rgba(255,255,255,.8);
+}
+.auth-logo{
+  width:68px;height:68px;margin:0 auto 14px;
+  border-radius:20px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#5865f2,#4752c4);
+  color:#fff;font-size:25px;font-weight:900;
+  box-shadow:0 10px 25px rgba(88,101,242,.28);
+}
+.auth-title{text-align:center;font-size:25px;font-weight:900;color:#20242b}
+.auth-subtitle{text-align:center;color:#8c929d;font-size:12px;margin:7px 0 22px}
+.auth-tabs{display:flex;background:#f1f2f4;border-radius:11px;padding:4px;margin-bottom:14px}
+.auth-tabs button{flex:1;height:36px;border-radius:8px;background:transparent;color:#777;font-size:12px;font-weight:700}
+.auth-tabs button.active{background:#fff;color:#20242b;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.auth-form{display:block}
+.auth-error{min-height:18px;margin-top:8px;color:#d33;font-size:11px;line-height:1.4}
+.auth-primary{height:44px;width:100%;border-radius:11px;background:var(--brand);color:#fff;font-weight:800}
+.auth-primary:disabled{opacity:.55}
+.auth-divider{display:flex;align-items:center;gap:10px;color:#aaa;font-size:10px;margin:16px 0}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:#e5e7eb;flex:1}
+.auth-guest{
+  height:44px;width:100%;border-radius:11px;
+  background:#eef0f3;color:#30343a;font-weight:800;
+}
+.auth-guest:hover{background:#e5e7eb}
+.auth-note{text-align:center;color:#a0a5ad;font-size:9px;line-height:1.5;margin-top:13px}
+.auth-user{display:none;text-align:center}
+.auth-user.show{display:block}
+.auth-user strong{display:block;font-size:15px;margin-bottom:5px}
+.auth-user span{font-size:11px;color:#888}
+.auth-logout{margin-top:14px;height:40px;width:100%;border-radius:10px;background:#fee2e2;color:#b91c1c;font-weight:700}
+@media(max-width:800px){
+  .auth-gate{padding:16px}
+  .auth-card{width:100%;padding:25px 18px 18px;border-radius:22px}
+  .auth-logo{width:62px;height:62px}
+  .auth-title{font-size:23px}
+}
+
 /* 断点 */
 @media(max-width:1100px){.members{display:none}}
 
@@ -534,6 +591,43 @@ body.dark .voice-person.speaking{background:#17251b}
   </div>
 </div>
 
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">SL</div>
+    <div class="auth-title">Security Lab</div>
+    <div class="auth-subtitle">登录后加入社区，也可以直接游客访问</div>
+
+    <div class="auth-tabs" id="authTabs">
+      <button class="active" id="loginTab" onclick="switchAuthTab('login')">登录</button>
+      <button id="signupTab" onclick="switchAuthTab('signup')">注册</button>
+    </div>
+
+    <div class="auth-form" id="authForm">
+      <label class="label">邮箱</label>
+      <input class="field" id="authEmail" type="email" autocomplete="email" placeholder="name@example.com">
+      <label class="label">密码</label>
+      <input class="field" id="authPassword" type="password" autocomplete="current-password" placeholder="至少 6 位">
+      <div class="auth-error" id="authError"></div>
+      <button class="auth-primary" id="authSubmit" onclick="submitAuth()">登录</button>
+    </div>
+
+    <div class="auth-divider">或者</div>
+    <button class="auth-guest" onclick="enterAsGuest()">👤 游客访问</button>
+
+    <div class="auth-user" id="authUser">
+      <strong id="authUserName"></strong>
+      <span id="authUserEmail"></span>
+      <button class="auth-logout" onclick="logoutAccount()">退出登录</button>
+    </div>
+
+    <div class="auth-note">
+      游客可以正常浏览和聊天；登录后可以长期保存账号身份。<br>
+      登录/注册使用 Supabase Auth，密码不会保存到本网页。
+    </div>
+  </div>
+</div>
+
 <div class="context-menu" id="contextMenu">
  <button onclick="contextReply()">↩ 回复</button>
  <button onclick="contextCopy()">📋 复制</button>
@@ -550,6 +644,149 @@ let nickname=localStorage.getItem("sl_name")||"游客";
 let signature=localStorage.getItem("sl_sig")||"Security Lab Member";
 let avatarURL=localStorage.getItem("sl_avatar")||"";
 let channel="general", replying=null, attachment=null, contextItem=null, dmMode=false;
+let authMode="login";
+let currentUser=null;
+let guestMode=localStorage.getItem("sl_guest")==="1";
+
+function showAuthGate(show=true){
+  const gate=$("authGate");
+  if(gate)gate.classList.toggle("show",show);
+}
+function switchAuthTab(mode){
+  authMode=mode;
+  $("loginTab").classList.toggle("active",mode==="login");
+  $("signupTab").classList.toggle("active",mode==="signup");
+  $("authSubmit").textContent=mode==="login"?"登录":"注册";
+  $("authPassword").autocomplete=mode==="login"?"current-password":"new-password";
+  $("authError").textContent="";
+}
+function setAuthError(text){
+  $("authError").textContent=text||"";
+}
+function setAuthBusy(busy){
+  const b=$("authSubmit");
+  b.disabled=busy;
+  b.textContent=busy?"处理中…":(authMode==="login"?"登录":"注册");
+}
+async function submitAuth(){
+  if(!sb){setAuthError("云端正在连接，请稍等几秒再试");return}
+  const email=$("authEmail").value.trim();
+  const password=$("authPassword").value;
+  if(!email){setAuthError("请输入邮箱");return}
+  if(password.length<6){setAuthError("密码至少需要 6 位");return}
+  setAuthError("");setAuthBusy(true);
+  try{
+    if(authMode==="login"){
+      const {data,error}=await sb.auth.signInWithPassword({email,password});
+      if(error)throw error;
+      currentUser=data.user||null;
+      guestMode=false;
+      localStorage.removeItem("sl_guest");
+      if(currentUser?.email){
+        const saved=localStorage.getItem("sl_name");
+        if(!saved || saved==="游客"){
+          nickname=currentUser.email.split("@")[0].slice(0,20)||"用户";
+          localStorage.setItem("sl_name",nickname);
+        }
+      }
+      updateIdentity();
+      showAuthGate(false);
+      toast("登录成功");
+      await loadMessages();
+    }else{
+      const {data,error}=await sb.auth.signUp({email,password});
+      if(error)throw error;
+      if(data.session){
+        currentUser=data.user||null;
+        guestMode=false;
+        localStorage.removeItem("sl_guest");
+        nickname=(email.split("@")[0]||"用户").slice(0,20);
+        localStorage.setItem("sl_name",nickname);
+        updateIdentity();
+        showAuthGate(false);
+        toast("注册成功");
+        await loadMessages();
+      }else{
+        setAuthError("注册成功！请先检查邮箱完成验证，然后返回这里登录。");
+      }
+    }
+  }catch(e){
+    console.warn("Auth error:",e);
+    let msg=e?.message||"登录失败";
+    if(/invalid login credentials/i.test(msg))msg="邮箱或密码不正确";
+    else if(/email not confirmed/i.test(msg))msg="邮箱还没有验证，请先完成邮箱验证";
+    else if(/user already registered/i.test(msg))msg="这个邮箱已经注册，请切换到“登录”";
+    setAuthError(msg);
+  }finally{
+    setAuthBusy(false);
+  }
+}
+function enterAsGuest(){
+  guestMode=true;
+  currentUser=null;
+  localStorage.setItem("sl_guest","1");
+  if(!localStorage.getItem("sl_name")||localStorage.getItem("sl_name")==="游客"){
+    nickname="游客";
+    localStorage.setItem("sl_name","游客");
+  }
+  updateIdentity();
+  showAuthGate(false);
+  toast("已进入游客模式");
+}
+async function logoutAccount(){
+  try{if(sb)await sb.auth.signOut()}catch(e){console.warn(e)}
+  currentUser=null;
+  guestMode=false;
+  localStorage.removeItem("sl_guest");
+  nickname="游客";
+  localStorage.setItem("sl_name","游客");
+  updateIdentity();
+  switchAuthTab("login");
+  $("authEmail").value="";
+  $("authPassword").value="";
+  showAuthGate(true);
+  toast("已退出登录");
+}
+async function restoreAuthState(){
+  if(!sb)return;
+  try{
+    const {data}=await sb.auth.getSession();
+    currentUser=data?.session?.user||null;
+    if(currentUser){
+      guestMode=false;
+      localStorage.removeItem("sl_guest");
+      const saved=localStorage.getItem("sl_name");
+      if(!saved || saved==="游客"){
+        nickname=(currentUser.email||"用户").split("@")[0].slice(0,20)||"用户";
+        localStorage.setItem("sl_name",nickname);
+      }
+      updateIdentity();
+      showAuthGate(false);
+    }else if(guestMode){
+      updateIdentity();
+      showAuthGate(false);
+    }else{
+      showAuthGate(true);
+    }
+    sb.auth.onAuthStateChange((_event,session)=>{
+      currentUser=session?.user||null;
+      if(currentUser){
+        guestMode=false;
+        localStorage.removeItem("sl_guest");
+        if(!localStorage.getItem("sl_name")||localStorage.getItem("sl_name")==="游客"){
+          nickname=(currentUser.email||"用户").split("@")[0].slice(0,20)||"用户";
+          localStorage.setItem("sl_name",nickname);
+          updateIdentity();
+        }
+        showAuthGate(false);
+      }
+    });
+  }catch(e){
+    console.warn("恢复登录状态失败:",e);
+    if(!guestMode)showAuthGate(true);
+  }
+}
+
 let notifications=JSON.parse(localStorage.getItem("sl_notifications")||"[]");
 let messages=JSON.parse(localStorage.getItem("sl_local_messages")||"[]");
 const channels=[
@@ -641,7 +878,7 @@ function setCloudStatus(text,color){
     if(!createClient)throw new Error("找不到 Supabase createClient");
 
     sb=createClient(SUPABASE_URL,SUPABASE_KEY,{
-      auth:{persistSession:false,autoRefreshToken:false},
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true},
       realtime:{params:{eventsPerSecond:10}}
     });
 
@@ -650,13 +887,15 @@ function setCloudStatus(text,color){
     if(test.error)throw test.error;
 
     setCloudStatus("云端已连接","#35a85a");
+    await restoreAuthState();
     subscribe();
     await loadMessages();
   }catch(e){
     console.warn("Supabase 连接失败:",e);
     setCloudStatus("连接异常","#d9534f");
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
-    toast("云端连接失败，当前使用本机缓存");
+    if(!guestMode)showAuthGate(true);
+    toast("云端连接失败，可先游客访问");
   }
 }function subscribe(){
   if(!sb)return;
