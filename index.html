@@ -300,6 +300,19 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 }
 </style>
 
+
+<style id="boot-failsafe">
+#boot{
+  animation: bootFailsafe 2.2s cubic-bezier(.22,1,.36,1) forwards;
+  animation-delay: 1.4s;
+}
+@keyframes bootFailsafe{
+  0%{opacity:1;transform:scale(1);filter:blur(0);pointer-events:auto}
+  78%{opacity:1;transform:scale(1.01);filter:blur(0);pointer-events:auto}
+  100%{opacity:0;transform:scale(1.045);filter:blur(7px);pointer-events:none;visibility:hidden}
+}
+</style>
+
 </head>
 <body>
 <!-- 移动端功能菜单 -->
@@ -327,6 +340,13 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}
 <canvas id="space"></canvas><div class="ambient one"></div><div class="ambient two"></div><div class="ambient three"></div>
 
 <div id="boot"><div class="boot"><div class="logo"></div><div class="boot-name">SECURITY LAB</div><div class="boot-line"></div></div></div>
+<script>
+  // 启动页保险机制：即使云端/天气脚本加载失败，也不会卡住启动画面
+  window.setTimeout(function(){
+    var boot = document.getElementById("boot");
+    if(boot) boot.classList.add("hide");
+  }, 2600);
+</script>
 
 <div class="app">
 
@@ -734,7 +754,7 @@ resize();addEventListener("resize",resize);animate();
 
 updateProfile();applySettings();renderNotifications();loadWeather();
 setInterval(()=>{$("onlineCount").textContent=String(Math.max(1,Math.floor(1+Math.random()*6)));updateStats()},15000);
-setTimeout(()=>$("boot").classList.add("hide"),3600);
+setTimeout(()=>$("boot").classList.add("hide"),2600);
 (async()=>{await initSupabase();subscribeRealtime();await loadMessages()})();
 
 function toggleMobileSidebar(){
