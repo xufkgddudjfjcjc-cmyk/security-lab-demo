@@ -2097,6 +2097,28 @@ button:active{
 }
 </style>
 
+
+<style id="security-points-v1">
+.points-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 11px;border-radius:999px;
+  background:rgba(23,40,62,.78);
+  border:1px solid rgba(91,205,255,.18);
+  color:#d9f4ff;font-size:10px;font-weight:900;
+  box-shadow:0 0 18px rgba(40,177,255,.08);
+}
+.points-pill b{color:#63d6ff}
+.points-mini-note{font-size:9px;color:#69849e}
+.points-reward-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:10px 12px;margin:7px 0;
+  border-radius:15px;background:rgba(18,32,52,.72);
+  border:1px solid rgba(99,170,235,.10);
+}
+.points-reward-row .left{display:flex;align-items:center;gap:9px;color:#b8cde1;font-size:10px}
+.points-reward-row .right{color:#65d9ff;font-weight:900;font-size:10px}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3989,6 +4011,125 @@ function mentionFromFullProfile(){
   if(n) mentionUser();
 }
 
+
+const localPointsKey="sl_points";
+function getLocalPoints(){ return Number(localStorage.getItem(localPointsKey)||0); }
+function setLocalPoints(n){ localStorage.setItem(localPointsKey,String(Math.max(0,Math.floor(n)))); }
+
+async function getUserPoints(){
+  if(currentUser && sb){
+    try{
+      const {data,error}=await sb.from("user_points")
+        .select("points,total_earned")
+        .eq("user_id",currentUser.id)
+        .maybeSingle();
+      if(!error){
+        if(data) return Number(data.points)||0;
+        const {error:insError}=await sb.from("user_points").insert({
+          user_id:currentUser.id,points:0,total_earned:0
+        });
+        if(!insError) return 0;
+      }
+    }catch(e){console.warn("读取云端积分失败",e)}
+  }
+  return getLocalPoints();
+}
+
+async function addPoints(amount,reason="活动奖励"){
+  amount=Math.max(0,Math.floor(Number(amount)||0));
+  if(!amount) return false;
+
+  if(currentUser && sb){
+    try{
+      const {data,error}=await sb.from("user_points")
+        .select("points,total_earned")
+        .eq("user_id",currentUser.id)
+        .maybeSingle();
+      if(error) throw error;
+
+      const next=(Number(data?.points)||0)+amount;
+      const total=(Number(data?.total_earned)||0)+amount;
+
+      const {error:upError}=await sb.from("user_points").upsert({
+        user_id:currentUser.id,
+        points:next,
+        total_earned:total,
+        updated_at:new Date().toISOString()
+      },{onConflict:"user_id"});
+      if(upError) throw upError;
+      toast(`💰 +${amount} 积分 · ${reason}`);
+      await refreshPointsUI();
+      return true;
+    }catch(e){
+      console.warn("云端积分失败",e);
+      toast("⚠️ 云端积分暂时失败");
+      return false;
+    }
+  }
+
+  setLocalPoints(getLocalPoints()+amount);
+  toast(`💰 +${amount} 积分 · ${reason}`);
+  refreshPointsUI();
+  return true;
+}
+
+async function spendPoints(amount,reason="兑换"){
+  amount=Math.max(0,Math.floor(Number(amount)||0));
+  const current=await getUserPoints();
+  if(current<amount){
+    toast("❌ 积分不足");
+    return false;
+  }
+
+  if(currentUser && sb){
+    const {data,error}=await sb.from("user_points")
+      .select("points,total_earned")
+      .eq("user_id",currentUser.id)
+      .maybeSingle();
+    if(error) return false;
+    const {error:upError}=await sb.from("user_points").update({
+      points:Math.max(0,(Number(data?.points)||0)-amount),
+      updated_at:new Date().toISOString()
+    }).eq("user_id",currentUser.id);
+    if(upError) return false;
+  }else{
+    setLocalPoints(current-amount);
+  }
+
+  toast(`🛍️ -${amount} 积分 · ${reason}`);
+  await refreshPointsUI();
+  return true;
+}
+
+async function refreshPointsUI(){
+  const points=await getUserPoints();
+  document.querySelectorAll("[data-points-value]").forEach(el=>el.textContent=points);
+  const profilePoints=$("profilePoints");
+  if(profilePoints && window.__fullProfileName===nickname) profilePoints.textContent=points;
+}
+
+function openPointsInfo(){ $("pointsInfoModal")?.classList.add("show"); }
+function closePointsInfo(){ $("pointsInfoModal")?.classList.remove("show"); }
+async function copyPointsSQL(){
+  const text=`${sql_block}`;
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("✅ SQL 已复制");
+  }catch(e){ toast("请手动复制 SQL"); }
+}
+
+
+async function claimDailyPoints(){
+  const today=new Date().toISOString().slice(0,10);
+  if(localStorage.getItem("sl_daily_points_date")===today) return;
+  localStorage.setItem("sl_daily_points_date",today);
+  await addPoints(50,"每日登录");
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  setTimeout(()=>{ claimDailyPoints(); refreshPointsUI(); },900);
+});
+
 </script>
 
 <!-- 奖励仓库 -->
@@ -4048,6 +4189,50 @@ function mentionFromFullProfile(){
         <button class="primary" style="background:#101b2d;color:#a9c0d9" onclick="mentionFromFullProfile()">@ 提及</button>
       </div>
     </div>
+  </div>
+</div>
+
+
+<div class="modal" id="pointsInfoModal" onclick="if(event.target===this)closePointsInfo()">
+  <div class="modal-card" style="max-width:620px">
+    <button class="close" onclick="closePointsInfo()">×</button>
+    <h2>💰 Lab Points</h2>
+    <p style="color:#8fa7c0;font-size:12px;line-height:1.7">
+      登录用户使用云端积分；游客使用本机积分。积分可以作为后续商店、成就和活动的统一货币。
+    </p>
+    <div id="points-sql-panel" style="background:#07111e;border:1px solid rgba(98,207,255,.16);border-radius:16px;padding:12px;overflow:auto">
+      <pre style="white-space:pre-wrap;color:#b9d6ed;font-size:10px;line-height:1.55;margin:0">
+-- Security Lab 积分系统
+create table if not exists public.user_points (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  points integer not null default 0,
+  total_earned integer not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.user_points enable row level security;
+
+create policy "Users can view their own points"
+on public.user_points
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Users can insert their own points"
+on public.user_points
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "Users can update their own points"
+on public.user_points
+for update
+to authenticated
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+</pre>
+    </div>
+    <button class="primary" style="margin-top:12px" onclick="copyPointsSQL()">复制 Supabase SQL</button>
   </div>
 </div>
 
