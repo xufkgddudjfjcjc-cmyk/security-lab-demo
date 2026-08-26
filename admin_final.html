@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06142d"><title>Security Lab · 管理后台</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#12386b,#06142d 45%,#020817);color:#eef6ff;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}.app{max-width:760px;margin:auto;padding:14px}.top{display:flex;justify-content:space-between;align-items:center;padding:10px 0}.brand{font-size:20px;font-weight:900}.muted{color:#91a9c7;font-size:13px}.card{background:#0b2348;border:1px solid #244c80;border-radius:18px;padding:16px;margin:12px 0}input{width:100%;padding:13px;margin:6px 0;background:#071a38;color:#fff;border:1px solid #294f80;border-radius:12px}button{padding:11px 14px;border:0;border-radius:12px;background:#4f73ff;color:#fff;font-weight:700;margin-top:7px}.ghost,.small{background:#10294d;border:1px solid #2c568d}.hidden{display:none!important}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:13px;background:#0b2348;border:1px solid #244c80;border-radius:15px}.stat span{display:block;color:#91a9c7;font-size:12px}.stat b{display:block;font-size:25px;margin-top:4px}.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.nav button{background:#0b2348;border:1px solid #244c80}.nav .active{background:#3565dd}.item{padding:13px 0;border-bottom:1px solid #244c80}.item:last-child{border-bottom:0}.msg{margin:7px 0;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.pill{font-size:11px;padding:4px 8px;border-radius:99px;background:#153b67}.danger{background:#542033}.err{color:#ff8e9d;white-space:pre-wrap}.empty{text-align:center;padding:25px;color:#7893b3}.head{display:flex;justify-content:space-between;align-items:center}.setting{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid #244c80}@media(max-width:480px){.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.nav button{font-size:12px;padding:10px 5px}}
+</style>
+<style id="admin-upgrade-v1">
+textarea{width:100%;min-height:100px;padding:13px;margin:6px 0;background:#071a38;color:#fff;border:1px solid #294f80;border-radius:12px;resize:vertical}
+.admin-nav-grid{grid-template-columns:repeat(4,1fr)}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.quick{display:flex;flex-direction:column;align-items:flex-start;gap:5px;background:linear-gradient(145deg,#103664,#0b2348);border:1px solid #2d5a91;padding:14px;border-radius:16px}
+.quick b{font-size:12px}.quick span{font-size:20px;color:#74d8ff}.notice{margin-top:12px;padding:13px;border:1px solid #244c80;border-radius:15px;background:#081d3d}
+.mini{width:100px!important;margin:0!important}
+.prob-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.prob-grid label{color:#91a9c7;font-size:12px}.prob-grid input{margin-top:5px}
+.data-row{padding:12px 0;border-bottom:1px solid #244c80}.data-row:last-child{border-bottom:0}
+.badge-pill{display:inline-block;padding:5px 9px;border-radius:99px;background:#163f70;border:1px solid #2d659f;margin:3px;font-size:11px}
+.warn{color:#ffc56b}.ok{color:#69e6a8}
+@media(max-width:480px){.admin-nav-grid{grid-template-columns:repeat(3,1fr)}.quick-grid{grid-template-columns:repeat(2,1fr)}.prob-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+</head>
+<body><div class="app">
+<header class="top"><div><div class="brand">🛡️ SECURITY LAB</div><div class="muted">手机管理后台</div></div><button id="logout" class="ghost hidden">退出</button></header>
+
+<section id="login" class="card"><h2>管理员登录</h2><p class="muted">仅允许指定管理员邮箱登录</p>
+<input id="email" type="email" placeholder="管理员邮箱" autocomplete="email">
+<input id="password" type="password" placeholder="密码">
+<button id="loginBtn">登录</button><div id="loginMsg" class="muted"></div></section>
+
+<main id="panel" class="hidden">
+<div class="stats"><div class="stat"><span>用户数量</span><b id="usersN">0</b></div><div class="stat"><span>消息数量</span><b id="messagesN">0</b></div><div class="stat"><span>今日活跃</span><b id="activeN">0</b></div></div>
+<nav class="nav admin-nav-grid">
+<button class="active" data-page="dashboard">📊 控制台</button>
+<button data-page="users">👤 用户管理</button>
+<button data-page="messages">💬 消息管理</button>
+<button data-page="lottery">🎰 抽奖管理</button>
+<button data-page="badges">🏅 徽章管理</button>
+<button data-page="inventory">🎁 奖励仓库</button>
+<button data-page="events">⚡ 活动管理</button>
+<button data-page="announce">📢 全服公告</button>
+<button data-page="notifications">🔔 通知管理</button>
+<button data-page="analytics">📈 数据统计</button>
+<button data-page="logs">📝 管理员日志</button>
+<button data-page="settings">⚙️ 系统设置</button>
+</nav>
+
+<section id="dashboardPage" class="page card">
+  <div class="head"><h2>📊 控制台</h2><button id="refresh" class="small">刷新</button></div>
+  <div class="quick-grid">
+    <button class="quick" data-jump="users">👥<b>用户</b><span id="dashUsers">0</span></button>
+    <button class="quick" data-jump="messages">💬<b>消息</b><span id="dashMessages">0</span></button>
+    <button class="quick" data-jump="badges">🏅<b>徽章</b><span id="dashBadges">-</span></button>
+    <button class="quick" data-jump="inventory">🎁<b>奖励</b><span id="dashRewards">-</span></button>
+    <button class="quick" data-jump="events">⚡<b>活动</b><span id="dashEvents">-</span></button>
+    <button class="quick" data-jump="notifications">🔔<b>通知</b><span id="dashNotifications">-</span></button>
+  </div>
+  <div class="notice"><b>🛡️ 管理员安全</b><div class="muted">当前后台继续使用 Supabase Auth + admin-data-v2。前端不保存 service_role 密钥。</div></div>
+</section>
+
+<section id="usersPage" class="page card hidden"><div class="head"><h2>👤 用户管理</h2><button class="small" onclick="load()">刷新</button></div><input id="userSearch" placeholder="搜索用户ID / 昵称 / 邮箱"><div id="usersList"></div></section>
+
+<section id="messagesPage" class="page card hidden"><div class="head"><h2>💬 消息管理</h2><button id="refreshMsg" class="small">刷新</button></div><input id="messageSearch" placeholder="搜索消息内容 / 用户ID"><div id="messagesList"></div></section>
+
+<section id="lotteryPage" class="page card hidden">
+  <h2>🎰 抽奖管理</h2>
+  <div class="setting"><span>每日次数</span><input class="mini" id="lotteryDaily" type="number" min="1" value="100"></div>
+  <div class="prob-grid">
+    <label>普通 %<input id="pCommon" type="number" min="0" max="100" value="55"></label>
+    <label>稀有 %<input id="pRare" type="number" min="0" max="100" value="30"></label>
+    <label>史诗 %<input id="pEpic" type="number" min="0" max="100" value="12"></label>
+    <label>传说 %<input id="pLegend" type="number" min="0" max="100" value="3"></label>
+  </div>
+  <button id="saveLottery">💾 保存抽奖设置</button>
+  <div class="muted">当前页面会保存管理员本机的配置。要让所有用户实时同步，需要后端 system_settings/Edge Function 支持。</div>
+</section>
+
+<section id="badgesPage" class="page card hidden"><div class="head"><h2>🏅 徽章管理</h2><button class="small" onclick="loadBadges()">刷新</button></div><div id="badgesList"></div></section>
+
+<section id="inventoryPage" class="page card hidden"><div class="head"><h2>🎁 奖励仓库</h2><button class="small" onclick="loadRewards()">刷新</button></div><div id="rewardsList"></div></section>
+
+<section id="eventsPage" class="page card hidden"><div class="head"><h2>⚡ 活动管理</h2><button class="small" onclick="loadEvents()">刷新</button></div><div id="eventsList"></div></section>
+
+<section id="announcePage" class="page card hidden">
+  <h2>📢 全服公告</h2>
+  <input id="annTitle" placeholder="公告标题">
+  <textarea id="annMessage" placeholder="公告内容"></textarea>
+  <input id="annIcon" value="📢" placeholder="图标">
+  <button id="publishAnn">发布公告</button>
+  <div id="annList"></div>
+</section>
+
+<section id="notificationsPage" class="page card hidden"><div class="head"><h2>🔔 通知管理</h2><button class="small" onclick="loadNotifications()">刷新</button></div><div id="notificationsList"></div></section>
+
+<section id="analyticsPage" class="page card hidden">
+  <h2>📈 数据统计</h2>
+  <div class="stats"><div class="stat"><span>用户</span><b id="anUsers">0</b></div><div class="stat"><span>消息</span><b id="anMessages">0</b></div><div class="stat"><span>今日活跃</span><b id="anActive">0</b></div></div>
+  <div class="notice"><b>数据说明</b><div class="muted">用户和消息来自现有 admin-data-v2；徽章、奖励、活动、通知统计会在对应表可读时显示。</div></div>
+</section>
+
+<section id="logsPage" class="page card hidden"><div class="head"><h2>📝 管理员日志</h2><button class="small" onclick="loadLogs()">刷新</button></div><div id="logsList"></div></section>
+
+<section id="settingsPage" class="page card hidden"><h2>⚙️ 系统设置</h2>
+  <div class="setting"><span>后台状态</span><b>● 正常</b></div>
+  <div class="setting"><span>数据来源</span><span class="muted">Supabase + Edge Function</span></div>
+  <div class="setting"><span>管理员</span><span id="adminEmail" class="muted">-</span></div>
+  <div class="setting"><span>安全</span><span class="muted">不在前端使用 service_role key</span></div>
+  <button id="clear" class="danger">退出管理员账号</button>
+</section>
+</main></div>
+
+<script>
+const SUPABASE_URL="https://lnducpwbmyjhnnjkqyxq.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_aukve7aK4EQCniOtCSy8uQ_raK8MH0j";
+const FUNCTION_NAME="admin-data-v2";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let payload={users:[],messages:[]};
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const list=v=>Array.isArray(v)?v:[];
+
+function renderUsers(){
+ const users=list(payload.users),q=$("userSearch").value.trim().toLowerCase();
+ const a=users.filter(x=>!q||[x?.id,x?.user_id,x?.email,x?.nickname].some(v=>String(v??"").toLowerCase().includes(q)));
+ $("usersN").textContent=users.length;
+ $("usersList").innerHTML=a.length?a.map(x=>`<div class="item"><b>${esc(x?.nickname||x?.email||"未设置昵称")}</b><div class="muted">用户ID：${esc(x?.id||"-")}</div><div class="muted">邮箱：${esc(x?.email||"-")}</div><div class="muted">注册：${esc(x?.created_at||"-")}</div></div>`).join(""):'<div class="empty">没有用户数据</div>';
+}
+function renderMessages(){
+ const messages=list(payload.messages),q=$("messageSearch").value.trim().toLowerCase();
+ const a=messages.filter(x=>!q||[x?.content,x?.user_id,x?.username,x?.nickname].some(v=>String(v??"").toLowerCase().includes(q)));
+ $("messagesN").textContent=messages.length;
+ $("messagesList").innerHTML=a.length?a.map(x=>`<div class="item"><b>${esc(x?.username||x?.nickname||x?.user_id||"用户")}</b><span class="pill">${esc(x?.created_at||"")}</span><div class="msg">${esc(x?.content||"")}</div><div class="muted">用户ID：${esc(x?.user_id||"-")}</div>${x?.id?`<button class="danger delete" data-id="${esc(x.id)}">🗑 删除消息</button>`:""}</div>`).join(""):'<div class="empty">没有消息数据</div>';
+ document.querySelectorAll(".delete").forEach(b=>b.onclick=()=>deleteMessage(b.dataset.id));
+}
+function render(){
+ const users=list(payload.users),messages=list(payload.messages);
+ $("usersN").textContent=users.length;$("messagesN").textContent=messages.length;
+ const d=new Date();d.setHours(0,0,0,0);
+ $("activeN").textContent=users.filter(x=>x?.last_sign_in_at&&new Date(x.last_sign_in_at)>=d).length;
+ renderUsers();renderMessages();
+}
+async function call(action,extra={}){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session)throw new Error("管理员登录已失效");
+ const r=await sb.functions.invoke(FUNCTION_NAME,{body:{action,...extra}});
+ if(r.error)throw new Error(r.error.message||"Edge Function 请求失败");
+ if(r.data?.error)throw new Error(r.data.error);
+ return r.data;
+}
+async function load(){
+ try{
+  const d=await call("list",{limit:500});
+  payload={users:list(d?.users||d?.data?.users),messages:list(d?.messages||d?.data?.messages)};
+  render();
+  if(!payload.users.length&&!payload.messages.length)$("usersList").innerHTML='<div class="empty">接口已连接，但没有返回用户/消息数据。请检查后台表名和权限。</div>';
+ }catch(e){
+  payload={users:[],messages:[]};render();
+  $("usersList").innerHTML='<div class="err">后台接口错误：'+esc(e.message||e)+'</div>';
+ }
+}
+async function deleteMessage(id){
+ if(!id||!confirm("确定删除这条消息吗？"))return;
+ try{await call("delete_message",{id});await load()}catch(e){alert("删除失败："+(e.message||e))}
+}
+$("loginBtn").onclick=async()=>{
+ $("loginMsg").textContent="登录中…";
+ const {error}=await sb.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});
+ if(error){$("loginMsg").textContent=error.message;return}
+ $("login").classList.add("hidden");$("panel").classList.remove("hidden");$("logout").classList.remove("hidden");
+ const {data:{user}}=await sb.auth.getUser();$("adminEmail").textContent=user?.email||"-";await load();
+};
+$("logout").onclick=async()=>{await sb.auth.signOut();location.reload()};
+$("clear").onclick=async()=>{await sb.auth.signOut();location.reload()};
+$("refresh").onclick=load;$("refreshMsg").onclick=load;$("userSearch").oninput=renderUsers;$("messageSearch").oninput=renderMessages;
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".page").forEach(x=>x.classList.add("hidden"));$(b.dataset.page+"Page").classList.remove("hidden")});
+sb.auth.getSession().then(({data:{session}})=>{if(session){$("login").classList.add("hidden");$("panel").classList.remove("hidden");$("logout").classList.remove("hidden");sb.auth.getUser().then(({data:{user}})=>$("adminEmail").textContent=user?.email||"-");load()}});
+
+/* ===== SECURITY LAB ADMIN MODULES ===== */
+const safeArr = v => Array.isArray(v) ? v : [];
+async function tableSelect(table, columns="*"){
+  try{
+    const {data,error}=await sb.from(table).select(columns).limit(100);
+    if(error) return {data:[],error};
+    return {data:safeArr(data),error:null};
+  }catch(e){return {data:[],error:e}}
+}
+function setModuleError(id,e){$(id).innerHTML='<div class="err">读取失败：'+esc(e?.message||e)+'</div>'}
+function jump(page){
+  const btn=document.querySelector('.nav button[data-page="'+page+'"]');
+  if(btn)btn.click();
+}
+document.querySelectorAll('.quick').forEach(b=>b.onclick=()=>jump(b.dataset.jump));
+
+async function loadBadges(){
+  const r=await tableSelect("user_badges");
+  if(r.error){setModuleError("badgesList",r.error);return}
+  $("badgesList").innerHTML=r.data.length?r.data.map(x=>`<div class="data-row"><b>用户：${esc(x.user_id||"-")}</b><div><span class="badge-pill">🏅 ${esc(x.badge_id||x.badge||x.name||"未命名徽章")}</span></div></div>`).join(""):'<div class="empty">暂无徽章记录</div>';
+  $("dashBadges").textContent=r.data.length;
+}
+async function loadRewards(){
+  const r=await tableSelect("user_rewards");
+  if(r.error){setModuleError("rewardsList",r.error);return}
+  $("rewardsList").innerHTML=r.data.length?r.data.map(x=>`<div class="data-row"><b>用户：${esc(x.user_id||"-")}</b><div class="muted">🎁 ${esc(x.reward_id||x.item_id||x.reward||"奖励")} · ${esc(x.created_at||"")}</div></div>`).join(""):'<div class="empty">暂无奖励</div>';
+  $("dashRewards").textContent=r.data.length;
+}
+async function loadEvents(){
+  const r=await tableSelect("lab_events");
+  if(r.error){setModuleError("eventsList",r.error);return}
+  $("eventsList").innerHTML=r.data.length?r.data.map(x=>`<div class="data-row"><b>${esc(x.icon||"⚡")} ${esc(x.name||x.event_id||"活动")}</b><div class="muted">${esc(x.starts_at||"-")} → ${esc(x.ends_at||"-")} · <span class="${x.active?"ok":"warn"}">${x.active?"进行中":"已关闭"}</span></div></div>`).join(""):'<div class="empty">暂无活动</div>';
+  $("dashEvents").textContent=r.data.length;
+}
+async function loadNotifications(){
+  const r=await tableSelect("user_notifications");
+  if(r.error){setModuleError("notificationsList",r.error);return}
+  $("notificationsList").innerHTML=r.data.length?r.data.map(x=>`<div class="data-row"><b>${esc(x.icon||"🔔")} ${esc(x.title||"通知")}</b><div class="muted">用户：${esc(x.user_id||"-")} · ${x.read?"已读":"未读"} · ${esc(x.created_at||"")}</div><div class="msg">${esc(x.message||"")}</div></div>`).join(""):'<div class="empty">暂无通知</div>';
+  $("dashNotifications").textContent=r.data.length;
+}
+async function loadLogs(){
+  const r=await tableSelect("admin_logs");
+  if(r.error){$("logsList").innerHTML='<div class="notice"><b>📝 日志表尚未接入</b><div class="muted">当前 admin.html 没有创建 admin_logs 表；因此不会伪造日志数据。</div></div>';return}
+  $("logsList").innerHTML=r.data.length?r.data.map(x=>`<div class="data-row"><b>${esc(x.action||"操作")}</b><div class="muted">${esc(x.admin_user_id||x.user_id||"-")} · ${esc(x.created_at||"")}</div><div class="msg">${esc(x.detail||x.message||"")}</div></div>`).join(""):'<div class="empty">暂无管理员日志</div>';
+}
+async function loadAnnouncementList(){
+  const r=await tableSelect("admin_announcements");
+  if(r.error){$("annList").innerHTML='<div class="muted">公告表尚未接入或当前账号无读取权限。</div>';return}
+  $("annList").innerHTML=r.data.map(x=>`<div class="data-row"><b>${esc(x.icon||"📢")} ${esc(x.title)}</b><div class="muted">${esc(x.created_at||"")}</div><div class="msg">${esc(x.message||"")}</div></div>`).join("")||'<div class="empty">暂无公告</div>';
+}
+$("publishAnn").onclick=async()=>{
+  const title=$("annTitle").value.trim(),message=$("annMessage").value.trim(),icon=$("annIcon").value.trim()||"📢";
+  if(!title||!message){alert("请填写公告标题和内容");return}
+  const {error}=await sb.from("admin_announcements").insert({title,message,icon,active:true});
+  if(error){alert("发布失败："+error.message);return}
+  $("annTitle").value="";$("annMessage").value="";toast?.("📢 公告已发布");loadAnnouncementList();
+};
+
+function loadLotterySettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem("security_lab_lottery")||"null");
+    if(s){$("lotteryDaily").value=s.daily??100;$("pCommon").value=s.common??55;$("pRare").value=s.rare??30;$("pEpic").value=s.epic??12;$("pLegend").value=s.legend??3}
+  }catch(e){}
+}
+$("saveLottery").onclick=()=>{
+  const s={daily:Number($("lotteryDaily").value),common:Number($("pCommon").value),rare:Number($("pRare").value),epic:Number($("pEpic").value),legend:Number($("pLegend").value)};
+  if(s.daily<1||Math.abs(s.common+s.rare+s.epic+s.legend-100)>0.01){alert("每日次数必须大于0，四项概率必须合计100%");return}
+  localStorage.setItem("security_lab_lottery",JSON.stringify(s));
+  alert("抽奖设置已保存。注意：当前为本机管理员配置，不会自动改变所有用户，除非后端接入云端配置表。");
+};
+
+async function loadExtraModules(){
+  loadLotterySettings();
+  await Promise.allSettled([loadBadges(),loadRewards(),loadEvents(),loadNotifications(),loadAnnouncementList(),loadLogs()]);
+}
+const oldLoad=load;
+load=async function(){
+  await oldLoad();
+  $("dashUsers").textContent=payload.users.length;
+  $("dashMessages").textContent=payload.messages.length;
+  $("anUsers").textContent=payload.users.length;
+  $("anMessages").textContent=payload.messages.length;
+  const d=new Date();d.setHours(0,0,0,0);
+  $("anActive").textContent=payload.users.filter(x=>x?.last_sign_in_at&&new Date(x.last_sign_in_at)>=d).length;
+  loadExtraModules();
+};
+
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{
+  const p=b.dataset.page;
+  if(p==="badges")loadBadges();
+  if(p==="inventory")loadRewards();
+  if(p==="events")loadEvents();
+  if(p==="notifications")loadNotifications();
+  if(p==="announce")loadAnnouncementList();
+  if(p==="logs")loadLogs();
+}));
+
+/* 允许管理员在用户列表里发起封禁动作，但只有后端已实现 action 时才执行。 */
+async function adminUserAction(action,userId){
+  if(!userId)return;
+  try{await call(action,{user_id:userId});await load();alert("操作完成")}catch(e){alert("操作未执行："+(e.message||e))}
+}
+
+</script></body></html>
