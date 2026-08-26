@@ -3739,20 +3739,108 @@ function stopVoiceNetworkMonitor(){
 const rewardInventoryKey="sl_reward_inventory_v1";
 let rewardInventoryTab="all";
 
-function getRewardInventory(){
+function getLocalRewardInventory(){
   try{
     return JSON.parse(localStorage.getItem(rewardInventoryKey)||"[]");
   }catch(e){return []}
 }
-function saveRewardInventory(items){
+function saveLocalRewardInventory(items){
   localStorage.setItem(rewardInventoryKey,JSON.stringify(items));
 }
-function addRewardToInventory(reward){
+
+/* 登录用户：从 Supabase 云端读取奖励；游客：使用本机仓库 */
+async function getRewardInventory(){
+  if(currentUser && sb){
+    try{
+      const {data,error}=await sb.from("user_rewards")
+        .select("id,user_id,reward_id,reward_type,reward_name,reward_icon,quantity,created_at,updated_at")
+        .eq("user_id",currentUser.id)
+        .order("created_at",{ascending:false});
+      if(!error && Array.isArray(data)){
+        return data.map(x=>({
+          key:x.reward_id,
+          id:x.reward_id,
+          type:x.reward_type||"reward",
+          icon:x.reward_icon||"🎁",
+          name:x.reward_name||"未知奖励",
+          desc:x.reward_type==="badge"?"徽章奖励":"抽奖获得",
+          count:Number(x.quantity)||1,
+          earnedAt:x.created_at
+        }));
+      }
+      if(error) console.warn("读取云端奖励失败：",error);
+    }catch(e){console.warn("读取云端奖励异常：",e)}
+  }
+  return getLocalRewardInventory();
+}
+
+async function saveCloudReward(reward){
+  if(!currentUser || !sb) return false;
+
+  const key=String(reward.badge||reward.id||reward.name);
+  const type=reward.badge?"badge":(
+    reward.id==="common"||reward.id==="rare"?"points":"reward"
+  );
+  const row={
+    user_id:currentUser.id,
+    reward_id:key,
+    reward_type:type,
+    reward_name:reward.name||"未知奖励",
+    reward_icon:reward.emoji||reward.icon||"🎁",
+    quantity:1,
+    updated_at:new Date().toISOString()
+  };
+
+  try{
+    const {data:old,error:findError}=await sb.from("user_rewards")
+      .select("id,quantity")
+      .eq("user_id",currentUser.id)
+      .eq("reward_id",key)
+      .maybeSingle();
+
+    if(findError) throw findError;
+
+    if(old){
+      const {error}=await sb.from("user_rewards")
+        .update({
+          quantity:(Number(old.quantity)||0)+1,
+          reward_name:row.reward_name,
+          reward_icon:row.reward_icon,
+          reward_type:row.reward_type,
+          updated_at:row.updated_at
+        })
+        .eq("id",old.id)
+        .eq("user_id",currentUser.id);
+      if(error) throw error;
+    }else{
+      const {error}=await sb.from("user_rewards").insert(row);
+      if(error) throw error;
+    }
+    return true;
+  }catch(e){
+    console.warn("保存云端奖励失败：",e);
+    toast("⚠️ 奖励云端保存失败，正在保留本机记录");
+    return false;
+  }
+}
+
+async function addRewardToInventory(reward){
   if(!reward) return;
-  const items=getRewardInventory();
+
+  /* 登录用户直接进入云端仓库 */
+  if(currentUser && sb){
+    const ok=await saveCloudReward(reward);
+    if(ok) toast("🎒 奖励已存入云端仓库");
+    if(typeof renderRewardInventory==="function") await renderRewardInventory();
+    return;
+  }
+
+  /* 游客没有云端账号，保存在本机 */
+  const items=getLocalRewardInventory();
   const key=String(reward.badge||reward.id||reward.name);
   let item=items.find(x=>String(x.key)===key);
-  if(item) item.count=(item.count||1)+1;
+
+  if(item) item.count=(Number(item.count)||1)+1;
   else items.push({
     key,
     id:reward.id||key,
@@ -3764,9 +3852,11 @@ function addRewardToInventory(reward){
     count:1,
     earnedAt:new Date().toISOString()
   });
-  saveRewardInventory(items);
-  if(typeof renderRewardInventory==="function") renderRewardInventory();
+
+  saveLocalRewardInventory(items);
+  if(typeof renderRewardInventory==="function") await renderRewardInventory();
 }
+
 function openRewardInventory(){
   const modal=$("rewardInventoryModal");
   if(!modal) return;
@@ -3782,13 +3872,20 @@ function switchRewardTab(tab,btn){
   btn?.classList.add("active");
   renderRewardInventory();
 }
-function renderRewardInventory(){
+
+async function renderRewardInventory(){
+  const status=$("rewardInventoryStatus");
+  if(status) status.textContent=(currentUser&&sb)?"☁️ 云端":"📱 本机游客";
   const list=$("rewardInventoryList");
   if(!list) return;
-  const items=getRewardInventory();
+
+  list.innerHTML='<div class="reward-empty">☁️ 正在读取奖励仓库…</div>';
+  const items=await getRewardInventory();
+
   const total=items.reduce((n,x)=>n+(Number(x.count)||1),0);
   const badges=items.filter(x=>x.type==="badge").reduce((n,x)=>n+(Number(x.count)||1),0);
   const points=items.filter(x=>x.type==="points").reduce((n,x)=>n+(Number(x.count)||1),0);
+
   $("inventoryTotal").textContent=total;
   $("inventoryBadges").textContent=badges;
   $("inventoryPoints").textContent=points;
@@ -3798,10 +3895,12 @@ function renderRewardInventory(){
     if(rewardInventoryTab==="points") return x.type==="points";
     return true;
   });
+
   if(!shown.length){
     list.innerHTML='<div class="reward-empty">🎒 仓库还是空的<br><small>去抽奖获得你的第一份奖励吧</small></div>';
     return;
   }
+
   list.innerHTML=shown.map(x=>`
     <div class="reward-item">
       <div class="reward-item-icon">${x.icon}</div>
@@ -3896,7 +3995,7 @@ function mentionFromFullProfile(){
 <div class="modal" id="rewardInventoryModal" onclick="if(event.target===this)closeRewardInventory()">
   <div class="modal-card reward-inventory-card">
     <div class="modal-head">
-      <span>🎒 奖励仓库</span>
+      <span>🎒 奖励仓库 <small id="rewardInventoryStatus" style="color:#62cfff;font-size:9px;margin-left:6px">☁️ 云端</small></span>
       <button class="close" onclick="closeRewardInventory()">×</button>
     </div>
     <div class="reward-inventory-summary">
