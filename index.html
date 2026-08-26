@@ -3231,6 +3231,47 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v10-diagnostics">
+.voice-diagnostics{
+  margin-top:8px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px 10px;
+  font-size:9px;
+  color:#71849b;
+}
+.voice-diagnostics div{display:flex;justify-content:space-between;gap:8px}
+.voice-diagnostics b{font-weight:700;color:#d6a548}
+.voice-diagnostics b.ok{color:#35c759}
+.voice-diagnostics b.err{color:#ff6b61}
+.voice-diagnostics b.wait{color:#d6a548}
+@media(max-width:800px){
+  .voice-diagnostics{font-size:9px;gap:4px 8px}
+}
+</style>
+
+
+<style id="security-lab-v10-chat-diagnostics">
+#chatDiagnostics{
+  position:fixed;
+  left:10px;
+  bottom:10px;
+  z-index:9998;
+  display:none;
+  max-width:min(92vw,360px);
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(8,16,28,.94);
+  border:1px solid rgba(110,160,230,.18);
+  color:#8195ae;
+  font-size:10px;
+  line-height:1.5;
+  box-shadow:0 12px 35px rgba(0,0,0,.35);
+}
+#chatDiagnostics b{color:#35c759}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3445,7 +3486,16 @@ button:active{
     <div class="voice-room">
       <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
       <div class="voice-state" id="voiceState">未加入语音</div>
-      <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div><div class="voice-device-note">首次加入会请求麦克风权限。语音使用 WebRTC，网络较差时会自动尝试重新连接。</div>
+      <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div>
+<div id="voiceDiagnostics" class="voice-diagnostics" aria-live="polite">
+  <div><span>☁ 云端</span><b id="diagCloud">检测中</b></div>
+  <div><span>👥 Presence</span><b id="diagPresence">检测中</b></div>
+  <div><span>📡 Broadcast</span><b id="diagBroadcast">检测中</b></div>
+  <div><span>📤 Offer</span><b id="diagOffer">—</b></div>
+  <div><span>📥 Answer</span><b id="diagAnswer">—</b></div>
+  <div><span>🧊 ICE</span><b id="diagIce">—</b></div>
+  <div><span>🎙 WebRTC</span><b id="diagWebrtc">—</b></div>
+</div><div class="voice-device-note">首次加入会请求麦克风权限。语音使用 WebRTC，网络较差时会自动尝试重新连接。</div>
     </div>
     <div class="voice-list" id="voiceList">
       <div class="voice-empty">还没有人加入语音</div>
@@ -3865,9 +3915,11 @@ async function loadMessages(options={}){
     localStorage.setItem("sl_local_messages",JSON.stringify(messages));
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
     setCloudStatus("云端已连接","#35a85a");
+    window.dispatchEvent(new Event("securitylab:chat-read-ok"));
   }catch(e){
     console.warn("读取 messages 失败:",e);
     setCloudStatus("连接异常","#d9534f");
+    window.dispatchEvent(new Event("securitylab:chat-read-error"));
     if(!silent)toast("聊天同步失败，正在重试");
     renderMessages(localData);
   }
@@ -4047,6 +4099,7 @@ async function sendMessage(){
     localStorage.setItem("sl_local_messages",JSON.stringify(messages));
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
     setCloudStatus("云端已连接","#35a85a");
+    window.dispatchEvent(new Event("securitylab:chat-send-ok"));
     addNotification("消息已发送");
   }catch(e){
     console.warn("发送失败:",e);
@@ -4054,6 +4107,7 @@ async function sendMessage(){
     local.syncError=e?.message||"发送失败";
     localStorage.setItem("sl_local_messages",JSON.stringify(messages));
     setCloudStatus("发送失败","#d9534f");
+    window.dispatchEvent(new Event("securitylab:chat-send-error"));
     renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
     toast("云端发送失败，可点“重新发送”");
   }
@@ -4560,10 +4614,34 @@ const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random(
 const voicePeers={};
 const voicePendingIce={};
 
+
+const voiceDiagState={cloud:"wait",presence:"wait",broadcast:"wait",offer:"wait",answer:"wait",ice:"wait",webrtc:"wait"};
+
+function setDiag(name,text,state="wait"){
+  voiceDiagState[name]=state;
+  const el=document.getElementById("diag"+name.charAt(0).toUpperCase()+name.slice(1));
+  if(!el)return;
+  el.textContent=text;
+  el.className=state;
+}
+function resetVoiceDiagnostics(){
+  setDiag("cloud","检测中","wait");
+  setDiag("presence","检测中","wait");
+  setDiag("broadcast","检测中","wait");
+  setDiag("offer","—","wait");
+  setDiag("answer","—","wait");
+  setDiag("ice","—","wait");
+  setDiag("webrtc","—","wait");
+}
+function countVoicePeers(){
+  return Object.keys(voicePeers).length;
+}
+
 function voiceTopic(){
   return "voice-"+String(channel).replace(/[^a-zA-Z0-9_-]/g,"_");
 }
 function openVoice(){
+  resetVoiceDiagnostics();
   $("voiceModal").classList.add("show");
   $("voiceRoomTitle").textContent="# "+($("chatName").textContent||"总聊天室");
   $("voiceState").textContent=voiceJoined?"已加入语音":"未加入语音";
@@ -4603,11 +4681,25 @@ function renderVoiceList(){
     </div>`).join("");
 }
 async function voiceBroadcast(event,payload){
-  if(!voiceRoom)return;
+  if(!voiceRoom){
+    setDiag("broadcast","无语音频道","err");
+    return false;
+  }
   try{
-    await voiceRoom.send({type:"broadcast",event,payload});
+    const res=await voiceRoom.send({type:"broadcast",event,payload});
+    if(res==="ok" || res===undefined){
+      setDiag("broadcast","正常","ok");
+      if(event==="offer")setDiag("offer","已发送","ok");
+      if(event==="answer")setDiag("answer","已发送","ok");
+      if(event==="ice")setDiag("ice","交换中","wait");
+      return true;
+    }
+    setDiag("broadcast","失败","err");
+    return false;
   }catch(e){
     console.warn("voice broadcast",e);
+    setDiag("broadcast","失败","err");
+    return false;
   }
 }
 
@@ -4637,11 +4729,14 @@ function makePeer(id,name){
 
   pc.onicecandidate=e=>{
     if(e.candidate){
+      setDiag("ice","交换中","wait");
       voiceBroadcast("ice",{
         from:voiceId,
         to:id,
         candidate:e.candidate
       });
+    }else{
+      setDiag("ice","完成","ok");
     }
   };
 
@@ -4698,14 +4793,22 @@ function makePeer(id,name){
     if(state==="connected"){
       if(p)p.connectedAt=Date.now();
       if(p)p.reconnecting=false;
+      setDiag("webrtc",`已连接 ${countVoicePeers()} 人`,"ok");
       setVoiceNetwork("WebRTC 已连接 ✓","ok");
       renderVoiceList();
+    }else if(state==="connecting"){
+      setDiag("webrtc","连接中","wait");
+      setVoiceNetwork("WebRTC 正在连接…","warn");
+    }else if(state==="new"){
+      setDiag("webrtc","已发现用户，等待协商","wait");
+      setVoiceNetwork("已发现成员，正在协商…","warn");
     }else if(state==="failed"){
+      setDiag("webrtc","连接失败","err");
       if(p)p.reconnecting=true;
       renderVoiceList();
-      // ICE restart：先尝试重新协商，再彻底移除。
       restartPeerConnection(id).catch(()=>removePeer(id));
     }else if(state==="disconnected"){
+      setDiag("webrtc","连接中断","err");
       if(p)p.reconnecting=true;
       renderVoiceList();
       setVoiceNetwork("连接暂时中断，正在恢复…","warn");
@@ -4751,6 +4854,7 @@ async function sendOffer(id,name,iceRestart=false){
     {offerToReceiveAudio:true}
   );
   await p.pc.setLocalDescription(offer);
+  setDiag("offer","已生成","wait");
   await voiceBroadcast("offer",{
     from:voiceId,
     to:id,
@@ -4792,6 +4896,8 @@ async function handleVoice(event,p){
 
       await peer.pc.setRemoteDescription(p.description);
       peer.remoteDescriptionSet=true;
+      setDiag("answer","已收到","ok");
+      setDiag("offer","已收到","ok");
 
       const queued=voicePendingIce[p.from]||[];
       for(const candidate of queued){
@@ -4801,6 +4907,7 @@ async function handleVoice(event,p){
 
       const answer=await peer.pc.createAnswer();
       await peer.pc.setLocalDescription(answer);
+      setDiag("answer","已生成","wait");
 
       await voiceBroadcast("answer",{
         from:voiceId,
@@ -4896,10 +5003,14 @@ async function joinVoice(){
         if(payload?.from)removePeer(payload.from);
       })
       .on("presence",{event:"sync"},()=>{
+        const count=Object.values(voiceRoom.presenceState()||{}).flat().length;
+        setDiag("presence",`${count} 人`,"ok");
         renderVoiceList();
         updateVoiceNetworkStatus();
       })
       .on("presence",{event:"join"},({newPresences})=>{
+        const count=Object.values(voiceRoom.presenceState()||{}).flat().length;
+        setDiag("presence",`${count} 人`,"ok");
         renderVoiceList();
         updateVoiceNetworkStatus();
         (newPresences||[]).forEach(u=>{
@@ -4910,6 +5021,8 @@ async function joinVoice(){
       })
       .on("presence",{event:"leave"},({key})=>{
         removePeer(key);
+        const count=Object.values(voiceRoom.presenceState()||{}).flat().length;
+        setDiag("presence",`${count} 人`,"ok");
         renderVoiceList();
         updateVoiceNetworkStatus();
       });
@@ -4919,9 +5032,13 @@ async function joinVoice(){
       voiceRoom.subscribe(async s=>{
         if(s==="SUBSCRIBED"){
           clearTimeout(timer);
+          setDiag("cloud","Realtime 已连接","ok");
+          setDiag("broadcast","可用","ok");
           resolve();
         }else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){
           clearTimeout(timer);
+          setDiag("cloud","Realtime 失败","err");
+          setDiag("broadcast","不可用","err");
           reject(new Error("Realtime 连接失败"));
         }
       });
@@ -5136,10 +5253,13 @@ async function updateVoiceNetworkStatus(){
   const otherUsers=presenceUsers.filter(u=>u?.peerId&&u.peerId!==voiceId);
 
   if(!peers.length){
-    setVoiceNetwork(
-      otherUsers.length?"发现成员，正在建立连接…":"已加入，等待其他成员",
-      "warn"
-    );
+    if(otherUsers.length){
+      setDiag("presence",`${otherUsers.length+1} 人`,"ok");
+      setDiag("webrtc","等待 Offer/Answer","wait");
+      setVoiceNetwork("已发现成员，正在协商…","warn");
+    }else{
+      setVoiceNetwork("已加入，等待其他成员","warn");
+    }
     return;
   }
 
@@ -6779,6 +6899,36 @@ html.voice-sheet-open,body.voice-sheet-open{
   }
 }
 </style>
+
+
+<div id="chatDiagnostics">
+  ☁ 云端：<b id="chatDiagCloud">检测中</b>　
+  📨 读取：<b id="chatDiagRead">检测中</b>　
+  📤 发送：<b id="chatDiagSend">—</b>　
+  ⚡ 实时：<b id="chatDiagRealtime">检测中</b>
+</div>
+
+
+<script id="security-lab-v10-chat-diag-js">
+(function(){
+  function set(id,t,ok){
+    const e=document.getElementById(id);
+    if(e){e.textContent=t;e.style.color=ok===false?"#ff6b61":"#35c759";}
+  }
+  const old=window.setCloudStatus;
+  if(typeof old==="function"){
+    window.setCloudStatus=function(t,c){
+      old.apply(this,arguments);
+      set("chatDiagCloud",t,!/异常|失败|断开/i.test(t));
+      set("chatDiagRealtime",/连接|正常|ok|成功/i.test(t)?"正常":"检查中",!/异常|失败/i.test(t));
+    };
+  }
+  window.addEventListener("securitylab:chat-read-ok",()=>set("chatDiagRead","正常",true));
+  window.addEventListener("securitylab:chat-read-error",()=>set("chatDiagRead","失败",false));
+  window.addEventListener("securitylab:chat-send-ok",()=>set("chatDiagSend","成功",true));
+  window.addEventListener("securitylab:chat-send-error",()=>set("chatDiagSend","失败",false));
+})();
+</script>
 
 </body>
 </html>
