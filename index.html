@@ -2921,6 +2921,69 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v7-header-actions-css">
+@media (max-width:800px){
+  /* 禁用上一版悬浮按钮，避免覆盖输入框 */
+  #mobileQuickActions{display:none !important;}
+
+  .head-actions{
+    margin-left:auto !important;
+    gap:6px !important;
+    position:relative !important;
+    z-index:1000 !important;
+  }
+
+  .head-actions .mobile-settings-btn,
+  .head-actions .mobile-profile-btn{
+    display:grid !important;
+    place-items:center !important;
+    width:38px !important;
+    min-width:38px !important;
+    height:38px !important;
+    border-radius:12px !important;
+    background:rgba(18,28,45,.96) !important;
+    border:1px solid rgba(120,176,255,.18) !important;
+    color:#dceaff !important;
+    font-size:17px !important;
+    pointer-events:auto !important;
+    touch-action:manipulation !important;
+    -webkit-tap-highlight-color:transparent !important;
+  }
+
+  .head-actions .mobile-settings-btn:active,
+  .head-actions .mobile-profile-btn:active{
+    transform:scale(.90) !important;
+    background:rgba(65,105,175,.96) !important;
+  }
+
+  /* 手机顶部只保留真正有用的按钮，避免挤压标题 */
+  .head-actions .cloud-status,
+  .head-actions .search{
+    display:none !important;
+  }
+
+  .chat-head{
+    position:relative !important;
+    z-index:1000 !important;
+  }
+
+  .input-area{
+    position:relative !important;
+    z-index:20 !important;
+  }
+
+  .mobile-nav{
+    position:relative !important;
+    z-index:30 !important;
+  }
+
+  #settingsModal,#profileModal{
+    z-index:20000 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -2951,7 +3014,7 @@ button:active{
         <span id="cloudStatus" class="cloud-status warn">● 连接中</span>
         <input class="search" id="search" placeholder="搜索消息">
         <button class="head-btn" onclick="openVoice()" title="语音聊天">🎙️</button>
-        <button class="head-btn" onclick="toggleMembers()" title="成员">👥</button>
+        <button class="head-btn" onclick="toggleMembers()" title="成员">👥</button><button class="head-btn mobile-settings-btn" type="button" onclick="openSettings()" title="设置">⚙️</button><button class="head-btn mobile-profile-btn" type="button" onclick="openProfile()" title="我的资料">⋯</button>
         <button class="head-btn" onclick="toggleNotifications()" title="通知">🔔</button>
         <button class="head-btn" onclick="openInvite()" title="邀请">＋</button>
       </div>
@@ -6114,6 +6177,36 @@ with check (auth.uid() = user_id);
   }else{
     bind();
   }
+})();
+</script>
+
+
+<script id="security-lab-v7-header-actions-js">
+(function(){
+  function bind(){
+    var s=document.querySelector('.mobile-settings-btn');
+    var p=document.querySelector('.mobile-profile-btn');
+
+    if(s && !s.dataset.v7){
+      s.addEventListener('touchend',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof openSettings==='function') openSettings();
+      },{passive:false});
+      s.dataset.v7='1';
+    }
+
+    if(p && !p.dataset.v7){
+      p.addEventListener('touchend',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        if(typeof openProfile==='function') openProfile();
+      },{passive:false});
+      p.dataset.v7='1';
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind);
+  else bind();
 })();
 </script>
 
