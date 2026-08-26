@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f4f5f7">
+<meta name="theme-color" content="#050711">
 <title>Security Lab · KOOK Style</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -619,22 +619,231 @@ body.dark .voice-person.speaking{background:#17251b}
   font-size:9px;font-weight:800;vertical-align:middle;
 }
 .cloud-badge.developer{background:linear-gradient(135deg,#fff4c7,#fff9e8);border-color:#e8c95f;color:#8a6500}
-.msg-top .cloud-badge{margin-left:0}
-.member-name .cloud-badge{font-size:8px;height:19px;padding:0 5px;margin-left:3px}
 body.dark .cloud-badge{background:#29233a;border-color:#6e52a1;color:#d6c5ff}
 body.dark .cloud-badge.developer{background:#38301b;border-color:#8c7428;color:#ffe38a}
 
 
-.lottery-rarity-epic{color:#7d4bd6;font-weight:900;text-shadow:0 0 10px rgba(125,75,214,.45)}
-.lottery-rarity-legendary{color:#b8860b;font-weight:900;text-shadow:0 0 12px rgba(255,193,7,.6)}
-.lottery-machine.epic{box-shadow:0 0 35px rgba(125,75,214,.65)}
-.lottery-machine.legendary{box-shadow:0 0 45px rgba(255,193,7,.85);animation:legendPulse .8s ease-in-out infinite alternate}
-@keyframes legendPulse{from{transform:scale(1)}to{transform:scale(1.035)}}
-.lottery-result-badge{font-size:18px;margin-top:8px}
+/* =========================================================
+   SECURITY LAB — NEON GLOW UI
+   仅增强视觉效果，不修改聊天/登录/游客/抽奖/徽章/语音逻辑
+   ========================================================= */
+:root{
+  --bg:#070912;
+  --panel:#0d1220;
+  --panel2:#11182a;
+  --line:rgba(129,153,255,.16);
+  --text:#eef3ff;
+  --muted:#8d99b5;
+  --brand:#6c63ff;
+  --brand2:#3d8bff;
+  --green:#38e6a5;
+  --red:#ff5c8a;
+  --server:#050711;
+  --hover:rgba(108,99,255,.12);
+}
+html,body{background:#050711;color:var(--text)}
+body{
+  background:
+    radial-gradient(circle at 10% 0%,rgba(82,72,255,.12),transparent 30%),
+    radial-gradient(circle at 90% 100%,rgba(0,198,255,.10),transparent 28%),
+    #050711;
+}
+.app{background:transparent}
+.servers{
+  width:72px;padding:14px 0;gap:11px;
+  background:linear-gradient(180deg,#050711,#080b16);
+  border-right:1px solid rgba(111,128,255,.12);
+}
+.server{
+  width:48px;height:48px;border-radius:16px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.07);
+  box-shadow:0 8px 22px rgba(0,0,0,.25),inset 0 0 16px rgba(108,99,255,.03);
+  transition:.25s cubic-bezier(.2,.8,.2,1);
+}
+.server:hover,.server.active{
+  background:linear-gradient(145deg,#675cff,#3c8cff);
+  border-color:rgba(154,220,255,.5);
+  box-shadow:0 0 0 1px rgba(113,197,255,.25),0 0 26px rgba(92,91,255,.42);
+  transform:translateY(-2px);
+}
+.server.active:before{left:-13px;background:#8cd8ff;box-shadow:0 0 14px #6cbcff}
+.server.add{color:#54f0bd;background:rgba(57,225,170,.08);border-color:rgba(57,225,170,.2)}
+.server-sep{background:rgba(130,150,200,.18)}
+.channels{
+  width:260px;
+  background:linear-gradient(180deg,rgba(12,17,30,.97),rgba(8,12,22,.98));
+  border-right:1px solid rgba(129,153,255,.13);
+  backdrop-filter:blur(18px);
+}
+.server-head{
+  height:64px;border-bottom:1px solid var(--line);color:#f5f7ff;
+  text-shadow:0 0 14px rgba(117,130,255,.25);
+}
+.server-head button{color:#9ca9c8}
+.cat{color:#657292;letter-spacing:.08em}
+.channel{color:#8995b2;border:1px solid transparent;transition:.2s}
+.channel:hover{background:rgba(108,99,255,.08);color:#eaf0ff;border-color:rgba(108,99,255,.12)}
+.channel.active{
+  background:linear-gradient(90deg,rgba(101,91,255,.24),rgba(67,151,255,.08));
+  color:#fff;border-color:rgba(109,125,255,.18);
+  box-shadow:inset 3px 0 0 #7d76ff,0 0 18px rgba(94,88,255,.08);
+}
+.channel .icon{color:#7482a4}
+.userbar{
+  height:66px;background:rgba(8,12,22,.92);
+  border-top:1px solid var(--line);
+}
+.userbar-actions button{color:#8490ae}
+.userbar-actions button:hover{background:rgba(108,99,255,.12);color:#fff}
+.avatar,.big-avatar,.msg-avatar,.voice-person-avatar{
+  background:linear-gradient(135deg,#625bff,#248dff);
+  box-shadow:0 0 0 1px rgba(126,214,255,.18),0 0 18px rgba(93,92,255,.28);
+}
+.status-dot{border-color:#0d1220;box-shadow:0 0 9px #35e39d}
+.chat{background:linear-gradient(180deg,#0a0f1c,#070a12)}
+.chat-head{
+  height:64px;background:rgba(8,12,22,.78)!important;
+  border-bottom:1px solid var(--line);box-shadow:0 8px 28px rgba(0,0,0,.16);
+  backdrop-filter:blur(18px);
+}
+.chat-title{color:#f4f7ff}.chat-title .hash{color:#707cff;text-shadow:0 0 12px rgba(101,107,255,.6)}
+.chat-topic{color:#6f7c99;border-color:rgba(129,153,255,.16)}
+.cloud-status.ok{color:#43e4a6!important;text-shadow:0 0 12px rgba(67,228,166,.35)}
+.head-btn{color:#8d9aba}.head-btn:hover{background:rgba(108,99,255,.11);color:#fff;box-shadow:0 0 16px rgba(108,99,255,.12)}
+.search{background:rgba(255,255,255,.055);color:#eef3ff;border:1px solid rgba(129,153,255,.10)}
+.search::placeholder,.message-input::placeholder{color:#687590}
+.messages{background:transparent}
+.dayline{color:#5f6d8c}.dayline:before,.dayline:after{background:rgba(129,153,255,.12)}
+.message{transition:.18s;background:transparent}
+.message:hover{background:rgba(108,99,255,.055)}
+.msg-avatar{border:1px solid rgba(128,200,255,.2)}
+.msg-user{color:#edf2ff}.msg-user.bot{color:#8290ff;text-shadow:0 0 10px rgba(130,144,255,.25)}
+.msg-time,.msg-id{color:#65718c}.msg-text{color:#cdd5e8}
+.mention{color:#aeb4ff;background:rgba(98,91,255,.14)}
+.reply-box{background:rgba(90,88,255,.08);border-left-color:#746cff;color:#8793af}
+.file-card{background:rgba(255,255,255,.035);border-color:var(--line);color:#e8edfa}
+.msg-actions{background:#11182a;border-color:var(--line);box-shadow:0 12px 35px rgba(0,0,0,.35)}
+.msg-actions button{background:#11182a;color:#aeb8d0}.msg-actions button:hover{background:#1a2340;color:#fff}
+.typing{color:#6c7995}
+.input-area{background:linear-gradient(180deg,rgba(7,10,18,.55),rgba(7,10,18,.96))!important}
+.composer{
+  background:rgba(255,255,255,.055);border:1px solid rgba(129,153,255,.12);
+  box-shadow:0 0 0 1px rgba(255,255,255,.015),0 12px 35px rgba(0,0,0,.18);
+}
+.composer:focus-within{border-color:rgba(111,137,255,.45);box-shadow:0 0 0 3px rgba(108,99,255,.08),0 0 26px rgba(80,100,255,.08)}
+.compose-btn{color:#8190ae}.compose-btn:hover{background:rgba(108,99,255,.11);color:#fff}
+.message-input{color:#f2f5ff}
+.send,.primary,.auth-primary{
+  background:linear-gradient(135deg,#7167ff,#3e8fff)!important;
+  box-shadow:0 0 20px rgba(83,101,255,.22);
+  transition:.2s ease;
+}
+.send:hover,.primary:hover,.auth-primary:hover{transform:translateY(-1px);box-shadow:0 0 26px rgba(83,130,255,.38)}
+.input-meta{color:#5f6c88}
+.members{background:rgba(9,14,25,.94);border-left-color:var(--line)}
+.members-title{color:#687692}.member{color:#d9e0ef}.member:hover{background:rgba(108,99,255,.08)}
+.member-name{color:#e8edfa}.member-status{color:#6d7993}
+.mobile-nav{background:rgba(7,11,20,.94)!important;border-top-color:var(--line);backdrop-filter:blur(18px)}
+.mobile-nav button{color:#66738e}.mobile-nav button.active{color:#8d85ff;background:rgba(108,99,255,.10);text-shadow:0 0 12px rgba(112,102,255,.45)}
+.overlay{background:rgba(1,3,9,.68);backdrop-filter:blur(4px)}
+.modal{background:rgba(1,3,9,.62);backdrop-filter:blur(8px)}
+.modal-card{
+  background:linear-gradient(145deg,rgba(16,23,39,.97),rgba(8,12,22,.98));
+  border:1px solid rgba(129,153,255,.16);color:#edf2ff;
+  box-shadow:0 28px 90px rgba(0,0,0,.55),0 0 35px rgba(76,91,255,.08);
+}
+.modal-head{color:#f5f7ff}.close{background:rgba(255,255,255,.07);color:#9aa8c4}.close:hover{background:rgba(255,92,138,.12);color:#ff8baa}
+.field{background:rgba(255,255,255,.045);border-color:rgba(129,153,255,.14);color:#eef3ff}
+.field:focus{border-color:#727aff;box-shadow:0 0 0 3px rgba(108,99,255,.08)}
+.label{color:#71809d}
+.emoji-grid button{background:rgba(255,255,255,.05);color:#fff}.emoji-grid button:hover{background:rgba(108,99,255,.14)}
+.toast{background:rgba(13,18,32,.94);border:1px solid rgba(129,153,255,.18);box-shadow:0 10px 30px rgba(0,0,0,.35),0 0 20px rgba(87,96,255,.12)}
+.context-menu{background:#11182a;border-color:var(--line);box-shadow:0 15px 40px rgba(0,0,0,.4)}
+.context-menu button{background:#11182a;color:#d7dff0}.context-menu button:hover{background:#1a2340;color:#fff}
+.badge-row{gap:7px}
+.user-badge{
+  background:rgba(255,255,255,.055);color:#bdc8df;border-color:rgba(129,153,255,.14);
+  box-shadow:inset 0 0 10px rgba(255,255,255,.02),0 0 12px rgba(96,101,255,.04);
+}
+.user-badge.gold{background:rgba(245,191,61,.10);color:#ffd66b;border-color:rgba(245,191,61,.32);box-shadow:0 0 14px rgba(245,191,61,.10)}
+.user-badge.blue{background:rgba(69,143,255,.10);color:#7fb7ff;border-color:rgba(69,143,255,.28)}
+.user-badge.green{background:rgba(53,225,163,.09);color:#65edbd;border-color:rgba(53,225,163,.27)}
+.user-badge.purple{background:rgba(149,91,255,.10);color:#c39aff;border-color:rgba(149,91,255,.28)}
+.user-badge.red{background:rgba(255,84,131,.09);color:#ff8eac;border-color:rgba(255,84,131,.27)}
+.badge-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.badge-item{
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border-color:rgba(129,153,255,.14);color:#eef3ff;position:relative;overflow:hidden;
+  box-shadow:inset 0 0 18px rgba(98,91,255,.025);
+}
+.badge-item:after{content:"";position:absolute;inset:-40% -10%;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.07) 50%,transparent 65%);transform:translateX(-55%);transition:.45s}
+.badge-item:hover:after{transform:translateX(55%)}
+.badge-item:hover{transform:translateY(-3px);background:rgba(108,99,255,.08);border-color:rgba(124,139,255,.32);box-shadow:0 10px 25px rgba(0,0,0,.2),0 0 20px rgba(108,99,255,.08)}
+.badge-item.locked{opacity:.34}
+.badge-item .badge-icon{text-shadow:0 0 16px rgba(116,130,255,.3)}
+.lottery-banner{background:linear-gradient(135deg,#625bff,#247dff,#2dcef0);box-shadow:0 12px 30px rgba(72,94,255,.22);position:relative;overflow:hidden}
+.lottery-banner:after{content:"";position:absolute;inset:-100% 20%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);transform:rotate(20deg);animation:neonSweep 3.2s linear infinite}
+@keyframes neonSweep{from{transform:translateX(-55%) rotate(20deg)}to{transform:translateX(55%) rotate(20deg)}}
+.lottery-machine{
+  background:radial-gradient(circle at 50% 50%,rgba(77,94,255,.18),transparent 45%),linear-gradient(145deg,#080b14,#151d31);
+  border:1px solid rgba(111,134,255,.18);box-shadow:inset 0 0 35px rgba(69,89,255,.10),0 10px 30px rgba(0,0,0,.3);
+}
+.lottery-reel{background:rgba(5,8,16,.72);border:1px solid rgba(125,149,255,.18);box-shadow:0 0 28px rgba(74,91,255,.13);backdrop-filter:blur(8px)}
+.lottery-slot{background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:1px solid rgba(129,153,255,.12);text-shadow:0 0 15px rgba(129,164,255,.4)}
+.lottery-slot.center{box-shadow:0 0 0 2px rgba(110,127,255,.55),0 0 28px rgba(93,100,255,.45)}
+.lottery-pointer{color:#7d86ff;text-shadow:0 0 12px rgba(117,126,255,.8)}
+.lottery-result{background:rgba(255,255,255,.045);border:1px solid rgba(129,153,255,.12);color:#cbd5e9}
+.lottery-result.win-result{background:rgba(43,220,151,.09);color:#64efbb;border-color:rgba(43,220,151,.28);box-shadow:0 0 25px rgba(43,220,151,.08)}
+.lottery-prize{background:rgba(255,255,255,.04);border-color:rgba(129,153,255,.13);color:#edf2ff;transition:.2s}
+.lottery-prize:hover{transform:translateY(-2px);border-color:rgba(124,139,255,.3);box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.lottery-prize span{color:#73809c}
+.voice-room{background:rgba(255,255,255,.045);border:1px solid rgba(129,153,255,.12)}
+.voice-person:hover{background:rgba(108,99,255,.08)}
+.voice-person.speaking{background:rgba(53,225,163,.06);box-shadow:inset 0 0 0 2px #35dca1,0 0 20px rgba(53,225,163,.08)}
+.voice-actions button{background:rgba(255,255,255,.055);color:#dbe3f2;border:1px solid rgba(129,153,255,.12)}
+.voice-actions .voice-join{background:linear-gradient(135deg,#625bff,#2f8cff);border:0;box-shadow:0 0 20px rgba(82,101,255,.25)}
+.auth-gate{
+  background:
+    radial-gradient(circle at 18% 15%,rgba(92,79,255,.28),transparent 30%),
+    radial-gradient(circle at 85% 80%,rgba(0,196,255,.18),transparent 28%),
+    #050711;
+}
+.auth-card{
+  background:linear-gradient(145deg,rgba(16,23,39,.96),rgba(7,11,20,.98));
+  border:1px solid rgba(129,153,255,.18);
+  box-shadow:0 30px 100px rgba(0,0,0,.65),0 0 50px rgba(77,89,255,.12);
+}
+.auth-logo{
+  background:linear-gradient(145deg,#7167ff,#318fff);box-shadow:0 0 30px rgba(82,106,255,.42),inset 0 0 20px rgba(255,255,255,.08);
+  animation:logoPulse 2.8s ease-in-out infinite;
+}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 24px rgba(82,106,255,.35)}50%{box-shadow:0 0 42px rgba(82,140,255,.62)}}
+.auth-title{color:#f5f7ff;text-shadow:0 0 18px rgba(119,130,255,.22)}
+.auth-subtitle,.auth-note{color:#7785a2}
+.auth-tabs{background:rgba(255,255,255,.045)}
+.auth-tabs button{color:#71809d}.auth-tabs button.active{background:rgba(255,255,255,.08);color:#fff;box-shadow:0 0 15px rgba(108,99,255,.08)}
+.auth-divider{color:#63708c}.auth-divider:before,.auth-divider:after{background:rgba(129,153,255,.13)}
+.auth-guest{background:rgba(255,255,255,.06);color:#dfe7f7;border:1px solid rgba(129,153,255,.12)}
+.auth-guest:hover{background:rgba(108,99,255,.10);color:#fff}
+.auth-user span{color:#7785a2}
+.auth-logout{background:rgba(255,92,138,.10);color:#ff8baa;border:1px solid rgba(255,92,138,.18)}
+.cloud-badge{background:rgba(149,91,255,.12);border-color:rgba(149,91,255,.3);color:#c8a9ff;box-shadow:0 0 12px rgba(149,91,255,.10)}
+.cloud-badge.developer{background:rgba(245,191,61,.12);border-color:rgba(245,191,61,.34);color:#ffd86b;box-shadow:0 0 15px rgba(245,191,61,.12)}
+@media(max-width:800px){
+  .channels{background:linear-gradient(180deg,#0b1020,#070b15)}
+  .chat-head{height:60px;min-height:60px}
+  .mobile-menu{background:rgba(108,99,255,.10);color:#8c86ff;border:1px solid rgba(108,99,255,.16)}
+  .messages{padding-top:10px}
+  .composer{min-height:50px}
+  .mobile-nav{height:62px;min-height:62px}
+  .modal-card{border-radius:20px 20px 14px 14px}
+}
+@media(max-width:390px){.chat-title{font-size:15px}.msg-text{font-size:14px}}
 
 </style>
 
-<meta name="theme-color" content="#f3f4f6">
+<meta name="theme-color" content="#050711">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -947,8 +1156,6 @@ async function submitAuth(){
           localStorage.setItem("sl_name",nickname);
         }
       }
-      await loadCloudProfile();
-      await loadPublicProfiles();
       updateIdentity();
       showAuthGate(false);
       toast("登录成功");
@@ -962,8 +1169,6 @@ async function submitAuth(){
         localStorage.removeItem("sl_guest");
         nickname=(email.split("@")[0]||"用户").slice(0,20);
         localStorage.setItem("sl_name",nickname);
-        await loadCloudProfile();
-        await loadPublicProfiles();
         updateIdentity();
         showAuthGate(false);
         toast("注册成功");
@@ -1096,15 +1301,11 @@ function mobileHome(){closePanels();switchChannel("general")}
 function openServerMenu(){toast("服务器菜单：邀请、设置、创建频道")}
 function addChannel(){const n=prompt("新频道名称");if(n){channels.push({id:"c"+Date.now(),name:n,icon:"#",topic:"新建频道"});renderChannels();toast("频道已创建")}}
 function renderMembers(){
-  const names=["游客",nickname==="游客"?"":nickname,"Hotdog","SecurityBot","开发者"].filter(Boolean);
-  const unique=[...new Set(names)];$("memberCount").textContent=unique.length;
-  $("memberList").innerHTML=unique.map((n,i)=>{
-    const p=getPublicProfile(n);
-    const badge=profileBadgeHtml(p);
-    const av=p?.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : esc(n[0]||"U");
-    return `<div class="member" onclick="openUser('${esc(n)}')"><div style="position:relative"><div class="avatar">${av}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)} ${badge}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`;
-  }).join("");
+ const names=["游客",nickname==="游客"?"":nickname,"Hotdog","SecurityBot","开发者"].filter(Boolean);
+ const unique=[...new Set(names)];$("memberCount").textContent=unique.length;
+ $("memberList").innerHTML=unique.map((n,i)=>`<div class="member" onclick="openUser('${esc(n)}')"><div style="position:relative"><div class="avatar">${esc(n[0]||"U")}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`).join("");
 }
+
 function setCloudStatus(text,color){
   const el=$("cloudStatus");
   if(!el)return;
@@ -1154,9 +1355,6 @@ function setCloudStatus(text,color){
 
     setCloudStatus("云端已连接","#35a85a");
     await restoreAuthState();
-    await loadCloudProfile();
-    await loadPublicProfiles();
-    updateIdentity();
     subscribe();
     await loadMessages();
   }catch(e){
@@ -1179,7 +1377,7 @@ function setCloudStatus(text,color){
       payload=>{
         const row=payload.new||{};
         if(!row.channel || row.channel===channel){
-          loadPublicProfiles().finally(()=>loadMessages());
+          loadMessages();
         }
       })
     .on("postgres_changes",
@@ -1238,34 +1436,27 @@ function setCloudStatus(text,color){
  return s;
 }
 function renderMessages(data){
-  const box=$("messages");box.innerHTML="";
-  if(!data.length){box.innerHTML=`<div style="text-align:center;color:#9aa0a9;padding:80px 10px;font-size:13px">这里还没有消息<br><small style="font-size:10px">发送第一条消息吧</small></div>`;return}
-  let prev="";
-  data.forEach((m,i)=>{
-    const grouped=prev===m.username;
-    const row=document.createElement("article");row.className="message"+(grouped?" grouped":"");row.dataset.id=m.id;
-    const profile=getPublicProfile(m.username);
-    const avatar=document.createElement("div");avatar.className="msg-avatar";
-    if(profile?.avatar_url){
-      const im=new Image();im.src=profile.avatar_url;im.alt="";
-      im.onload=()=>{avatar.innerHTML="";avatar.appendChild(im)};
-      im.onerror=()=>avatar.textContent=(m.username||"游")[0];
-    }else avatar.textContent=(m.username||"游")[0];
-    const main=document.createElement("div");main.className="msg-main";
-    let reply=m.reply_to?`<div class="reply-box">回复 ${esc(m.reply_to.username||"用户")}：${esc(m.reply_to.message||"")}</div>`:"";
-    const badge=profileBadgeHtml(profile);
-    main.innerHTML=`<div class="msg-top"><span class="msg-user">${esc(m.username||"游客")}</span>${badge}${m.username===nickname?'<span class="msg-id">你</span>':""}<span class="msg-time">${time(m.created_at||Date.now())}</span></div>${reply}<div class="msg-text">${formatMentions(m.message||"")}</div>`;
-    if(m.image_data)main.innerHTML+=`<img class="msg-image" src="${m.image_data}" alt="图片">`;
-    if(m.file_name)main.innerHTML+=`<div class="file-card"><div class="file-icon">📄</div><div><div class="file-name">${esc(m.file_name)}</div><div class="file-size">${size(m.file_size||0)}</div></div></div>`;
-    const acts=document.createElement("div");acts.className="msg-actions";
-    acts.innerHTML=`<button>↩</button><button>📋</button>${m.username===nickname?'<button>✏</button><button>🗑</button>':""}`;
-    acts.children[0].onclick=()=>replyMessage(m);acts.children[1].onclick=()=>copyText(m.message||"");
-    if(m.username===nickname){acts.children[2].onclick=()=>editMessage(m);acts.children[3].onclick=()=>deleteMessage(m)}
-    row.append(avatar,main,acts);row.addEventListener("contextmenu",e=>{e.preventDefault();showContext(e.clientX,e.clientY,m)});
-    main.querySelector(".msg-user").onclick=()=>openUser(m.username||"游客");
-    box.appendChild(row);prev=m.username;
-  });
-  box.scrollTop=box.scrollHeight;
+ const box=$("messages");box.innerHTML="";
+ if(!data.length){box.innerHTML=`<div style="text-align:center;color:#9aa0a9;padding:80px 10px;font-size:13px">这里还没有消息<br><small style="font-size:10px">发送第一条消息吧</small></div>`;return}
+ let prev="";
+ data.forEach((m,i)=>{
+  const grouped=prev===m.username;
+  const row=document.createElement("article");row.className="message"+(grouped?" grouped":"");row.dataset.id=m.id;
+  const avatar=document.createElement("div");avatar.className="msg-avatar";avatar.textContent=(m.username||"游")[0];
+  const main=document.createElement("div");main.className="msg-main";
+  let reply=m.reply_to?`<div class="reply-box">回复 ${esc(m.reply_to.username||"用户")}：${esc(m.reply_to.message||"")}</div>`:"";
+  main.innerHTML=`<div class="msg-top"><span class="msg-user">${esc(m.username||"游客")}</span>${m.username===nickname?'<span class="msg-id">你</span>':""}<span class="msg-time">${time(m.created_at||Date.now())}</span></div>${reply}<div class="msg-text">${formatMentions(m.message||"")}</div>`;
+  if(m.image_data)main.innerHTML+=`<img class="msg-image" src="${m.image_data}" alt="图片">`;
+  if(m.file_name)main.innerHTML+=`<div class="file-card"><div class="file-icon">📄</div><div><div class="file-name">${esc(m.file_name)}</div><div class="file-size">${size(m.file_size||0)}</div></div></div>`;
+  const acts=document.createElement("div");acts.className="msg-actions";
+  acts.innerHTML=`<button>↩</button><button>📋</button>${m.username===nickname?'<button>✏</button><button>🗑</button>':""}`;
+  acts.children[0].onclick=()=>replyMessage(m);acts.children[1].onclick=()=>copyText(m.message||"");
+  if(m.username===nickname){acts.children[2].onclick=()=>editMessage(m);acts.children[3].onclick=()=>deleteMessage(m)}
+  row.append(avatar,main,acts);row.addEventListener("contextmenu",e=>{e.preventDefault();showContext(e.clientX,e.clientY,m)});
+  main.querySelector(".msg-user").onclick=()=>openUser(m.username||"游客");
+  box.appendChild(row);prev=m.username;
+ });
+ box.scrollTop=box.scrollHeight;
 }
 async function sendMessage(){
   localStorage.setItem("sl_sent_count",String(parseInt(localStorage.getItem("sl_sent_count")||"0")+1));
@@ -1384,12 +1575,8 @@ function saveProfile(){
 }
 function setAvatar(el,url,name){el.innerHTML="";if(url){const im=new Image();im.src=url;im.onload=()=>el.appendChild(im);im.onerror=()=>el.textContent=(name||"游")[0]}else el.textContent=(name||"游")[0]}
 function openUser(name){
-  const p=getPublicProfile(name);
-  $("userModalName").innerHTML=esc(name)+" "+profileBadgeHtml(p);
-  $("userModalBio").textContent=name===nickname?signature:"Security Lab 社区成员";
-  setAvatar($("userBigAvatar"),p?.avatar_url || (name===nickname?avatarURL:""),name);
-  window.__selectedUser=name;
-  $("userModal").classList.add("show")
+  const devBadge=isCurrentUserDeveloper() && nickname!=="游客" && arguments[0]===nickname;
+ $("userModalName").textContent=name;$("userModalBio").textContent=name===nickname?signature:"Security Lab 社区成员";setAvatar($("userBigAvatar"),name===nickname?avatarURL:"",name);window.__selectedUser=name;$("userModal").classList.add("show")
 }
 function closeUser(){$("userModal").classList.remove("show")}
 function startDM(){const n=window.__selectedUser;closeUser();openDM(n)}
@@ -1431,14 +1618,10 @@ function resetChatBackground(){
   localStorage.removeItem("sl_chat_bg");localStorage.removeItem("sl_chat_bg_color");applyChatBackgroundStyle();closeBackgroundSettings();toast("已恢复默认聊天背景")
 }
 const lotteryPrizes=[
-  {id:"common",emoji:"🎫",name:"普通 · 100 积分",weight:5,rarity:"普通"},
-  {id:"rare",emoji:"⭐",name:"稀有 · 500 积分",weight:15,rarity:"稀有"},
-  {id:"epic_void",emoji:"🟣",name:"史诗徽章 · 虚空行者",weight:10,rarity:"史诗",badge:"epic_void"},
-  {id:"epic_galaxy",emoji:"🌌",name:"史诗徽章 · 星河守望者",weight:10,rarity:"史诗",badge:"epic_galaxy"},
-  {id:"epic_eye",emoji:"🔮",name:"史诗徽章 · 深渊之眼",weight:10,rarity:"史诗",badge:"epic_eye"},
-  {id:"legend_king",emoji:"👑",name:"传说徽章 · 传奇王者",weight:15,rarity:"传说",badge:"legend_king"},
-  {id:"legend_creator",emoji:"🌟",name:"传说徽章 · 创世者",weight:15,rarity:"传说",badge:"legend_creator"},
-  {id:"legend_eternal",emoji:"💫",name:"传说徽章 · 永恒之星",weight:20,rarity:"传说",badge:"legend_eternal"}
+ {emoji:"🏆",name:"一等奖 · 高级会员体验",weight:2},
+ {emoji:"💎",name:"二等奖 · 1000 积分",weight:8},
+ {emoji:"⭐",name:"三等奖 · 500 积分",weight:20},
+ {emoji:"🎫",name:"幸运奖 · 100 积分",weight:70}
 ];
 function lotteryUserKey(){
   if(typeof currentUser!=="undefined" && currentUser?.id) return "user_"+currentUser.id;
@@ -1450,8 +1633,8 @@ function lotteryDateKey(){
 }
 function updateLotteryUI(){
   const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
-  const remaining=Math.max(0,100-count);
-  $("lotteryCount").textContent=`今日免费次数：${remaining} / 100`;
+  const remaining=Math.max(0,10-count);
+  $("lotteryCount").textContent=`今日免费次数：${remaining} / 10`;
   $("lotteryButton").disabled=remaining<=0;
   $("lotteryButton").textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
 }
@@ -1461,8 +1644,8 @@ function drawLottery(){
   const key=lotteryDateKey();
   const countKey=key+"_count";
   const count=parseInt(localStorage.getItem(countKey)||"0");
-  if(count>=100){
-    toast("今天的 100 次抽奖已经用完");
+  if(count>=10){
+    toast("今天的 10 次抽奖已经用完");
     updateLotteryUI();
     return;
   }
@@ -1519,12 +1702,9 @@ function drawLottery(){
         slot.classList.toggle("center",i===2);
       });
 
-      machine.classList.remove("rolling","epic","legendary");
+      machine.classList.remove("rolling");
       machine.classList.add("win");
-      if(win.rarity==="史诗") machine.classList.add("epic");
-      if(win.rarity==="传说") machine.classList.add("legendary");
-      const rarityClass=win.rarity==="史诗"?"lottery-rarity-epic":(win.rarity==="传说"?"lottery-rarity-legendary":"");
-      result.innerHTML=`🎉 恭喜你抽中：<b class="${rarityClass}">${esc(win.emoji+" "+win.name)}</b>`;
+      result.innerHTML=`🎉 恭喜你抽中：<b>${esc(win.emoji+" "+win.name)}</b>`;
       result.classList.remove("rolling");
       result.classList.add("win-result");
 
@@ -1568,41 +1748,6 @@ async function loadCloudProfile(){
   }
 }
 
-
-// 云端公开资料缓存：让“开发者”等徽章对所有访问者可见。
-const publicProfilesByName = Object.create(null);
-const publicProfilesById = Object.create(null);
-
-async function loadPublicProfiles(){
-  if(!sb) return;
-  try{
-    const {data,error}=await sb.from("profiles")
-      .select("id,username,avatar_url,badge,role")
-      .limit(500);
-    if(error) throw error;
-    Object.keys(publicProfilesByName).forEach(k=>delete publicProfilesByName[k]);
-    Object.keys(publicProfilesById).forEach(k=>delete publicProfilesById[k]);
-    (data||[]).forEach(p=>{
-      if(p?.id) publicProfilesById[p.id]=p;
-      if(p?.username) publicProfilesByName[String(p.username)]=p;
-    });
-    if(currentUser && !cloudProfile){
-      const mine=publicProfilesById[currentUser.id];
-      if(mine) cloudProfile=mine;
-    }
-  }catch(e){
-    console.warn("读取公开 profiles 失败：请确认 profiles 的 SELECT RLS 策略允许读取公开资料。",e);
-  }
-}
-function getPublicProfile(username){
-  return publicProfilesByName[String(username||"")] || null;
-}
-function profileBadgeHtml(profile){
-  if(!profile) return "";
-  return (profile.role==="developer" || profile.badge==="developer")
-    ? developerBadgeHtml(true) : "";
-}
-
 function developerBadgeHtml(isDeveloper){
   return isDeveloper ? '<span class="cloud-badge developer">💻 开发者</span>' : "";
 }
@@ -1615,90 +1760,24 @@ function isCurrentUserDeveloper(){
 
 const badgeDefs=[
  {id:"welcome",icon:"👋",name:"初来乍到",desc:"第一次进入 Security Lab",cls:"blue"},
- {id:"member",icon:"🛡️",name:"正式成员",desc:"完成账号登录",cls:"blue"},
- {id:"developer",icon:"💻",name:"开发者",desc:"管理员授予",cls:"purple"},
- {id:"admin",icon:"🛡️",name:"管理员",desc:"管理员身份",cls:"gold"},
- {id:"vip",icon:"💎",name:"VIP",desc:"获得 VIP 身份",cls:"gold"},
- {id:"early",icon:"⚡",name:"早期用户",desc:"连续活跃 7 天",cls:"red"},
- {id:"founder",icon:"🏛️",name:"元老成员",desc:"早期加入 Security Lab",cls:"gold"},
-
- {id:"chat10",icon:"💬",name:"初次发言",desc:"发送 10 条消息",cls:"green"},
- {id:"chat",icon:"🗣️",name:"聊天达人",desc:"发送 100 条消息",cls:"green"},
- {id:"chat500",icon:"🔥",name:"话题王者",desc:"发送 500 条消息",cls:"red"},
- {id:"chat1000",icon:"💬",name:"社区元老",desc:"发送 1000 条消息",cls:"gold"},
- {id:"first_reply",icon:"↩️",name:"热心回复",desc:"完成一次回复互动",cls:"blue"},
- {id:"night",icon:"🌙",name:"夜猫子",desc:"深夜活跃",cls:"purple"},
-
+ {id:"chat",icon:"💬",name:"聊天达人",desc:"发送 100 条消息",cls:"green"},
  {id:"voice",icon:"🎙️",name:"语音玩家",desc:"加入语音聊天室",cls:"purple"},
- {id:"voice10",icon:"🎧",name:"语音达人",desc:"累计语音 10 小时",cls:"purple"},
- {id:"voice50",icon:"📢",name:"麦霸",desc:"累计语音 50 小时",cls:"gold"},
-
  {id:"lucky",icon:"🍀",name:"幸运之星",desc:"抽中一次奖励",cls:"gold"},
  {id:"lottery10",icon:"🎰",name:"抽奖达人",desc:"累计抽奖 10 次",cls:"gold"},
- {id:"lottery100",icon:"🎯",name:"百抽挑战者",desc:"累计抽奖 100 次",cls:"blue"},
- {id:"lottery500",icon:"🎰",name:"抽奖狂热者",desc:"累计抽奖 500 次",cls:"purple"},
- {id:"lottery1000",icon:"🏆",name:"千抽收藏家",desc:"累计抽奖 1000 次",cls:"gold"},
- {id:"rare_lucky",icon:"⭐",name:"稀有猎手",desc:"获得稀有奖励",cls:"blue"},
- {id:"epic_collector",icon:"🟣",name:"史诗收藏家",desc:"获得史诗徽章",cls:"purple"},
- {id:"legend_collector",icon:"👑",name:"传说收藏家",desc:"获得传说徽章",cls:"gold"},
-
- {id:"streak3",icon:"🌱",name:"连续 3 天",desc:"连续活跃 3 天",cls:"green"},
- {id:"streak7",icon:"🔥",name:"连续 7 天",desc:"连续活跃 7 天",cls:"red"},
- {id:"streak30",icon:"🌟",name:"连续 30 天",desc:"连续活跃 30 天",cls:"gold"},
- {id:"streak100",icon:"👑",name:"连续 100 天",desc:"连续活跃 100 天",cls:"gold"},
-
- {id:"security",icon:"🔐",name:"安全卫士",desc:"完成安全设置",cls:"blue"},
- {id:"profile",icon:"🪪",name:"完整档案",desc:"完善个人资料",cls:"blue"},
- {id:"custom_avatar",icon:"🖼️",name:"专属头像",desc:"设置自定义头像",cls:"purple"},
- {id:"custom_bg",icon:"🎨",name:"空间设计师",desc:"设置聊天背景",cls:"purple"},
- {id:"voice_creator",icon:"🎤",name:"语音房主",desc:"创建语音聊天室",cls:"gold"},
- {id:"explorer",icon:"🧭",name:"探索者",desc:"访问多个频道",cls:"green"}
+ {id:"member",icon:"🛡️",name:"Security Lab 成员",desc:"完成账号登录",cls:"blue"},
+ {id:"early",icon:"⚡",name:"活跃用户",desc:"连续活跃 7 天",cls:"red"},
+ {id:"developer",icon:"💻",name:"开发者",desc:"管理员授予",cls:"purple"}
 ];
-
-const lotteryBadgeDefs=[
- {id:"epic_void",icon:"🟣",name:"虚空行者",desc:"抽奖获得史诗徽章",cls:"purple"},
- {id:"epic_galaxy",icon:"🌌",name:"星河守望者",desc:"抽奖获得史诗徽章",cls:"purple"},
- {id:"epic_eye",icon:"🔮",name:"深渊之眼",desc:"抽奖获得史诗徽章",cls:"purple"},
- {id:"legend_king",icon:"👑",name:"传奇王者",desc:"抽奖获得传说徽章",cls:"gold"},
- {id:"legend_creator",icon:"🌟",name:"创世者",desc:"抽奖获得传说徽章",cls:"gold"},
- {id:"legend_eternal",icon:"💫",name:"永恒之星",desc:"抽奖获得传说徽章",cls:"gold"}
-];
-
-const lotteryBadgeDefs=[
- {id:"epic_void",icon:"🟣",name:"虚空行者",desc:"抽奖获得史诗徽章",cls:"purple"},
- {id:"epic_galaxy",icon:"🌌",name:"星河守望者",desc:"抽奖获得史诗徽章",cls:"purple"},
- {id:"epic_eye",icon:"🔮",name:"深渊之眼",desc:"抽奖获得史诗徽章",cls:"purple"},
- {id:"legend_king",icon:"👑",name:"传奇王者",desc:"抽奖获得传说徽章",cls:"gold"},
- {id:"legend_creator",icon:"🌟",name:"创世者",desc:"抽奖获得传说徽章",cls:"gold"},
- {id:"legend_eternal",icon:"💫",name:"永恒之星",desc:"抽奖获得传说徽章",cls:"gold"}
-];
-
 function badgeUnlocked(id){
   const key="sl_badge_"+id;
   if(localStorage.getItem(key)==="1")return true;
   if(id==="welcome")return true;
   if(id==="developer")return isCurrentUserDeveloper();
   if(id==="member")return !!currentUser;
-  const sent=parseInt(localStorage.getItem("sl_sent_count")||"0");
-  const total=parseInt(localStorage.getItem("sl_lottery_total")||"0");
-  if(id==="chat10")return sent>=10;
-  if(id==="chat")return sent>=100;
-  if(id==="chat500")return sent>=500;
-  if(id==="chat1000")return sent>=1000;
+  if(id==="chat")return parseInt(localStorage.getItem("sl_sent_count")||"0")>=100;
   if(id==="voice")return localStorage.getItem("sl_voice_joined")==="1";
-  if(id==="voice10")return parseInt(localStorage.getItem("sl_voice_minutes")||"0")>=600;
-  if(id==="voice50")return parseInt(localStorage.getItem("sl_voice_minutes")||"0")>=3000;
   if(id==="lucky")return localStorage.getItem("sl_lottery_won")==="1";
-  if(id==="lottery10")return total>=10;
-  if(id==="lottery100")return total>=100;
-  if(id==="lottery500")return total>=500;
-  if(id==="lottery1000")return total>=1000;
-  if(id==="epic_collector")return JSON.parse(localStorage.getItem("sl_owned_badges")||"[]").some(x=>["epic_void","epic_galaxy","epic_eye"].includes(x));
-  if(id==="legend_collector")return JSON.parse(localStorage.getItem("sl_owned_badges")||"[]").some(x=>["legend_king","legend_creator","legend_eternal"].includes(x));
-  if(id==="rare_lucky")return localStorage.getItem("sl_rare_won")==="1";
-  if(id==="custom_avatar")return !!localStorage.getItem("sl_avatar");
-  if(id==="custom_bg")return !!(localStorage.getItem("sl_chat_bg")||localStorage.getItem("sl_chat_bg_color"));
-  if(id==="profile")return !!(localStorage.getItem("sl_name")&&localStorage.getItem("sl_sig"));
+  if(id==="lottery10")return parseInt(localStorage.getItem("sl_lottery_total")||"0")>=10;
   return false;
 }
 function renderBadges(){
