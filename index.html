@@ -619,6 +619,8 @@ body.dark .voice-person.speaking{background:#17251b}
   font-size:9px;font-weight:800;vertical-align:middle;
 }
 .cloud-badge.developer{background:linear-gradient(135deg,#fff4c7,#fff9e8);border-color:#e8c95f;color:#8a6500}
+.msg-top .cloud-badge{margin-left:0}
+.member-name .cloud-badge{font-size:8px;height:19px;padding:0 5px;margin-left:3px}
 body.dark .cloud-badge{background:#29233a;border-color:#6e52a1;color:#d6c5ff}
 body.dark .cloud-badge.developer{background:#38301b;border-color:#8c7428;color:#ffe38a}
 
@@ -937,6 +939,8 @@ async function submitAuth(){
           localStorage.setItem("sl_name",nickname);
         }
       }
+      await loadCloudProfile();
+      await loadPublicProfiles();
       updateIdentity();
       showAuthGate(false);
       toast("登录成功");
@@ -950,6 +954,8 @@ async function submitAuth(){
         localStorage.removeItem("sl_guest");
         nickname=(email.split("@")[0]||"用户").slice(0,20);
         localStorage.setItem("sl_name",nickname);
+        await loadCloudProfile();
+        await loadPublicProfiles();
         updateIdentity();
         showAuthGate(false);
         toast("注册成功");
@@ -1082,11 +1088,15 @@ function mobileHome(){closePanels();switchChannel("general")}
 function openServerMenu(){toast("服务器菜单：邀请、设置、创建频道")}
 function addChannel(){const n=prompt("新频道名称");if(n){channels.push({id:"c"+Date.now(),name:n,icon:"#",topic:"新建频道"});renderChannels();toast("频道已创建")}}
 function renderMembers(){
- const names=["游客",nickname==="游客"?"":nickname,"Hotdog","SecurityBot","开发者"].filter(Boolean);
- const unique=[...new Set(names)];$("memberCount").textContent=unique.length;
- $("memberList").innerHTML=unique.map((n,i)=>`<div class="member" onclick="openUser('${esc(n)}')"><div style="position:relative"><div class="avatar">${esc(n[0]||"U")}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`).join("");
+  const names=["游客",nickname==="游客"?"":nickname,"Hotdog","SecurityBot","开发者"].filter(Boolean);
+  const unique=[...new Set(names)];$("memberCount").textContent=unique.length;
+  $("memberList").innerHTML=unique.map((n,i)=>{
+    const p=getPublicProfile(n);
+    const badge=profileBadgeHtml(p);
+    const av=p?.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : esc(n[0]||"U");
+    return `<div class="member" onclick="openUser('${esc(n)}')"><div style="position:relative"><div class="avatar">${av}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)} ${badge}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`;
+  }).join("");
 }
-
 function setCloudStatus(text,color){
   const el=$("cloudStatus");
   if(!el)return;
@@ -1136,6 +1146,9 @@ function setCloudStatus(text,color){
 
     setCloudStatus("云端已连接","#35a85a");
     await restoreAuthState();
+    await loadCloudProfile();
+    await loadPublicProfiles();
+    updateIdentity();
     subscribe();
     await loadMessages();
   }catch(e){
@@ -1158,7 +1171,7 @@ function setCloudStatus(text,color){
       payload=>{
         const row=payload.new||{};
         if(!row.channel || row.channel===channel){
-          loadMessages();
+          loadPublicProfiles().finally(()=>loadMessages());
         }
       })
     .on("postgres_changes",
@@ -1217,27 +1230,34 @@ function setCloudStatus(text,color){
  return s;
 }
 function renderMessages(data){
- const box=$("messages");box.innerHTML="";
- if(!data.length){box.innerHTML=`<div style="text-align:center;color:#9aa0a9;padding:80px 10px;font-size:13px">这里还没有消息<br><small style="font-size:10px">发送第一条消息吧</small></div>`;return}
- let prev="";
- data.forEach((m,i)=>{
-  const grouped=prev===m.username;
-  const row=document.createElement("article");row.className="message"+(grouped?" grouped":"");row.dataset.id=m.id;
-  const avatar=document.createElement("div");avatar.className="msg-avatar";avatar.textContent=(m.username||"游")[0];
-  const main=document.createElement("div");main.className="msg-main";
-  let reply=m.reply_to?`<div class="reply-box">回复 ${esc(m.reply_to.username||"用户")}：${esc(m.reply_to.message||"")}</div>`:"";
-  main.innerHTML=`<div class="msg-top"><span class="msg-user">${esc(m.username||"游客")}</span>${m.username===nickname?'<span class="msg-id">你</span>':""}<span class="msg-time">${time(m.created_at||Date.now())}</span></div>${reply}<div class="msg-text">${formatMentions(m.message||"")}</div>`;
-  if(m.image_data)main.innerHTML+=`<img class="msg-image" src="${m.image_data}" alt="图片">`;
-  if(m.file_name)main.innerHTML+=`<div class="file-card"><div class="file-icon">📄</div><div><div class="file-name">${esc(m.file_name)}</div><div class="file-size">${size(m.file_size||0)}</div></div></div>`;
-  const acts=document.createElement("div");acts.className="msg-actions";
-  acts.innerHTML=`<button>↩</button><button>📋</button>${m.username===nickname?'<button>✏</button><button>🗑</button>':""}`;
-  acts.children[0].onclick=()=>replyMessage(m);acts.children[1].onclick=()=>copyText(m.message||"");
-  if(m.username===nickname){acts.children[2].onclick=()=>editMessage(m);acts.children[3].onclick=()=>deleteMessage(m)}
-  row.append(avatar,main,acts);row.addEventListener("contextmenu",e=>{e.preventDefault();showContext(e.clientX,e.clientY,m)});
-  main.querySelector(".msg-user").onclick=()=>openUser(m.username||"游客");
-  box.appendChild(row);prev=m.username;
- });
- box.scrollTop=box.scrollHeight;
+  const box=$("messages");box.innerHTML="";
+  if(!data.length){box.innerHTML=`<div style="text-align:center;color:#9aa0a9;padding:80px 10px;font-size:13px">这里还没有消息<br><small style="font-size:10px">发送第一条消息吧</small></div>`;return}
+  let prev="";
+  data.forEach((m,i)=>{
+    const grouped=prev===m.username;
+    const row=document.createElement("article");row.className="message"+(grouped?" grouped":"");row.dataset.id=m.id;
+    const profile=getPublicProfile(m.username);
+    const avatar=document.createElement("div");avatar.className="msg-avatar";
+    if(profile?.avatar_url){
+      const im=new Image();im.src=profile.avatar_url;im.alt="";
+      im.onload=()=>{avatar.innerHTML="";avatar.appendChild(im)};
+      im.onerror=()=>avatar.textContent=(m.username||"游")[0];
+    }else avatar.textContent=(m.username||"游")[0];
+    const main=document.createElement("div");main.className="msg-main";
+    let reply=m.reply_to?`<div class="reply-box">回复 ${esc(m.reply_to.username||"用户")}：${esc(m.reply_to.message||"")}</div>`:"";
+    const badge=profileBadgeHtml(profile);
+    main.innerHTML=`<div class="msg-top"><span class="msg-user">${esc(m.username||"游客")}</span>${badge}${m.username===nickname?'<span class="msg-id">你</span>':""}<span class="msg-time">${time(m.created_at||Date.now())}</span></div>${reply}<div class="msg-text">${formatMentions(m.message||"")}</div>`;
+    if(m.image_data)main.innerHTML+=`<img class="msg-image" src="${m.image_data}" alt="图片">`;
+    if(m.file_name)main.innerHTML+=`<div class="file-card"><div class="file-icon">📄</div><div><div class="file-name">${esc(m.file_name)}</div><div class="file-size">${size(m.file_size||0)}</div></div></div>`;
+    const acts=document.createElement("div");acts.className="msg-actions";
+    acts.innerHTML=`<button>↩</button><button>📋</button>${m.username===nickname?'<button>✏</button><button>🗑</button>':""}`;
+    acts.children[0].onclick=()=>replyMessage(m);acts.children[1].onclick=()=>copyText(m.message||"");
+    if(m.username===nickname){acts.children[2].onclick=()=>editMessage(m);acts.children[3].onclick=()=>deleteMessage(m)}
+    row.append(avatar,main,acts);row.addEventListener("contextmenu",e=>{e.preventDefault();showContext(e.clientX,e.clientY,m)});
+    main.querySelector(".msg-user").onclick=()=>openUser(m.username||"游客");
+    box.appendChild(row);prev=m.username;
+  });
+  box.scrollTop=box.scrollHeight;
 }
 async function sendMessage(){
   localStorage.setItem("sl_sent_count",String(parseInt(localStorage.getItem("sl_sent_count")||"0")+1));
@@ -1356,8 +1376,12 @@ function saveProfile(){
 }
 function setAvatar(el,url,name){el.innerHTML="";if(url){const im=new Image();im.src=url;im.onload=()=>el.appendChild(im);im.onerror=()=>el.textContent=(name||"游")[0]}else el.textContent=(name||"游")[0]}
 function openUser(name){
-  const devBadge=isCurrentUserDeveloper() && nickname!=="游客" && arguments[0]===nickname;
- $("userModalName").textContent=name;$("userModalBio").textContent=name===nickname?signature:"Security Lab 社区成员";setAvatar($("userBigAvatar"),name===nickname?avatarURL:"",name);window.__selectedUser=name;$("userModal").classList.add("show")
+  const p=getPublicProfile(name);
+  $("userModalName").innerHTML=esc(name)+" "+profileBadgeHtml(p);
+  $("userModalBio").textContent=name===nickname?signature:"Security Lab 社区成员";
+  setAvatar($("userBigAvatar"),p?.avatar_url || (name===nickname?avatarURL:""),name);
+  window.__selectedUser=name;
+  $("userModal").classList.add("show")
 }
 function closeUser(){$("userModal").classList.remove("show")}
 function startDM(){const n=window.__selectedUser;closeUser();openDM(n)}
@@ -1527,6 +1551,41 @@ async function loadCloudProfile(){
     console.warn("读取 profiles 失败:",e);
     return null;
   }
+}
+
+
+// 云端公开资料缓存：让“开发者”等徽章对所有访问者可见。
+const publicProfilesByName = Object.create(null);
+const publicProfilesById = Object.create(null);
+
+async function loadPublicProfiles(){
+  if(!sb) return;
+  try{
+    const {data,error}=await sb.from("profiles")
+      .select("id,username,avatar_url,badge,role")
+      .limit(500);
+    if(error) throw error;
+    Object.keys(publicProfilesByName).forEach(k=>delete publicProfilesByName[k]);
+    Object.keys(publicProfilesById).forEach(k=>delete publicProfilesById[k]);
+    (data||[]).forEach(p=>{
+      if(p?.id) publicProfilesById[p.id]=p;
+      if(p?.username) publicProfilesByName[String(p.username)]=p;
+    });
+    if(currentUser && !cloudProfile){
+      const mine=publicProfilesById[currentUser.id];
+      if(mine) cloudProfile=mine;
+    }
+  }catch(e){
+    console.warn("读取公开 profiles 失败：请确认 profiles 的 SELECT RLS 策略允许读取公开资料。",e);
+  }
+}
+function getPublicProfile(username){
+  return publicProfilesByName[String(username||"")] || null;
+}
+function profileBadgeHtml(profile){
+  if(!profile) return "";
+  return (profile.role==="developer" || profile.badge==="developer")
+    ? developerBadgeHtml(true) : "";
 }
 
 function developerBadgeHtml(isDeveloper){
