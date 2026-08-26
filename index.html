@@ -737,6 +737,7 @@ let voiceStatsTimer=null;
 let voiceAudioContext=null, voiceAnalyser=null, voiceAudioData=null, voiceLevelTimer=null;
 const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()).toString().slice(0,36);
 const voicePeers={};
+const voicePendingIce={};
 
 function voiceTopic(){
   return "voice-"+String(channel).replace(/[^a-zA-Z0-9_-]/g,"_");
@@ -781,42 +782,65 @@ function renderVoiceList(){
 }
 function makePeer(id,name){
   if(voicePeers[id])return voicePeers[id];
+
   const pc=new RTCPeerConnection({
     iceServers:[
       {urls:"stun:stun.l.google.com:19302"},
       {urls:"stun:stun1.l.google.com:19302"}
     ]
   });
-  voicePeers[id]={pc,name,audio:null};
-  if(voiceStream)voiceStream.getTracks().forEach(t=>pc.addTrack(t,voiceStream));
+
+  voicePendingIce[id]=voicePendingIce[id]||[];
+  voicePeers[id]={pc,name,audio:null,remoteDescriptionSet:false};
+
+  if(voiceStream){
+    voiceStream.getTracks().forEach(t=>pc.addTrack(t,voiceStream));
+  }
+
   pc.onicecandidate=e=>{
-    if(e.candidate)voiceBroadcast("ice",{from:voiceId,to:id,candidate:e.candidate});
+    if(e.candidate){
+      voiceBroadcast("ice",{
+        from:voiceId,
+        to:id,
+        candidate:e.candidate
+      });
+    }
   };
+
   pc.ontrack=e=>{
     let a=voicePeers[id].audio;
     if(!a){
       a=document.createElement("audio");
-      a.autoplay=true;a.playsInline=true;a.style.display="none";
+      a.autoplay=true;
+      a.playsInline=true;
+      a.setAttribute("playsinline","");
+      a.style.display="none";
       document.body.appendChild(a);
       voicePeers[id].audio=a;
     }
-    if(e.streams[0])a.srcObject=e.streams[0];
+    if(e.streams?.[0])a.srcObject=e.streams[0];
     a.play().catch(()=>{});
   };
+
   pc.onconnectionstatechange=()=>{
     updateVoiceNetworkStatus();
+    if(pc.connectionState==="connected"){
+      setVoiceNetwork("WebRTC 直连 ✓","ok");
+    }
     if(["failed","closed"].includes(pc.connectionState))removePeer(id);
   };
+
   pc.oniceconnectionstatechange=()=>{
     updateVoiceNetworkStatus();
   };
+
   return voicePeers[id];
-}
-function removePeer(id){
+}function removePeer(id){
   const p=voicePeers[id];if(!p)return;
   try{p.pc.close()}catch(_){}
   if(p.audio)p.audio.remove();
   delete voicePeers[id];
+  delete voicePendingIce[id];
 }
 async function sendOffer(id,name){
   const p=makePeer(id,name);
@@ -827,23 +851,66 @@ async function sendOffer(id,name){
 }
 async function handleVoice(event,p){
   if(!p||p.to!==voiceId||p.from===voiceId)return;
+
   try{
     if(event==="offer"){
       const peer=makePeer(p.from,p.name||"用户");
+
       await peer.pc.setRemoteDescription(p.description);
+      peer.remoteDescriptionSet=true;
+
+      // 处理在 remoteDescription 设置前抵达的 ICE。
+      const queued=voicePendingIce[p.from]||[];
+      for(const candidate of queued){
+        try{await peer.pc.addIceCandidate(candidate)}catch(_){}
+      }
+      voicePendingIce[p.from]=[];
+
       const answer=await peer.pc.createAnswer();
       await peer.pc.setLocalDescription(answer);
-      await voiceBroadcast("answer",{from:voiceId,to:p.from,name:nickname||"游客",description:answer});
+
+      await voiceBroadcast("answer",{
+        from:voiceId,
+        to:p.from,
+        name:nickname||"游客",
+        description:answer
+      });
+
     }else if(event==="answer"){
       const peer=voicePeers[p.from];
-      if(peer)await peer.pc.setRemoteDescription(p.description);
+      if(!peer)return;
+
+      await peer.pc.setRemoteDescription(p.description);
+      peer.remoteDescriptionSet=true;
+
+      const queued=voicePendingIce[p.from]||[];
+      for(const candidate of queued){
+        try{await peer.pc.addIceCandidate(candidate)}catch(_){}
+      }
+      voicePendingIce[p.from]=[];
+
     }else if(event==="ice"){
       const peer=voicePeers[p.from];
-      if(peer&&p.candidate)try{await peer.pc.addIceCandidate(p.candidate)}catch(_){}
+
+      if(!peer || !peer.remoteDescriptionSet){
+        voicePendingIce[p.from]=voicePendingIce[p.from]||[];
+        voicePendingIce[p.from].push(p.candidate);
+        return;
+      }
+
+      if(p.candidate){
+        try{
+          await peer.pc.addIceCandidate(p.candidate);
+        }catch(e){
+          console.warn("ICE candidate",e);
+        }
+      }
     }
-  }catch(e){console.warn("voice signal",e)}
-}
-async function joinVoice(){
+  }catch(e){
+    console.warn("voice signal",e);
+    voiceState("语音连接建立失败",true);
+  }
+}async function joinVoice(){
   if(voiceJoined)return;
   if(!sb){voiceState("云端未连接，暂时不能加入",true);return}
   try{
@@ -865,9 +932,24 @@ async function joinVoice(){
       .on("broadcast",{event:"answer"},({payload})=>handleVoice("answer",payload))
       .on("broadcast",{event:"ice"},({payload})=>handleVoice("ice",payload))
       .on("broadcast",{event:"leave"},({payload})=>{if(payload?.from)removePeer(payload.from)})
-      .on("presence",{event:"sync"},renderVoiceList)
-      .on("presence",{event:"join"},renderVoiceList)
-      .on("presence",{event:"leave"},({key})=>{removePeer(key);renderVoiceList()});
+      .on("presence",{event:"sync"},()=>{
+        renderVoiceList();
+        updateVoiceNetworkStatus();
+      })
+      .on("presence",{event:"join"},({newPresences})=>{
+        renderVoiceList();
+        updateVoiceNetworkStatus();
+        (newPresences||[]).forEach(u=>{
+          if(u?.peerId && u.peerId!==voiceId && voiceId<u.peerId){
+            sendOffer(u.peerId,u.name||"用户").catch(e=>console.warn("presence offer",e));
+          }
+        });
+      })
+      .on("presence",{event:"leave"},({key})=>{
+        removePeer(key);
+        renderVoiceList();
+        updateVoiceNetworkStatus();
+      });
     await new Promise((resolve,reject)=>{
       const timer=setTimeout(()=>reject(new Error("语音连接超时")),10000);
       voiceRoom.subscribe(async s=>{
@@ -880,9 +962,24 @@ async function joinVoice(){
     $("voiceJoin").textContent="📞 离开语音";
     $("voiceMute").disabled=false;
     voiceState("已加入语音");
-    await voiceRoom.track({peerId:voiceId,name:nickname||"游客",muted:false});
+    await voiceRoom.track({
+      peerId:voiceId,
+      name:nickname||"游客",
+      muted:false,
+      online_at:new Date().toISOString()
+    });
     renderVoiceList();
+    updateVoiceNetworkStatus();
     await voiceBroadcast("hello",{from:voiceId,name:nickname||"游客"});
+
+    // 保险：如果对方已在房间，但 join 事件发生在本机监听器建立前，
+    // 通过当前 Presence 状态再次发起一次 offer。
+    const current=voiceRoom.presenceState();
+    Object.values(current||{}).flat().forEach(u=>{
+      if(u?.peerId && u.peerId!==voiceId && voiceId<u.peerId){
+        sendOffer(u.peerId,u.name||"用户").catch(()=>{});
+      }
+    });
   }catch(e){
     console.warn("join voice",e);
     voiceState("加入失败："+(e.message||"未知错误"),true);
@@ -979,8 +1076,14 @@ async function updateVoiceNetworkStatus(){
     return;
   }
   const peers=Object.values(voicePeers);
+  const presenceUsers=voiceRoom?Object.values(voiceRoom.presenceState()||{}).flat():[];
+  const otherUsers=presenceUsers.filter(u=>u?.peerId&&u.peerId!==voiceId);
   if(!peers.length){
-    setVoiceNetwork("已加入，等待其他成员","warn");
+    if(otherUsers.length){
+      setVoiceNetwork("发现其他成员，正在建立连接…","warn");
+    }else{
+      setVoiceNetwork("已加入，等待其他成员","warn");
+    }
     return;
   }
 
