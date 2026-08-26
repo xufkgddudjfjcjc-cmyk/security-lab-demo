@@ -2474,7 +2474,7 @@ button:active{
  <div class="modal-card lottery-card">
   <div class="modal-head"><span>🎁 抽奖活动</span><button class="close" onclick="closeLottery()">×</button></div>
   <div class="lottery-banner"><div class="gift">🎁</div>
-<button class="reward-inventory-open" onclick="openRewardInventory()">🎒 奖励仓库</button><h3>Security Lab 幸运抽奖</h3><p>每位用户每天 10 次免费抽奖 · 游客也可以参加</p></div>
+<button class="reward-inventory-open" onclick="openRewardInventory()">🎒 奖励仓库</button><h3>Security Lab 幸运抽奖</h3><p>每位用户每天 100 次免费抽奖 · 游客也可以参加</p></div>
   <div class="lottery-machine" id="lotteryMachine">
    <div class="lottery-pointer">▼</div>
    <div class="lottery-reel" id="lotteryReel">
@@ -3210,8 +3210,29 @@ async function updateLotteryUI(){
   button.disabled=remaining<=0;
   button.textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
 }
-function openLottery(){$("lotteryModal").classList.add("show");$("lotteryResult").textContent="点击下面按钮开始抽奖";updateLotteryUI()}
-function closeLottery(){$("lotteryModal").classList.remove("show")}
+function openLottery(){
+  // 先关闭设置面板，避免两个弹窗叠加导致无法点击
+  if(typeof closeSettings === "function") closeSettings();
+
+  const modal=$("lotteryModal");
+  if(!modal) return;
+
+  // 抽奖弹窗始终置于最上层
+  modal.style.zIndex="300";
+  modal.classList.add("show");
+
+  const result=$("lotteryResult");
+  if(result) result.textContent="点击下面按钮开始抽奖";
+
+  // 等弹窗显示后再刷新次数，避免异步刷新影响点击
+  setTimeout(()=>{
+    if(typeof updateLotteryUI === "function") updateLotteryUI();
+  },30);
+}
+function closeLottery(){
+  const modal=$("lotteryModal");
+  if(modal) modal.classList.remove("show");
+}
 
 function cyberLotteryBurst(kind){
   const machine=document.querySelector(".lottery-machine");
