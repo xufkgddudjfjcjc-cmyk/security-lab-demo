@@ -1047,6 +1047,17 @@ function calcVoiceLevel(analyser,data){
   return Math.min(100,Math.round(rms*500));
 }
 
+function stopVoiceLevelMonitor(){
+  if(voiceLevelTimer)cancelAnimationFrame(voiceLevelTimer);
+  voiceLevelTimer=null;
+  if(voiceAudioContext){
+    try{voiceAudioContext.close()}catch(_){}
+  }
+  voiceAudioContext=null;
+  voiceAnalyser=null;
+  voiceAudioData=null;
+}
+
 function startVoiceLevelMonitor(){
   stopVoiceLevelMonitor();
   if(!voiceStream || !voiceJoined)return;
