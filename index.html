@@ -80,6 +80,23 @@ button,input,textarea{font:inherit}button{cursor:pointer;border:0}
 .send{width:36px;height:36px;border-radius:9px;background:var(--brand);color:#fff;font-size:17px}.send:hover{background:var(--brand2)}
 .input-meta{display:flex;justify-content:space-between;padding:4px 3px 0;color:#a0a5ad;font-size:9px}
 
+/* ===== 自定义聊天背景 ===== */
+.messages.custom-bg{background-size:cover;background-position:center;background-repeat:no-repeat;background-attachment:local}
+.messages.custom-bg::before{content:"";position:absolute;inset:0;background:rgba(255,255,255,.62);pointer-events:none}
+.messages.custom-bg > *{position:relative;z-index:1}
+.messages{position:relative}
+/* ===== 抽奖活动 ===== */
+.lottery-card{width:min(520px,94vw)}
+.lottery-banner{padding:18px;border-radius:14px;background:linear-gradient(135deg,#5865f2,#7c3aed);color:#fff;text-align:center;margin-bottom:14px}
+.lottery-banner .gift{font-size:38px}.lottery-banner h3{margin:5px 0;font-size:20px}.lottery-banner p{margin:0;font-size:11px;opacity:.9}
+.lottery-prizes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.lottery-prize{padding:11px;border:1px solid #e1e4e8;border-radius:10px;background:#f8f9fb;text-align:center}
+.lottery-prize .emoji{font-size:24px}.lottery-prize b{display:block;font-size:12px;margin-top:4px}.lottery-prize span{font-size:9px;color:#999}
+.lottery-result{min-height:42px;margin-top:12px;padding:10px;border-radius:9px;background:#f3f4f6;text-align:center;font-size:12px;color:#555}
+.lottery-count{text-align:center;color:#888;font-size:10px;margin-top:8px}
+body.dark .messages.custom-bg::before{background:rgba(17,19,24,.64)}
+body.dark .lottery-prize,body.dark .lottery-result{background:#20232a;border-color:#3a3e47;color:#eee}
+
 /* 右侧成员 */
 .members{width:230px;background:#f7f8fa;border-left:1px solid var(--line);padding:18px 12px;overflow:auto;flex:none}
 .members-title{font-size:11px;font-weight:800;color:#777e89;padding:0 8px 9px}.member-group{margin-bottom:18px}
@@ -524,6 +541,8 @@ body.dark .voice-person.speaking{background:#17251b}
   <div class="modal-head"><span>设置</span><button class="close" onclick="closeSettings()">×</button></div>
   <div class="channel" onclick="toggleDark()"><span class="icon">◐</span><span>深色模式</span><span id="darkState" style="margin-left:auto">关闭</span></div>
   <div class="channel" onclick="toggleNotifications()">🔔 通知设置</div>
+  <div class="channel" onclick="openBackgroundSettings()">🖼️ 自定义聊天背景</div>
+  <div class="channel" onclick="openLottery()">🎁 抽奖活动</div>
   <div class="channel" onclick="exportChat()">💾 导出聊天记录</div>
   <div class="channel" onclick="clearLocalChat()">🧹 清除本机缓存</div>
   <button class="primary danger" onclick="resetApp()">恢复默认</button>
@@ -568,6 +587,36 @@ body.dark .voice-person.speaking{background:#17251b}
  <div class="modal-card"><div class="modal-head"><span>🔔 通知</span><button class="close" onclick="closeNotifications()">×</button></div><div id="noticeList"></div></div>
 </div>
 
+
+<!-- 自定义聊天背景 -->
+<div class="modal" id="backgroundModal" onclick="if(event.target===this)closeBackgroundSettings()">
+ <div class="modal-card">
+  <div class="modal-head"><span>🖼️ 自定义聊天背景</span><button class="close" onclick="closeBackgroundSettings()">×</button></div>
+  <label class="label">背景图片（建议 2MB 以内）</label>
+  <input class="field" id="backgroundFile" type="file" accept="image/*">
+  <label class="label">背景颜色</label>
+  <input class="field" id="backgroundColor" type="color" value="#ffffff" style="padding:4px">
+  <div class="row-btn"><button class="primary" onclick="applyChatBackground()">应用背景</button><button class="primary" style="background:#f0f1f3;color:#555" onclick="resetChatBackground()">恢复默认</button></div>
+  <p style="font-size:10px;color:#999;line-height:1.5;margin-bottom:0">背景只保存在当前浏览器，不会上传到服务器。</p>
+ </div>
+</div>
+
+<!-- 抽奖活动 -->
+<div class="modal" id="lotteryModal" onclick="if(event.target===this)closeLottery()">
+ <div class="modal-card lottery-card">
+  <div class="modal-head"><span>🎁 抽奖活动</span><button class="close" onclick="closeLottery()">×</button></div>
+  <div class="lottery-banner"><div class="gift">🎁</div><h3>Security Lab 幸运抽奖</h3><p>每个浏览器每天 1 次免费抽奖 · 游客也可以参加</p></div>
+  <div class="lottery-prizes">
+   <div class="lottery-prize"><div class="emoji">🏆</div><b>一等奖</b><span>高级会员体验</span></div>
+   <div class="lottery-prize"><div class="emoji">💎</div><b>二等奖</b><span>1000 积分</span></div>
+   <div class="lottery-prize"><div class="emoji">⭐</div><b>三等奖</b><span>500 积分</span></div>
+   <div class="lottery-prize"><div class="emoji">🎫</div><b>幸运奖</b><span>100 积分</span></div>
+  </div>
+  <div class="lottery-result" id="lotteryResult">点击下面按钮开始抽奖</div>
+  <div class="lottery-count" id="lotteryCount"></div>
+  <button class="primary" id="lotteryButton" onclick="drawLottery()">🎲 立即抽奖</button>
+ </div>
+</div>
 
 <!-- 语音聊天室 -->
 <div class="modal" id="voiceModal" onclick="if(event.target===this)closeVoice()">
@@ -1125,6 +1174,50 @@ function copyInvite(){copyText($("inviteCode").value);closeInvite()}
 function openAdmin(){$("adminModal").classList.add("show");closePanels()}
 function closeAdmin(){$("adminModal").classList.remove("show")}
 function adminAction(x){toast(x+"操作已打开（需要服务端管理员权限才能真正生效）")}
+function applyChatBackgroundStyle(){
+  const box=$("messages");if(!box)return;
+  const bg=localStorage.getItem("sl_chat_bg")||"";
+  const color=localStorage.getItem("sl_chat_bg_color")||"#ffffff";
+  box.style.backgroundColor=color;
+  if(bg){box.style.backgroundImage=`url("${bg}")`;box.classList.add("custom-bg")}
+  else{box.style.backgroundImage="";box.classList.remove("custom-bg")}
+}
+function openBackgroundSettings(){
+  $("backgroundColor").value=localStorage.getItem("sl_chat_bg_color")||"#ffffff";
+  $("backgroundFile").value="";$("backgroundModal").classList.add("show")
+}
+function closeBackgroundSettings(){$("backgroundModal").classList.remove("show")}
+function applyChatBackground(){
+  const color=$("backgroundColor").value||"#ffffff",file=$("backgroundFile").files?.[0];
+  const save=bg=>{localStorage.setItem("sl_chat_bg_color",color);if(bg)localStorage.setItem("sl_chat_bg",bg);applyChatBackgroundStyle();closeBackgroundSettings();toast("聊天背景已更新")};
+  if(!file){save(localStorage.getItem("sl_chat_bg")||"");return}
+  if(file.size>2*1024*1024){toast("背景图片不能超过 2MB");return}
+  const reader=new FileReader();reader.onload=()=>save(reader.result);reader.onerror=()=>toast("读取图片失败");reader.readAsDataURL(file)
+}
+function resetChatBackground(){
+  localStorage.removeItem("sl_chat_bg");localStorage.removeItem("sl_chat_bg_color");applyChatBackgroundStyle();closeBackgroundSettings();toast("已恢复默认聊天背景")
+}
+const lotteryPrizes=[
+ {emoji:"🏆",name:"一等奖 · 高级会员体验",weight:2},
+ {emoji:"💎",name:"二等奖 · 1000 积分",weight:8},
+ {emoji:"⭐",name:"三等奖 · 500 积分",weight:20},
+ {emoji:"🎫",name:"幸运奖 · 100 积分",weight:70}
+];
+function lotteryDateKey(){const d=new Date();return `sl_lottery_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function updateLotteryUI(){
+  const used=localStorage.getItem(lotteryDateKey())==="1";
+  $("lotteryCount").textContent=used?"今日免费次数：0 / 1":"今日免费次数：1 / 1";
+  $("lotteryButton").disabled=used;$("lotteryButton").textContent=used?"今日已抽奖":"🎲 立即抽奖"
+}
+function openLottery(){$("lotteryModal").classList.add("show");$("lotteryResult").textContent="点击下面按钮开始抽奖";updateLotteryUI()}
+function closeLottery(){$("lotteryModal").classList.remove("show")}
+function drawLottery(){
+  const key=lotteryDateKey();if(localStorage.getItem(key)==="1"){toast("今天已经抽过奖了");updateLotteryUI();return}
+  const total=lotteryPrizes.reduce((s,p)=>s+p.weight,0);let n=Math.random()*total,win=lotteryPrizes[lotteryPrizes.length-1];
+  for(const p of lotteryPrizes){n-=p.weight;if(n<=0){win=p;break}}
+  localStorage.setItem(key,"1");$("lotteryResult").innerHTML=`🎉 恭喜你抽中：<b>${esc(win.emoji+" "+win.name)}</b>`;updateLotteryUI();toast("抽奖完成！")
+}
+
 function openSettings(){$("settingsModal").classList.add("show")}
 function closeSettings(){$("settingsModal").classList.remove("show")}
 function toggleDark(){
@@ -1132,7 +1225,7 @@ function toggleDark(){
 }
 function exportChat(){const blob=new Blob([JSON.stringify(messages,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="security-lab-chat.json";a.click();toast("已导出")}
 function clearLocalChat(){if(confirm("清除本机缓存？")){localStorage.removeItem("sl_local_messages");messages=[];renderMessages([]);toast("已清除")}}
-function resetApp(){if(confirm("恢复默认设置？")){localStorage.removeItem("sl_name");localStorage.removeItem("sl_sig");localStorage.removeItem("sl_avatar");location.reload()}}
+function resetApp(){if(confirm("恢复默认设置？")){localStorage.removeItem("sl_name");localStorage.removeItem("sl_sig");localStorage.removeItem("sl_avatar");localStorage.removeItem("sl_chat_bg");localStorage.removeItem("sl_chat_bg_color");location.reload()}}
 
 function addNotification(text){notifications.unshift({text,time:new Date().toISOString()});notifications=notifications.slice(0,40);localStorage.setItem("sl_notifications",JSON.stringify(notifications))}
 function toggleNotifications(){$("noticeList").innerHTML=notifications.length?notifications.map(n=>`<div style="padding:10px;border-bottom:1px solid #eee;font-size:11px">${esc(n.text)}<div style="color:#aaa;font-size:9px;margin-top:4px">${time(n.time)}</div></div>`).join(""):'<div style="padding:30px;text-align:center;color:#999">暂无通知</div>';$("noticeModal").classList.add("show")}
@@ -1145,10 +1238,10 @@ function contextCopy(){if(contextItem)copyText(contextItem.message);$("contextMe
 function contextEdit(){if(contextItem&&contextItem.username===nickname)editMessage(contextItem);else toast("只能编辑自己的消息");$("contextMenu").classList.remove("show")}
 function contextDelete(){if(contextItem&&contextItem.username===nickname)deleteMessage(contextItem);else toast("只能删除自己的消息");$("contextMenu").classList.remove("show")}
 
-function closePanelsAll(){closePanels();closeEmoji();closeProfile();closeSettings();closeUser();closeInvite();closeAdmin();closeNotifications()}
+function closePanelsAll(){closePanels();closeEmoji();closeProfile();closeSettings();closeBackgroundSettings();closeLottery();closeUser();closeInvite();closeAdmin();closeNotifications()}
 function updateIdentity(){ $("miniName").textContent=nickname;setAvatar($("miniAvatar"),avatarURL,nickname);renderMembers() }
 
-renderServers();renderChannels();updateIdentity();
+renderServers();renderChannels();updateIdentity();applyChatBackgroundStyle();
 if(localStorage.getItem("sl_dark")==="1"){document.body.classList.add("dark");$("darkState").textContent="开启"}
 renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
 initSB();
