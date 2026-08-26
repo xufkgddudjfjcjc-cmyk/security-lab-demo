@@ -86,6 +86,169 @@ button,input,textarea{font:inherit}button{cursor:pointer;border:0}
 .messages.custom-bg > *{position:relative;z-index:1}
 .messages{position:relative}
 /* ===== 抽奖活动 ===== */
+
+
+/* ===== 徽章系统 ===== */
+.badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.user-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  height:23px;padding:0 7px;border-radius:999px;
+  background:#f0f1f4;color:#555;font-size:10px;font-weight:800;
+  border:1px solid #e0e3e8;
+}
+.user-badge.gold{background:#fff7d6;color:#8a6500;border-color:#f1d36a}
+.user-badge.blue{background:#eaf0ff;color:#3e56b5;border-color:#b9c7ff}
+.user-badge.green{background:#eafbf0;color:#18733b;border-color:#b7e8c6}
+.user-badge.purple{background:#f2eaff;color:#6b3db4;border-color:#d5baf6}
+.user-badge.red{background:#ffeaea;color:#b42323;border-color:#f3b5b5}
+.badge-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.badge-item{
+  padding:11px;border:1px solid #e1e4e8;border-radius:11px;
+  background:#f8f9fb;cursor:pointer;transition:.15s
+}
+.badge-item:hover{transform:translateY(-1px);background:#f0f1f3}
+.badge-item.locked{opacity:.45;filter:grayscale(.7)}
+.badge-item .badge-icon{font-size:26px}
+.badge-item b{display:block;font-size:11px;margin-top:4px}
+.badge-item span{display:block;font-size:9px;color:#999;margin-top:2px}
+body.dark .user-badge{background:#20232a;color:#ddd;border-color:#3a3e47}
+body.dark .badge-item{background:#20232a;border-color:#3a3e47}
+
+/* ===== 抽奖动画 v2 ===== */
+.lottery-machine{
+  height:128px;
+  background:linear-gradient(135deg,#15171b,#30343d);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.lottery-reel{
+  width:88%;height:82px;gap:8px;
+  background:linear-gradient(#fff,#f4f5f7);
+  position:relative;
+}
+.lottery-slot{
+  width:62px;height:62px;min-width:62px;
+  font-size:31px;
+  transition:transform .08s linear,filter .08s linear;
+}
+.lottery-slot.center{
+  transform:scale(1.12);
+  box-shadow:0 0 0 3px rgba(88,101,242,.18);
+}
+.lottery-machine.rolling .lottery-slot{
+  filter:blur(1px);
+}
+.lottery-machine.rolling .lottery-reel{
+  animation:reelShake .12s linear infinite;
+}
+@keyframes reelShake{
+  0%,100%{transform:translateX(0)}
+  50%{transform:translateX(1px)}
+}
+.lottery-machine.win .lottery-reel{
+  animation:reelWin .7s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes reelWin{
+  0%{transform:scale(1)}
+  30%{transform:scale(1.06) rotate(-1deg)}
+  55%{transform:scale(1.03) rotate(1deg)}
+  100%{transform:scale(1)}
+}
+.lottery-machine.win .lottery-pointer{
+  animation:pointerBounce .6s ease-out;
+}
+@keyframes pointerBounce{
+  0%{transform:translateX(-50%) translateY(0)}
+  30%{transform:translateX(-50%) translateY(7px)}
+  60%{transform:translateX(-50%) translateY(-2px)}
+  100%{transform:translateX(-50%) translateY(0)}
+}
+.lottery-result{
+  transition:transform .25s ease,background .25s ease;
+}
+.lottery-result.win-result{
+  background:#eefdf2;
+  color:#18733b;
+  transform:scale(1.025);
+}
+body.dark .lottery-result.win-result{background:#17251b;color:#79d99a}
+
+/* ===== 抽奖动画 ===== */
+.lottery-machine{
+  position:relative;
+  height:108px;
+  margin:4px 0 12px;
+  overflow:hidden;
+  border-radius:14px;
+  background:linear-gradient(135deg,#202225,#30343b);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.lottery-reel{
+  width:82%;
+  height:76px;
+  border-radius:12px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  box-shadow:0 8px 25px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+.lottery-slot{
+  width:58px;height:58px;min-width:58px;
+  display:grid;place-items:center;
+  border-radius:12px;
+  background:#f2f3f5;
+  font-size:29px;
+  transform:translateY(0);
+}
+.lottery-pointer{
+  position:absolute;
+  top:2px;left:50%;
+  transform:translateX(-50%);
+  color:#5865f2;
+  font-size:20px;
+  z-index:3;
+}
+.lottery-glow{
+  position:absolute;inset:0;
+  pointer-events:none;
+  opacity:0;
+  background:radial-gradient(circle,#fff6a8 0%,rgba(255,255,255,0) 65%);
+}
+.lottery-machine.win .lottery-glow{animation:lotteryGlow .8s ease-out}
+.lottery-machine.win{animation:lotteryWin .65s ease-out}
+.lottery-machine.win .lottery-slot{animation:lotteryPop .55s ease-out}
+@keyframes lotteryGlow{
+  0%{opacity:0}35%{opacity:.95}100%{opacity:0}
+}
+@keyframes lotteryWin{
+  0%{transform:scale(1)}35%{transform:scale(1.035)}70%{transform:scale(.985)}100%{transform:scale(1)}
+}
+@keyframes lotteryPop{
+  0%{transform:scale(.7);opacity:.3}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}
+}
+.lottery-fireworks{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;
+}
+.lottery-fireworks i{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  background:#fff;
+  opacity:0;
+}
+.lottery-machine.win .lottery-fireworks i:nth-child(1){left:18%;top:25%;animation:firework .8s .02s}
+.lottery-machine.win .lottery-fireworks i:nth-child(2){left:82%;top:28%;animation:firework .8s .08s}
+.lottery-machine.win .lottery-fireworks i:nth-child(3){left:25%;top:70%;animation:firework .8s .14s}
+.lottery-machine.win .lottery-fireworks i:nth-child(4){left:75%;top:68%;animation:firework .8s .2s}
+@keyframes firework{
+  0%{opacity:0;transform:scale(.2) translate(0,0)}
+  35%{opacity:1}
+  100%{opacity:0;transform:scale(1.8) translate(0,-25px)}
+}
+.lottery-result.rolling{color:#5865f2;font-weight:800}
+
 .lottery-card{width:min(520px,94vw)}
 .lottery-banner{padding:18px;border-radius:14px;background:linear-gradient(135deg,#5865f2,#7c3aed);color:#fff;text-align:center;margin-bottom:14px}
 .lottery-banner .gift{font-size:38px}.lottery-banner h3{margin:5px 0;font-size:20px}.lottery-banner p{margin:0;font-size:11px;opacity:.9}
@@ -543,6 +706,7 @@ body.dark .voice-person.speaking{background:#17251b}
   <div class="channel" onclick="toggleNotifications()">🔔 通知设置</div>
   <div class="channel" onclick="openBackgroundSettings()">🖼️ 自定义聊天背景</div>
   <div class="channel" onclick="openLottery()">🎁 抽奖活动</div>
+  <div class="channel" onclick="openBadges()">🎖️ 我的徽章</div>
   <div class="channel" onclick="exportChat()">💾 导出聊天记录</div>
   <div class="channel" onclick="clearLocalChat()">🧹 清除本机缓存</div>
   <button class="primary danger" onclick="resetApp()">恢复默认</button>
@@ -605,7 +769,19 @@ body.dark .voice-person.speaking{background:#17251b}
 <div class="modal" id="lotteryModal" onclick="if(event.target===this)closeLottery()">
  <div class="modal-card lottery-card">
   <div class="modal-head"><span>🎁 抽奖活动</span><button class="close" onclick="closeLottery()">×</button></div>
-  <div class="lottery-banner"><div class="gift">🎁</div><h3>Security Lab 幸运抽奖</h3><p>每个浏览器每天 1 次免费抽奖 · 游客也可以参加</p></div>
+  <div class="lottery-banner"><div class="gift">🎁</div><h3>Security Lab 幸运抽奖</h3><p>每位用户每天 10 次免费抽奖 · 游客也可以参加</p></div>
+  <div class="lottery-machine" id="lotteryMachine">
+   <div class="lottery-pointer">▼</div>
+   <div class="lottery-reel" id="lotteryReel">
+    <div class="lottery-slot">🎁</div>
+    <div class="lottery-slot">⭐</div>
+    <div class="lottery-slot">💎</div>
+    <div class="lottery-slot">🏆</div>
+    <div class="lottery-slot">🎫</div>
+   </div>
+   <div class="lottery-glow"></div>
+   <div class="lottery-fireworks"><i></i><i></i><i></i><i></i></div>
+  </div>
   <div class="lottery-prizes">
    <div class="lottery-prize"><div class="emoji">🏆</div><b>一等奖</b><span>高级会员体验</span></div>
    <div class="lottery-prize"><div class="emoji">💎</div><b>二等奖</b><span>1000 积分</span></div>
@@ -615,6 +791,16 @@ body.dark .voice-person.speaking{background:#17251b}
   <div class="lottery-result" id="lotteryResult">点击下面按钮开始抽奖</div>
   <div class="lottery-count" id="lotteryCount"></div>
   <button class="primary" id="lotteryButton" onclick="drawLottery()">🎲 立即抽奖</button>
+ </div>
+</div>
+
+
+<!-- 徽章 -->
+<div class="modal" id="badgeModal" onclick="if(event.target===this)closeBadges()">
+ <div class="modal-card">
+  <div class="modal-head"><span>🎖️ 我的徽章</span><button class="close" onclick="closeBadges()">×</button></div>
+  <div style="font-size:10px;color:#999;margin-bottom:10px">完成对应条件即可解锁徽章</div>
+  <div class="badge-grid" id="badgeGrid"></div>
  </div>
 </div>
 
@@ -1041,6 +1227,7 @@ function renderMessages(data){
  box.scrollTop=box.scrollHeight;
 }
 async function sendMessage(){
+  localStorage.setItem("sl_sent_count",String(parseInt(localStorage.getItem("sl_sent_count")||"0")+1));
   const input=$("messageInput"),text=input.value.trim();
   if(!text&&!attachment)return;
 
@@ -1203,20 +1390,141 @@ const lotteryPrizes=[
  {emoji:"⭐",name:"三等奖 · 500 积分",weight:20},
  {emoji:"🎫",name:"幸运奖 · 100 积分",weight:70}
 ];
-function lotteryDateKey(){const d=new Date();return `sl_lottery_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function lotteryUserKey(){
+  if(typeof currentUser!=="undefined" && currentUser?.id) return "user_"+currentUser.id;
+  return "guest_"+(localStorage.getItem("sl_guest_id")||(()=>{const id=crypto.randomUUID?crypto.randomUUID():String(Date.now());localStorage.setItem("sl_guest_id",id);return id})());
+}
+function lotteryDateKey(){
+  const d=new Date();
+  return `sl_lottery_${lotteryUserKey()}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
 function updateLotteryUI(){
-  const used=localStorage.getItem(lotteryDateKey())==="1";
-  $("lotteryCount").textContent=used?"今日免费次数：0 / 1":"今日免费次数：1 / 1";
-  $("lotteryButton").disabled=used;$("lotteryButton").textContent=used?"今日已抽奖":"🎲 立即抽奖"
+  const count=parseInt(localStorage.getItem(lotteryDateKey()+"_count")||"0");
+  const remaining=Math.max(0,10-count);
+  $("lotteryCount").textContent=`今日免费次数：${remaining} / 10`;
+  $("lotteryButton").disabled=remaining<=0;
+  $("lotteryButton").textContent=remaining<=0?"今日次数已用完":"🎲 立即抽奖";
 }
 function openLottery(){$("lotteryModal").classList.add("show");$("lotteryResult").textContent="点击下面按钮开始抽奖";updateLotteryUI()}
 function closeLottery(){$("lotteryModal").classList.remove("show")}
 function drawLottery(){
-  const key=lotteryDateKey();if(localStorage.getItem(key)==="1"){toast("今天已经抽过奖了");updateLotteryUI();return}
-  const total=lotteryPrizes.reduce((s,p)=>s+p.weight,0);let n=Math.random()*total,win=lotteryPrizes[lotteryPrizes.length-1];
-  for(const p of lotteryPrizes){n-=p.weight;if(n<=0){win=p;break}}
-  localStorage.setItem(key,"1");$("lotteryResult").innerHTML=`🎉 恭喜你抽中：<b>${esc(win.emoji+" "+win.name)}</b>`;updateLotteryUI();toast("抽奖完成！")
+  const key=lotteryDateKey();
+  const countKey=key+"_count";
+  const count=parseInt(localStorage.getItem(countKey)||"0");
+  if(count>=10){
+    toast("今天的 10 次抽奖已经用完");
+    updateLotteryUI();
+    return;
+  }
+
+  const btn=$("lotteryButton");
+  const result=$("lotteryResult");
+  const machine=$("lotteryMachine");
+  const slots=[...$("lotteryReel").querySelectorAll(".lottery-slot")];
+
+  btn.disabled=true;
+  result.classList.add("rolling");
+  result.classList.remove("win-result");
+  result.textContent="🎰 正在抽取……";
+  machine.classList.remove("win");
+  machine.classList.add("rolling");
+
+  const total=lotteryPrizes.reduce((s,p)=>s+p.weight,0);
+  let n=Math.random()*total;
+  let win=lotteryPrizes[lotteryPrizes.length-1];
+  for(const p of lotteryPrizes){
+    n-=p.weight;
+    if(n<=0){win=p;break}
+  }
+
+  const icons=["🎁","⭐","💎","🏆","🎫","🍀","🎟️","🎉","🔥","🌟"];
+  const start=performance.now();
+  const duration=2800;
+  let lastStep=-1;
+
+  function spin(now){
+    const elapsed=now-start;
+    const progress=Math.min(elapsed/duration,1);
+    const ease=1-Math.pow(1-progress,3);
+    const step=Math.floor(elapsed/55);
+
+    if(step!==lastStep){
+      lastStep=step;
+      slots.forEach((slot,i)=>{
+        slot.textContent=icons[(step+i)%icons.length];
+        slot.classList.toggle("center",i===2);
+      });
+    }
+
+    // 让后半段明显减速
+    const blur=Math.max(0,1-progress*1.2);
+    slots.forEach(slot=>slot.style.filter=`blur(${blur}px)`);
+
+    if(progress<1){
+      requestAnimationFrame(spin);
+    }else{
+      slots.forEach((slot,i)=>{
+        slot.style.filter="none";
+        slot.textContent=(i===1||i===2||i===3)?win.emoji:icons[(i+3)%icons.length];
+        slot.classList.toggle("center",i===2);
+      });
+
+      machine.classList.remove("rolling");
+      machine.classList.add("win");
+      result.innerHTML=`🎉 恭喜你抽中：<b>${esc(win.emoji+" "+win.name)}</b>`;
+      result.classList.remove("rolling");
+      result.classList.add("win-result");
+
+      localStorage.setItem(countKey,String(count+1));
+      localStorage.setItem("sl_lottery_total",String(parseInt(localStorage.getItem("sl_lottery_total")||"0")+1));
+      localStorage.setItem("sl_lottery_won","1");
+      updateLotteryUI();
+      toast("🎉 抽奖完成！");
+
+      setTimeout(()=>{
+        machine.classList.remove("win");
+        result.classList.remove("win-result");
+      },1200);
+    }
+  }
+  requestAnimationFrame(spin);
 }
+
+
+const badgeDefs=[
+ {id:"welcome",icon:"👋",name:"初来乍到",desc:"第一次进入 Security Lab",cls:"blue"},
+ {id:"chat",icon:"💬",name:"聊天达人",desc:"发送 100 条消息",cls:"green"},
+ {id:"voice",icon:"🎙️",name:"语音玩家",desc:"加入语音聊天室",cls:"purple"},
+ {id:"lucky",icon:"🍀",name:"幸运之星",desc:"抽中一次奖励",cls:"gold"},
+ {id:"lottery10",icon:"🎰",name:"抽奖达人",desc:"累计抽奖 10 次",cls:"gold"},
+ {id:"member",icon:"🛡️",name:"Security Lab 成员",desc:"完成账号登录",cls:"blue"},
+ {id:"early",icon:"⚡",name:"活跃用户",desc:"连续活跃 7 天",cls:"red"},
+ {id:"developer",icon:"💻",name:"开发者",desc:"管理员授予",cls:"purple"}
+];
+function badgeUnlocked(id){
+  const key="sl_badge_"+id;
+  if(localStorage.getItem(key)==="1")return true;
+  if(id==="welcome")return true;
+  if(id==="member")return !!currentUser;
+  if(id==="chat")return parseInt(localStorage.getItem("sl_sent_count")||"0")>=100;
+  if(id==="voice")return localStorage.getItem("sl_voice_joined")==="1";
+  if(id==="lucky")return localStorage.getItem("sl_lottery_won")==="1";
+  if(id==="lottery10")return parseInt(localStorage.getItem("sl_lottery_total")||"0")>=10;
+  return false;
+}
+function renderBadges(){
+  const grid=$("badgeGrid");
+  grid.innerHTML=badgeDefs.map(b=>{
+    const ok=badgeUnlocked(b.id);
+    return `<div class="badge-item ${ok?"":"locked"}">
+      <div class="badge-icon">${b.icon}</div>
+      <b>${b.name} ${ok?"✓":"🔒"}</b>
+      <span>${b.desc}</span>
+    </div>`;
+  }).join("");
+}
+function openBadges(){renderBadges();$("badgeModal").classList.add("show")}
+function closeBadges(){$("badgeModal").classList.remove("show")}
 
 function openSettings(){$("settingsModal").classList.add("show")}
 function closeSettings(){$("settingsModal").classList.remove("show")}
@@ -1238,7 +1546,7 @@ function contextCopy(){if(contextItem)copyText(contextItem.message);$("contextMe
 function contextEdit(){if(contextItem&&contextItem.username===nickname)editMessage(contextItem);else toast("只能编辑自己的消息");$("contextMenu").classList.remove("show")}
 function contextDelete(){if(contextItem&&contextItem.username===nickname)deleteMessage(contextItem);else toast("只能删除自己的消息");$("contextMenu").classList.remove("show")}
 
-function closePanelsAll(){closePanels();closeEmoji();closeProfile();closeSettings();closeBackgroundSettings();closeLottery();closeUser();closeInvite();closeAdmin();closeNotifications()}
+function closePanelsAll(){closePanels();closeEmoji();closeProfile();closeSettings();closeBackgroundSettings();closeLottery();closeBadges();closeUser();closeInvite();closeAdmin();closeNotifications()}
 function updateIdentity(){ $("miniName").textContent=nickname;setAvatar($("miniAvatar"),avatarURL,nickname);renderMembers() }
 
 renderServers();renderChannels();updateIdentity();applyChatBackgroundStyle();
@@ -1568,7 +1876,8 @@ async function leaveVoice(){
   voiceState("已离开语音");
   renderVoiceList();
 }
-async function toggleVoice(){if(voiceJoined)await leaveVoice();else await joinVoice()}
+async function toggleVoice(){
+  localStorage.setItem("sl_voice_joined","1");if(voiceJoined)await leaveVoice();else await joinVoice()}
 async function toggleVoiceMute(){
   if(!voiceStream||!voiceJoined)return;
   voiceMuted=!voiceMuted;
