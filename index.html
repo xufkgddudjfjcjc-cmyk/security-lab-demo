@@ -717,6 +717,12 @@ body.dark .cloud-badge.developer{background:#38301b;border-color:#8c7428;color:#
 @keyframes legendPulse{from{transform:scale(1)}to{transform:scale(1.035)}}
 .lottery-result-badge{font-size:18px;margin-top:8px}
 
+
+/* ===== 功能中心设置菜单修复 ===== */
+#settingsModal .modal-card{max-height:min(88vh,760px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+#settingsModal .channel{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+#settingsModal .channel:hover{filter:brightness(1.08);}
+
 </style>
 
 <meta name="theme-color" content="#f3f4f6">
@@ -2403,8 +2409,19 @@ button:active{
   <div class="channel" onclick="toggleDark()"><span class="icon">◐</span><span>深色模式</span><span id="darkState" style="margin-left:auto">关闭</span></div>
   <div class="channel" onclick="toggleNotifications()">🔔 通知设置</div>
   <div class="channel" onclick="openBackgroundSettings()">🖼️ 自定义聊天背景</div>
-  <div class="channel" onclick="openLottery()">🎁 抽奖活动</div>
-  <div class="channel" onclick="openBadges()">🎖️ 我的徽章</div>
+  <div class="channel" onclick="closeSettings();openLottery()">🎁 抽奖活动</div>
+  <div class="channel" onclick="closeSettings();openBadges()">🎖️ 我的徽章</div>
+
+  <div style="margin:14px 0 7px;padding:0 4px;color:#9aa7c7;font-size:11px;font-weight:800;letter-spacing:.5px">✨ 功能中心</div>
+  <div class="channel" onclick="closeSettings();openProfile()">👤 个人主页</div>
+  <div class="channel" onclick="closeSettings();openRewardInventory()">🎒 奖励仓库</div>
+  <div class="channel" onclick="closeSettings();openShop()">🛒 积分商店</div>
+  <div class="channel" onclick="closeSettings();openAchievements()">🏆 成就中心</div>
+  <div class="channel" onclick="closeSettings();openLeaderboard()">🥇 排行榜</div>
+  <div class="channel" onclick="closeSettings();openEvents()">🎉 限时活动</div>
+  <div class="channel" onclick="closeSettings();openFriends()">👥 好友中心</div>
+  <div class="channel" onclick="closeSettings();openNotifications()">🔔 消息通知</div>
+
   <div class="channel" onclick="exportChat()">💾 导出聊天记录</div>
   <div class="channel" onclick="clearLocalChat()">🧹 清除本机缓存</div>
   <button class="primary danger" onclick="resetApp()">恢复默认</button>
