@@ -141,6 +141,28 @@ body.dark .emoji-grid button,body.dark .file-card,body.dark .attach-preview{back
 body.dark .context-menu,body.dark .context-menu button{background:#1b1d23;color:#eee;border-color:#3a3e47}
 body.dark .context-menu button:hover{background:#292d35}
 
+
+.cloud-status{display:inline-flex;align-items:center;gap:4px;max-width:110px;overflow:hidden;text-overflow:ellipsis}
+.cloud-status.ok{color:#35a85a!important}
+.cloud-status.warn{color:#d19a2a!important}
+.cloud-status.err{color:#d9534f!important}
+
+
+/* 语音聊天 */
+.voice-card{width:min(520px,94vw)}
+.voice-room{background:#f3f4f7;border-radius:10px;padding:12px;margin-bottom:10px}
+.voice-room-title{font-weight:800;font-size:14px}
+.voice-state{font-size:11px;color:#888;margin-top:4px}
+.voice-list{min-height:130px;max-height:40vh;overflow:auto}
+.voice-person{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px}
+.voice-person:hover{background:#f0f1f3}
+.voice-person-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#5865f2,#8b5cf6);color:#fff;display:grid;place-items:center;font-weight:800}
+.voice-actions{display:flex;gap:8px;margin-top:12px}
+.voice-actions button{flex:1;height:44px;border-radius:9px;background:#f0f1f3;color:#444}
+.voice-actions .voice-join{background:var(--brand);color:#fff}
+.voice-empty{text-align:center;color:#999;padding:45px 10px;font-size:12px}
+body.dark .voice-room,body.dark .voice-actions button{background:#20232a;color:#eee}
+
 </style>
 </head>
 <body>
@@ -169,8 +191,9 @@ body.dark .context-menu button:hover{background:#292d35}
       <button class="mobile-menu" onclick="toggleChannels()">☰</button>
       <div class="chat-title"><span class="hash">#</span><span id="chatName">总聊天室</span><span class="chat-topic" id="chatTopic">欢迎来到 Security Lab</span></div>
       <div class="head-actions">
-        <span id="cloudStatus" style="font-size:10px;color:#8c929d;white-space:nowrap">● 连接中</span>
+        <span id="cloudStatus" class="cloud-status warn">● 连接中</span>
         <input class="search" id="search" placeholder="搜索消息">
+        <button class="head-btn" onclick="openVoice()" title="语音聊天">🎙️</button>
         <button class="head-btn" onclick="toggleMembers()" title="成员">👥</button>
         <button class="head-btn" onclick="toggleNotifications()" title="通知">🔔</button>
         <button class="head-btn" onclick="openInvite()" title="邀请">＋</button>
@@ -270,6 +293,28 @@ body.dark .context-menu button:hover{background:#292d35}
  <div class="modal-card"><div class="modal-head"><span>🔔 通知</span><button class="close" onclick="closeNotifications()">×</button></div><div id="noticeList"></div></div>
 </div>
 
+
+<!-- 语音聊天室 -->
+<div class="modal" id="voiceModal" onclick="if(event.target===this)closeVoice()">
+  <div class="modal-card voice-card">
+    <div class="modal-head">
+      <span>🎙️ 语音聊天室</span>
+      <button class="close" onclick="closeVoice()">×</button>
+    </div>
+    <div class="voice-room">
+      <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
+      <div class="voice-state" id="voiceState">未加入语音</div>
+    </div>
+    <div class="voice-list" id="voiceList">
+      <div class="voice-empty">还没有人加入语音</div>
+    </div>
+    <div class="voice-actions">
+      <button id="voiceMute" onclick="toggleVoiceMute()" disabled>🎤 静音</button>
+      <button class="voice-join" id="voiceJoin" onclick="toggleVoice()">🎙️ 加入语音</button>
+    </div>
+  </div>
+</div>
+
 <div class="context-menu" id="contextMenu">
  <button onclick="contextReply()">↩ 回复</button>
  <button onclick="contextCopy()">📋 复制</button>
@@ -324,7 +369,7 @@ function renderChannels(){
 let unread=0;
 function switchChannel(id){
  dmMode=false;channel=id;const c=channels.find(x=>x.id===id);$("chatName").textContent=c.name;$("chatTopic").textContent=c.topic;
- unread=0;renderChannels();closePanels();loadMessages();
+ unread=0;renderChannels();closePanels();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));loadMessages();
 }
 function toggleChannels(){$("channels").classList.toggle("open");$("overlay").classList.toggle("show",$("channels").classList.contains("open"))}
 function closePanels(){$("channels").classList.remove("open");$("overlay").classList.remove("show")}
@@ -339,63 +384,128 @@ function renderMembers(){
 }
 
 function setCloudStatus(text,color){
- const el=$("cloudStatus");
- if(el){el.textContent="● "+text;el.style.color=color||"#8c929d"}
-}
-async function loadSupabaseSDK(){
- // 优先动态模块；部分手机 WebView 会禁止 dynamic import，因此提供 script 标签备用方案。
- try{
-   const mod=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
-   return mod;
- }catch(e){
-   await new Promise((resolve,reject)=>{
-     const s=document.createElement("script");
-     s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
-     s.onload=resolve;s.onerror=reject;document.head.appendChild(s);
-   });
-   if(window.supabase) return window.supabase;
-   throw new Error("Supabase SDK 加载失败");
- }
-}
-async function initSB(){
- setCloudStatus("连接中","#d19a2a");
- try{
-  const mod=await loadSupabaseSDK();
-  const createClient=mod.createClient||window.supabase?.createClient;
-  if(!createClient) throw new Error("找不到 Supabase createClient");
-  sb=createClient(SUPABASE_URL,SUPABASE_KEY);
-  // 用真实查询测试数据库、表和 RLS，而不是仅仅创建 client。
-  const test=await sb.from("messages").select("id").limit(1);
-  if(test.error) throw test.error;
-  setCloudStatus("云端已连接","#35a85a");
-  subscribe();
-  await loadMessages();
- }catch(e){
-  console.warn("Supabase:",e);
-  setCloudStatus("云端未连接","#d9534f");
-  renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
-  toast("云端连接失败："+(e.message||"请检查 Supabase"));
- }
-}
-function subscribe(){
- if(!sb)return;
- realtime=sb.channel("sl-chat").on("postgres_changes",{event:"*",schema:"public",table:"messages"},payload=>{
-   loadMessages();
- }).subscribe();
-}
-async function loadMessages(){
- if(channel!=="general"||!sb){renderMessages(messages.filter(m=>m.channel===channel));return}
- try{
-  const {data,error}=await sb.from("messages").select("id,username,message,created_at,channel").order("created_at",{ascending:true}).limit(200);
-  if(error)throw error;
-  messages=data||[];localStorage.setItem("sl_local_messages",JSON.stringify(messages));renderMessages(messages);
- }catch(e){
-  console.warn("读取 messages 失败:",e);
-  setCloudStatus("连接异常","#d9534f");
-  renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
- }
-}
-function formatMentions(text){
+  const el=$("cloudStatus");
+  if(!el)return;
+  el.textContent="● "+text;
+  el.classList.remove("ok","warn","err");
+  if(color==="#35a85a" || /已连接|正常/.test(text)) el.classList.add("ok");
+  else if(color==="#d19a2a" || /连接中|检查/.test(text)) el.classList.add("warn");
+  else el.classList.add("err");
+}async function loadSupabaseSDK(){
+  if(window.supabase?.createClient) return window.supabase;
+  try{
+    const mod=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    if(mod?.createClient)return mod;
+  }catch(e){
+    console.warn("Supabase ESM 加载失败",e);
+  }
+  return await new Promise((resolve,reject)=>{
+    const old=document.querySelector('script[data-supabase-sdk]');
+    if(old){
+      old.addEventListener("load",()=>window.supabase?resolve(window.supabase):reject(new Error("Supabase SDK 不可用")));
+      old.addEventListener("error",()=>reject(new Error("Supabase SDK 加载失败")));
+      return;
+    }
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+    s.async=true;
+    s.dataset.supabaseSdk="1";
+    s.onload=()=>window.supabase?resolve(window.supabase):reject(new Error("Supabase SDK 不可用"));
+    s.onerror=()=>reject(new Error("Supabase SDK 加载失败"));
+    document.head.appendChild(s);
+  });
+}async function initSB(){
+  setCloudStatus("连接中","#d19a2a");
+  try{
+    const mod=await loadSupabaseSDK();
+    const createClient=mod.createClient||window.supabase?.createClient;
+    if(!createClient)throw new Error("找不到 Supabase createClient");
+
+    sb=createClient(SUPABASE_URL,SUPABASE_KEY,{
+      auth:{persistSession:false,autoRefreshToken:false},
+      realtime:{params:{eventsPerSecond:10}}
+    });
+
+    // 真正访问数据库验证 URL、Key、messages 表和 RLS。
+    const test=await sb.from("messages").select("id").limit(1);
+    if(test.error)throw test.error;
+
+    setCloudStatus("云端已连接","#35a85a");
+    subscribe();
+    await loadMessages();
+  }catch(e){
+    console.warn("Supabase 连接失败:",e);
+    setCloudStatus("连接异常","#d9534f");
+    renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+    toast("云端连接失败，当前使用本机缓存");
+  }
+}function subscribe(){
+  if(!sb)return;
+  if(realtime){
+    try{sb.removeChannel(realtime)}catch(_){}
+    realtime=null;
+  }
+
+  realtime=sb.channel("sl-chat-"+Date.now())
+    .on("postgres_changes",
+      {event:"INSERT",schema:"public",table:"messages"},
+      payload=>{
+        const row=payload.new||{};
+        if(!row.channel || row.channel===channel){
+          loadMessages();
+        }
+      })
+    .on("postgres_changes",
+      {event:"UPDATE",schema:"public",table:"messages"},
+      ()=>loadMessages())
+    .on("postgres_changes",
+      {event:"DELETE",schema:"public",table:"messages"},
+      ()=>loadMessages())
+    .subscribe(status=>{
+      console.log("Supabase Realtime:",status);
+      if(status==="SUBSCRIBED")setCloudStatus("云端已连接","#35a85a");
+      if(status==="CHANNEL_ERROR" || status==="TIMED_OUT"){
+        setCloudStatus("实时异常","#d9534f");
+      }
+    });
+}async function loadMessages(){
+  const localData=messages.filter(m=>!m.channel||m.channel===channel);
+
+  if(!sb){
+    renderMessages(localData);
+    return;
+  }
+
+  try{
+    let query=sb.from("messages")
+      .select("id,username,message,created_at,channel")
+      .order("created_at",{ascending:true})
+      .limit(200);
+
+    if(!dmMode)query=query.eq("channel",channel);
+
+    let result=await query;
+
+    // 兼容旧数据库：messages 表如果没有 channel 列，则读取全部消息。
+    if(result.error && /channel/i.test(result.error.message||"")){
+      result=await sb.from("messages")
+        .select("id,username,message,created_at")
+        .order("created_at",{ascending:true})
+        .limit(200);
+    }
+
+    if(result.error)throw result.error;
+
+    messages=result.data||[];
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+    setCloudStatus("云端已连接","#35a85a");
+  }catch(e){
+    console.warn("读取 messages 失败:",e);
+    setCloudStatus("连接异常","#d9534f");
+    renderMessages(localData);
+  }
+}function formatMentions(text){
  let s=esc(text);
  s=s.replace(/@([\\w\\u4e00-\\u9fff-]+)/g,'<span class="mention">@$1</span>');
  return s;
@@ -424,22 +534,78 @@ function renderMessages(data){
  box.scrollTop=box.scrollHeight;
 }
 async function sendMessage(){
- const input=$("messageInput"),text=input.value.trim();
- if(!text&&!attachment)return;
- const now=new Date().toISOString();
- const local={id:"local-"+Date.now(),username:nickname||"游客",message:text,created_at:now,channel,reply_to:replying?{username:replying.username,message:replying.message}:null};
- if(attachment){if(attachment.type.startsWith("image/"))local.image_data=attachment.data;else{local.file_name=attachment.name;local.file_size=attachment.size}}
- try{
-  if(sb&&channel==="general"){
-   const payload={username:local.username,message:local.message};
-   const {error}=await sb.from("messages").insert([payload]);if(error)throw error;
-  }else{
-   messages.push(local);localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+  const input=$("messageInput"),text=input.value.trim();
+  if(!text&&!attachment)return;
+
+  const now=new Date().toISOString();
+  const local={
+    id:"local-"+Date.now(),
+    username:nickname||"游客",
+    message:text,
+    created_at:now,
+    channel,
+    reply_to:replying?{username:replying.username,message:replying.message}:null
+  };
+
+  if(attachment){
+    if(attachment.type.startsWith("image/"))local.image_data=attachment.data;
+    else{
+      local.file_name=attachment.name;
+      local.file_size=attachment.size;
+    }
   }
-  input.value="";$("count").textContent="0 / 1000";clearAttachment();cancelReply();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));addNotification("消息已发送");
- }catch(e){console.warn("发送失败:",e);setCloudStatus("云端异常","#d9534f");messages.push(local);localStorage.setItem("sl_local_messages",JSON.stringify(messages));input.value="";clearAttachment();cancelReply();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));toast("云端发送失败，已保存到本机")}
-}
-$("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
+
+  try{
+    if(sb && !dmMode){
+      // 新表结构优先：带 channel。
+      let result=await sb.from("messages").insert([{
+        username:local.username,
+        message:local.message,
+        channel:channel
+      }]);
+
+      // 如果旧表没有 channel，退回旧结构。
+      if(result.error && /channel/i.test(result.error.message||"")){
+        result=await sb.from("messages").insert([{
+          username:local.username,
+          message:local.message
+        }]);
+      }
+
+      if(result.error)throw result.error;
+
+      input.value="";
+      $("count").textContent="0 / 1000";
+      clearAttachment();
+      cancelReply();
+      await loadMessages();
+      addNotification("消息已发送");
+      setCloudStatus("云端已连接","#35a85a");
+      return;
+    }
+
+    // 私信/离线：保存本机。
+    messages.push(local);
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    input.value="";
+    $("count").textContent="0 / 1000";
+    clearAttachment();
+    cancelReply();
+    renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+    addNotification("消息已保存到本机");
+  }catch(e){
+    console.warn("发送失败:",e);
+    setCloudStatus("连接异常","#d9534f");
+    messages.push(local);
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    input.value="";
+    $("count").textContent="0 / 1000";
+    clearAttachment();
+    cancelReply();
+    renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+    toast("云端发送失败，已保存到本机");
+  }
+}$("messageInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}});
 $("messageInput").addEventListener("input",e=>{$("count").textContent=e.target.value.length+" / 1000"});
 $("search").addEventListener("input",e=>{
  const q=e.target.value.toLowerCase().trim();
@@ -547,6 +713,179 @@ $("messages").addEventListener("click",e=>{
 if(localStorage.getItem("sl_dark")==="1"){
   document.body.classList.add("dark");
   $("darkState").textContent="开启";
+}
+
+
+/* ===== 第一阶段语音：WebRTC + Supabase Realtime ===== */
+let voiceRoom=null, voiceStream=null, voiceJoined=false, voiceMuted=false;
+const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()).toString().slice(0,36);
+const voicePeers={};
+
+function voiceTopic(){
+  return "voice-"+String(channel).replace(/[^a-zA-Z0-9_-]/g,"_");
+}
+function openVoice(){
+  $("voiceModal").classList.add("show");
+  $("voiceRoomTitle").textContent="# "+($("chatName").textContent||"总聊天室");
+  $("voiceState").textContent=voiceJoined?"已加入语音":"未加入语音";
+}
+async function closeVoice(){
+  if(voiceJoined)await leaveVoice();
+  $("voiceModal").classList.remove("show");
+}
+function voiceState(t,err=false){
+  $("voiceState").textContent=t;
+  $("voiceState").style.color=err?"#d9534f":"";
+}
+function renderVoiceList(){
+  const box=$("voiceList");
+  if(!voiceRoom){box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';return}
+  const state=voiceRoom.presenceState();
+  const users=[];
+  Object.values(state||{}).forEach(arr=>(arr||[]).forEach(u=>users.push(u)));
+  if(!users.length){box.innerHTML='<div class="voice-empty">还没有人加入语音</div>';return}
+  box.innerHTML=users.map(u=>`<div class="voice-person">
+    <div class="voice-person-avatar">${esc((u.name||"游")[0])}</div>
+    <div><b>${esc(u.name||"游客")}${u.peerId===voiceId?"（你）":""}</b>
+    <div style="font-size:9px;color:#999">${u.muted?"🔇 已静音":"🎤 麦克风开启"}</div></div>
+  </div>`).join("");
+}
+async function voiceBroadcast(event,payload){
+  if(!voiceRoom)return;
+  try{await voiceRoom.send({type:"broadcast",event,payload})}catch(e){console.warn("voice",e)}
+}
+function makePeer(id,name){
+  if(voicePeers[id])return voicePeers[id];
+  const pc=new RTCPeerConnection({
+    iceServers:[
+      {urls:"stun:stun.l.google.com:19302"},
+      {urls:"stun:stun1.l.google.com:19302"}
+    ]
+  });
+  voicePeers[id]={pc,name,audio:null};
+  if(voiceStream)voiceStream.getTracks().forEach(t=>pc.addTrack(t,voiceStream));
+  pc.onicecandidate=e=>{
+    if(e.candidate)voiceBroadcast("ice",{from:voiceId,to:id,candidate:e.candidate});
+  };
+  pc.ontrack=e=>{
+    let a=voicePeers[id].audio;
+    if(!a){
+      a=document.createElement("audio");
+      a.autoplay=true;a.playsInline=true;a.style.display="none";
+      document.body.appendChild(a);
+      voicePeers[id].audio=a;
+    }
+    if(e.streams[0])a.srcObject=e.streams[0];
+    a.play().catch(()=>{});
+  };
+  pc.onconnectionstatechange=()=>{
+    if(["failed","closed"].includes(pc.connectionState))removePeer(id);
+  };
+  return voicePeers[id];
+}
+function removePeer(id){
+  const p=voicePeers[id];if(!p)return;
+  try{p.pc.close()}catch(_){}
+  if(p.audio)p.audio.remove();
+  delete voicePeers[id];
+}
+async function sendOffer(id,name){
+  const p=makePeer(id,name);
+  if(p.pc.signalingState!=="stable")return;
+  const offer=await p.pc.createOffer({offerToReceiveAudio:true});
+  await p.pc.setLocalDescription(offer);
+  await voiceBroadcast("offer",{from:voiceId,to:id,name:nickname||"游客",description:offer});
+}
+async function handleVoice(event,p){
+  if(!p||p.to!==voiceId||p.from===voiceId)return;
+  try{
+    if(event==="offer"){
+      const peer=makePeer(p.from,p.name||"用户");
+      await peer.pc.setRemoteDescription(p.description);
+      const answer=await peer.pc.createAnswer();
+      await peer.pc.setLocalDescription(answer);
+      await voiceBroadcast("answer",{from:voiceId,to:p.from,name:nickname||"游客",description:answer});
+    }else if(event==="answer"){
+      const peer=voicePeers[p.from];
+      if(peer)await peer.pc.setRemoteDescription(p.description);
+    }else if(event==="ice"){
+      const peer=voicePeers[p.from];
+      if(peer&&p.candidate)try{await peer.pc.addIceCandidate(p.candidate)}catch(_){}
+    }
+  }catch(e){console.warn("voice signal",e)}
+}
+async function joinVoice(){
+  if(voiceJoined)return;
+  if(!sb){voiceState("云端未连接，暂时不能加入",true);return}
+  try{
+    if(!navigator.mediaDevices?.getUserMedia)throw new Error("浏览器不支持麦克风");
+    voiceState("正在请求麦克风…");
+    voiceStream=await navigator.mediaDevices.getUserMedia({
+      audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
+      video:false
+    });
+    voiceRoom=sb.channel(voiceTopic(),{
+      config:{broadcast:{self:false,ack:true},presence:{key:voiceId}}
+    });
+    voiceRoom
+      .on("broadcast",{event:"hello"},({payload})=>{
+        if(payload?.from&&voiceId<payload.from)sendOffer(payload.from,payload.name).catch(()=>{});
+      })
+      .on("broadcast",{event:"offer"},({payload})=>handleVoice("offer",payload))
+      .on("broadcast",{event:"answer"},({payload})=>handleVoice("answer",payload))
+      .on("broadcast",{event:"ice"},({payload})=>handleVoice("ice",payload))
+      .on("broadcast",{event:"leave"},({payload})=>{if(payload?.from)removePeer(payload.from)})
+      .on("presence",{event:"sync"},renderVoiceList)
+      .on("presence",{event:"join"},renderVoiceList)
+      .on("presence",{event:"leave"},({key})=>{removePeer(key);renderVoiceList()});
+    await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(new Error("语音连接超时")),10000);
+      voiceRoom.subscribe(async s=>{
+        if(s==="SUBSCRIBED"){clearTimeout(timer);resolve()}
+        else if(s==="CHANNEL_ERROR"||s==="TIMED_OUT"){clearTimeout(timer);reject(new Error("Realtime 连接失败"))}
+      });
+    });
+    voiceJoined=true;
+    $("voiceJoin").textContent="📞 离开语音";
+    $("voiceMute").disabled=false;
+    voiceState("已加入语音");
+    await voiceRoom.track({peerId:voiceId,name:nickname||"游客",muted:false});
+    renderVoiceList();
+    await voiceBroadcast("hello",{from:voiceId,name:nickname||"游客"});
+  }catch(e){
+    console.warn("join voice",e);
+    voiceState("加入失败："+(e.message||"未知错误"),true);
+    toast("语音加入失败，请检查麦克风权限");
+    if(voiceRoom){try{await sb.removeChannel(voiceRoom)}catch(_){}}
+    voiceRoom=null;
+    if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
+  }
+}
+async function leaveVoice(){
+  if(voiceRoom)await voiceBroadcast("leave",{from:voiceId});
+  Object.keys(voicePeers).forEach(removePeer);
+  if(voiceRoom){
+    try{await voiceRoom.untrack()}catch(_){}
+    try{await sb.removeChannel(voiceRoom)}catch(_){}
+  }
+  voiceRoom=null;voiceJoined=false;voiceMuted=false;
+  if(voiceStream){voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null}
+  $("voiceJoin").textContent="🎙️ 加入语音";
+  $("voiceMute").disabled=true;
+  $("voiceMute").textContent="🎤 静音";
+  voiceState("已离开语音");
+  renderVoiceList();
+}
+async function toggleVoice(){if(voiceJoined)await leaveVoice();else await joinVoice()}
+async function toggleVoiceMute(){
+  if(!voiceStream||!voiceJoined)return;
+  voiceMuted=!voiceMuted;
+  voiceStream.getAudioTracks().forEach(t=>t.enabled=!voiceMuted);
+  $("voiceMute").textContent=voiceMuted?"🔇 取消静音":"🎤 静音";
+  if(voiceRoom){
+    try{await voiceRoom.track({peerId:voiceId,name:nickname||"游客",muted:voiceMuted})}catch(_){}
+    renderVoiceList();
+  }
 }
 
 </script>
