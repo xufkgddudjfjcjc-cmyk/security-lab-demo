@@ -2323,6 +2323,47 @@ button:active{
 .notification-empty{text-align:center;padding:42px 10px;color:#637c96;font-size:10px}
 </style>
 
+
+<style id="security-lottery-scroll-click-fix-v3">
+/* 抽奖弹窗：移动端强制可滚动 + 可点击 */
+#lotteryModal{
+  overflow-y:auto !important;
+  overscroll-behavior:contain !important;
+  -webkit-overflow-scrolling:touch !important;
+  touch-action:none !important;
+  align-items:flex-start !important;
+  padding-top:max(12px, env(safe-area-inset-top)) !important;
+  padding-bottom:max(12px, env(safe-area-inset-bottom)) !important;
+}
+#lotteryModal .lottery-card{
+  width:min(520px,94vw) !important;
+  max-height:calc(100dvh - 24px) !important;
+  min-height:min(68dvh,620px) !important;
+  overflow-y:scroll !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  overscroll-behavior:contain !important;
+  touch-action:pan-y !important;
+  pointer-events:auto !important;
+  margin:auto !important;
+}
+#lotteryModal .lottery-card > *{pointer-events:auto !important;}
+#lotteryModal .lottery-card button{touch-action:manipulation !important;pointer-events:auto !important;}
+#lotteryModal .lottery-card input,#lotteryModal .lottery-card textarea{touch-action:auto !important;}
+@media(max-width:800px){
+  #lotteryModal{padding-left:10px !important;padding-right:10px !important;}
+  #lotteryModal .lottery-card{
+    width:100% !important;
+    max-width:520px !important;
+    min-height:72dvh !important;
+    max-height:calc(100dvh - 20px) !important;
+    border-radius:24px !important;
+    margin:auto !important;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom)) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3261,11 +3302,14 @@ async function reserveLotteryDraw(){
 
 async function drawLottery(){
   const btn=$("lotteryButton");
-  if(btn.disabled)return;
+  if(!btn) return;
+  if(btn.dataset.busy==="1") return;
+  btn.dataset.busy="1";
   btn.disabled=true;
+  try {
 
   const reserved=await reserveLotteryDraw();
-  if(!reserved){toast("今天的 100 次抽奖已经用完");await updateLotteryUI();return}
+  if(!reserved){btn.disabled=false;btn.dataset.busy="0";toast("今天的 100 次抽奖已经用完或云端暂时不可用");await updateLotteryUI();return}
 
   const result=$("lotteryResult"), machine=$("lotteryMachine");
   const slots=[...$("lotteryReel").querySelectorAll(".lottery-slot")];
@@ -3303,11 +3347,20 @@ async function drawLottery(){
     localStorage.setItem("sl_lottery_total",String(parseInt(localStorage.getItem("sl_lottery_total")||"0")+1));
     localStorage.setItem("sl_lottery_won","1");
     await updateLotteryUI();
+    btn.disabled=false;
+    btn.dataset.busy="0";
     toast("🎉 抽奖完成！");
     if(typeof evaluateAchievements==="function")evaluateAchievements();
     setTimeout(()=>{machine.classList.remove("win");result.classList.remove("win-result")},1200);
   }
   requestAnimationFrame(spin);
+  } catch(e) {
+    console.error("抽奖异常:",e);
+    toast("⚠️ 抽奖出现异常，请重试");
+    btn.disabled=false;
+    btn.dataset.busy="0";
+    await updateLotteryUI();
+  }
 }
 
 
