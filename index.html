@@ -2364,6 +2364,469 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-mobile-app-v4">
+/* =========================================================
+   Security Lab Mobile App UI V4
+   原有功能不改，只强化手机端的 App 感、层级、触控和滚动
+   ========================================================= */
+@media (max-width: 800px){
+  :root{
+    --mobile-bg:#070b14;
+    --mobile-surface:rgba(13,19,32,.88);
+    --mobile-surface-2:rgba(18,27,45,.92);
+    --mobile-border:rgba(120,176,255,.18);
+    --mobile-blue:#5b8cff;
+    --mobile-purple:#8b5cf6;
+  }
+
+  html,body{
+    width:100%;
+    height:100%;
+    min-height:100%;
+    overflow:hidden !important;
+    overscroll-behavior:none;
+    -webkit-text-size-adjust:100%;
+  }
+
+  body{
+    background:
+      radial-gradient(circle at 10% 0%,rgba(53,132,255,.20),transparent 30%),
+      radial-gradient(circle at 95% 75%,rgba(145,74,255,.18),transparent 34%),
+      #070b14 !important;
+  }
+
+  .app{
+    height:100dvh;
+    min-height:100dvh;
+    background:transparent;
+  }
+
+  /* 顶部栏：更像原生 App */
+  .chat-head{
+    height:62px !important;
+    min-height:62px !important;
+    padding-top:env(safe-area-inset-top) !important;
+    height:calc(62px + env(safe-area-inset-top)) !important;
+    padding-left:max(12px,env(safe-area-inset-left)) !important;
+    padding-right:max(12px,env(safe-area-inset-right)) !important;
+    background:rgba(7,11,20,.82) !important;
+    border-bottom:1px solid rgba(130,180,255,.12) !important;
+    box-shadow:0 8px 28px rgba(0,0,0,.22) !important;
+    backdrop-filter:blur(20px) saturate(145%);
+    -webkit-backdrop-filter:blur(20px) saturate(145%);
+    position:relative;
+    z-index:10;
+  }
+
+  .mobile-menu{
+    width:40px !important;
+    height:40px !important;
+    border-radius:13px !important;
+    background:rgba(255,255,255,.07) !important;
+    border:1px solid rgba(120,176,255,.13) !important;
+    color:#dceaff !important;
+    box-shadow:inset 0 0 16px rgba(91,140,255,.06);
+  }
+
+  .chat-title{
+    font-size:16px !important;
+    letter-spacing:.1px;
+  }
+  .chat-title .hash{
+    width:28px;
+    height:28px;
+    border-radius:9px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,rgba(91,140,255,.22),rgba(139,92,246,.20));
+    color:#9cc4ff !important;
+    font-size:18px !important;
+  }
+
+  .head-actions{
+    gap:6px !important;
+  }
+  .head-btn{
+    width:38px !important;
+    min-width:38px !important;
+    height:38px !important;
+    border-radius:12px !important;
+    background:rgba(255,255,255,.055) !important;
+    color:#cfe3ff !important;
+    border:1px solid rgba(120,176,255,.10) !important;
+  }
+  .cloud-status{
+    display:none !important;
+  }
+
+  /* 消息区：卡片化、呼吸空间 */
+  .messages{
+    padding:14px 12px 14px !important;
+    background:linear-gradient(180deg,rgba(7,11,20,.08),rgba(7,11,20,.28));
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    scroll-padding-bottom:140px;
+  }
+
+  .dayline{
+    margin:8px 4px 16px !important;
+    color:#667c98 !important;
+  }
+
+  .message{
+    gap:10px !important;
+    margin:2px 0 8px !important;
+    padding:9px 8px !important;
+    border-radius:15px !important;
+    transition:background .18s ease,transform .18s ease;
+  }
+
+  .message:active{
+    background:rgba(91,140,255,.08) !important;
+    transform:scale(.995);
+  }
+
+  .msg-avatar{
+    width:40px !important;
+    height:40px !important;
+    min-width:40px !important;
+    border-radius:14px !important;
+    box-shadow:0 4px 14px rgba(0,0,0,.20);
+  }
+
+  .msg-user{font-size:13px !important;color:#edf5ff !important}
+  .msg-time{font-size:9px !important;color:#687f9c !important}
+  .msg-id{display:none !important}
+  .msg-text{
+    font-size:15px !important;
+    line-height:1.55 !important;
+    color:#d9e5f2 !important;
+  }
+
+  /* 输入区：悬浮胶囊 */
+  .input-area{
+    padding:7px 10px max(8px,env(safe-area-inset-bottom)) !important;
+    background:linear-gradient(180deg,rgba(7,11,20,.12),rgba(7,11,20,.96)) !important;
+  }
+
+  .composer{
+    min-height:52px !important;
+    border-radius:18px !important;
+    padding:4px !important;
+    background:rgba(19,29,47,.94) !important;
+    border:1px solid rgba(120,176,255,.17) !important;
+    box-shadow:
+      0 10px 30px rgba(0,0,0,.28),
+      inset 0 0 20px rgba(91,140,255,.04) !important;
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+  }
+
+  .compose-btn{
+    width:42px !important;
+    min-width:42px !important;
+    height:42px !important;
+    border-radius:14px !important;
+    color:#b8d4ff !important;
+  }
+
+  .message-input{
+    height:42px !important;
+    font-size:15px !important;
+    color:#edf6ff !important;
+    background:transparent !important;
+  }
+  .message-input::placeholder{color:#7186a2 !important}
+
+  .send{
+    width:44px !important;
+    min-width:44px !important;
+    height:42px !important;
+    border-radius:14px !important;
+    margin-right:1px !important;
+    background:linear-gradient(135deg,#5b8cff,#7c4dff) !important;
+    box-shadow:0 6px 18px rgba(91,140,255,.25);
+  }
+
+  .input-meta{
+    display:none !important;
+  }
+
+  /* 底部 Tab Bar：原生 App 风格 */
+  .mobile-nav{
+    height:70px !important;
+    min-height:70px !important;
+    padding:
+      5px
+      max(7px,env(safe-area-inset-right))
+      max(5px,env(safe-area-inset-bottom))
+      max(7px,env(safe-area-inset-left)) !important;
+    background:rgba(8,13,23,.91) !important;
+    border-top:1px solid rgba(120,176,255,.13) !important;
+    box-shadow:0 -12px 32px rgba(0,0,0,.28) !important;
+    backdrop-filter:blur(22px) saturate(150%);
+    -webkit-backdrop-filter:blur(22px) saturate(150%);
+    position:relative;
+    z-index:30;
+  }
+
+  .mobile-nav button{
+    height:56px !important;
+    max-width:96px !important;
+    border-radius:16px !important;
+    color:#71839a !important;
+    font-size:21px !important;
+    position:relative;
+    transition:transform .18s ease,background .18s ease,color .18s ease;
+  }
+
+  .mobile-nav button:active{
+    transform:scale(.92);
+  }
+
+  .mobile-nav button span{
+    font-size:10px !important;
+    font-weight:700;
+    margin-top:3px !important;
+  }
+
+  .mobile-nav button.active{
+    color:#bcd7ff !important;
+    background:linear-gradient(
+      135deg,
+      rgba(91,140,255,.16),
+      rgba(139,92,246,.14)
+    ) !important;
+    box-shadow:inset 0 0 20px rgba(91,140,255,.05);
+  }
+
+  .mobile-nav button.active:before{
+    content:"";
+    position:absolute;
+    top:3px;
+    left:50%;
+    width:22px;
+    height:3px;
+    transform:translateX(-50%);
+    border-radius:99px;
+    background:linear-gradient(90deg,#5b8cff,#9b6cff);
+    box-shadow:0 0 12px rgba(91,140,255,.65);
+  }
+
+  /* 频道抽屉：真正 App 抽屉 */
+  .channels{
+    width:min(88vw,340px) !important;
+    background:rgba(10,16,28,.97) !important;
+    border-right:1px solid rgba(120,176,255,.12);
+    box-shadow:20px 0 50px rgba(0,0,0,.48) !important;
+    backdrop-filter:blur(24px);
+    -webkit-backdrop-filter:blur(24px);
+  }
+
+  .server-head{
+    height:64px !important;
+    padding-top:env(safe-area-inset-top) !important;
+    height:calc(64px + env(safe-area-inset-top)) !important;
+    border-color:rgba(120,176,255,.12) !important;
+    color:#eef6ff !important;
+  }
+
+  .channel-scroll{
+    padding:14px 10px !important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .cat{
+    color:#5f7794 !important;
+    padding:15px 8px 7px !important;
+  }
+
+  .channel{
+    height:46px !important;
+    border-radius:13px !important;
+    color:#9db2ca !important;
+    padding:0 12px !important;
+    margin:3px 0 !important;
+  }
+
+  .channel.active,
+  .channel:active{
+    color:#eaf4ff !important;
+    background:linear-gradient(
+      90deg,
+      rgba(91,140,255,.18),
+      rgba(139,92,246,.08)
+    ) !important;
+    box-shadow:inset 0 0 18px rgba(91,140,255,.04);
+  }
+
+  .userbar{
+    height:68px !important;
+    background:rgba(17,26,42,.96) !important;
+    border-top:1px solid rgba(120,176,255,.10);
+    padding-bottom:max(7px,env(safe-area-inset-bottom)) !important;
+  }
+
+  /* 弹窗：从底部升起，像原生 Sheet */
+  .modal{
+    padding:
+      0
+      max(8px,env(safe-area-inset-right))
+      max(8px,env(safe-area-inset-bottom))
+      max(8px,env(safe-area-inset-left)) !important;
+    align-items:flex-end !important;
+    background:rgba(0,0,0,.58) !important;
+    backdrop-filter:blur(5px);
+    -webkit-backdrop-filter:blur(5px);
+  }
+
+  .modal-card{
+    width:100% !important;
+    max-width:560px !important;
+    max-height:calc(91dvh - env(safe-area-inset-top)) !important;
+    margin:0 auto !important;
+    padding:18px 16px max(18px,env(safe-area-inset-bottom)) !important;
+    border-radius:24px 24px 14px 14px !important;
+    background:
+      linear-gradient(180deg,rgba(18,28,46,.98),rgba(8,14,24,.98)) !important;
+    border:1px solid rgba(120,176,255,.18) !important;
+    box-shadow:
+      0 -18px 60px rgba(0,0,0,.46),
+      inset 0 1px 0 rgba(255,255,255,.05) !important;
+    overflow-y:auto !important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    animation:mobileSheetIn .22s ease-out;
+  }
+  .modal-card::-webkit-scrollbar{display:none}
+
+  .modal-card:before{
+    content:"";
+    display:block;
+    width:42px;
+    height:4px;
+    margin:-4px auto 13px;
+    border-radius:99px;
+    background:rgba(180,210,245,.25);
+  }
+
+  .modal-head{
+    min-height:42px !important;
+    margin-bottom:8px;
+    color:#f0f7ff !important;
+  }
+
+  .modal-head .close,
+  .close{
+    width:38px !important;
+    height:38px !important;
+    border-radius:13px !important;
+    background:rgba(255,255,255,.07) !important;
+    color:#d9e8fa !important;
+  }
+
+  .field,
+  textarea.field{
+    min-height:48px !important;
+    border-radius:14px !important;
+    background:rgba(255,255,255,.055) !important;
+    border:1px solid rgba(120,176,255,.14) !important;
+    color:#eef7ff !important;
+    font-size:15px !important;
+  }
+
+  .primary{
+    min-height:50px !important;
+    border-radius:15px !important;
+    font-weight:800 !important;
+    box-shadow:0 8px 22px rgba(91,140,255,.12);
+  }
+
+  /* 设置页：更像系统设置 */
+  #settingsModal .modal-card{
+    padding-top:14px !important;
+  }
+  #settingsModal .channel{
+    min-height:52px !important;
+    padding:0 12px !important;
+    border-radius:14px !important;
+    margin:4px 0 !important;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(120,176,255,.07);
+    color:#d8e6f5 !important;
+  }
+  #settingsModal .channel:active{
+    transform:scale(.985);
+    background:rgba(91,140,255,.10) !important;
+  }
+
+  /* 抽奖卡片：移动端更有游戏 App 感 */
+  #lotteryModal .modal-card,
+  .lottery-card{
+    max-height:calc(93dvh - env(safe-area-inset-top)) !important;
+  }
+
+  .lottery-machine{
+    border-radius:24px !important;
+    overflow:hidden;
+  }
+
+  /* 其他功能卡片统一圆角 */
+  .shop-grid,
+  .achievement-grid,
+  .leaderboard-list,
+  .friends-list,
+  .event-list{
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* Toast 在底部 Tab 上方 */
+  .toast{
+    bottom:calc(78px + env(safe-area-inset-bottom)) !important;
+    max-width:calc(100vw - 28px);
+    border-radius:14px !important;
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+
+  /* 点击态 */
+  button:active{
+    transform:scale(.97);
+  }
+
+  /* 小屏 */
+  @media (max-width:390px){
+    .chat-head{
+      gap:6px;
+    }
+    .chat-title{
+      font-size:15px !important;
+    }
+    .head-btn{
+      width:36px !important;
+      min-width:36px !important;
+      height:36px !important;
+    }
+    .messages{
+      padding-left:9px !important;
+      padding-right:9px !important;
+    }
+    .msg-avatar{
+      width:38px !important;
+      height:38px !important;
+      min-width:38px !important;
+    }
+  }
+}
+
+@keyframes mobileSheetIn{
+  from{transform:translateY(24px);opacity:.35}
+  to{transform:translateY(0);opacity:1}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -5444,6 +5907,29 @@ with check (auth.uid() = user_id);
     <div id="notificationList"></div>
   </div>
 </div>
+
+
+<script id="security-lab-mobile-app-v4-js">
+(function(){
+  function syncMobileViewport(){
+    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--app-vh', h + 'px');
+  }
+  syncMobileViewport();
+  window.addEventListener('resize', syncMobileViewport, {passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize', syncMobileViewport, {passive:true});
+  }
+
+  // 给移动端底部导航一个更稳定的 active 状态
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest && e.target.closest('.mobile-nav button');
+    if(!btn) return;
+    document.querySelectorAll('.mobile-nav button').forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+  }, {passive:true});
+})();
+</script>
 
 </body>
 </html>
