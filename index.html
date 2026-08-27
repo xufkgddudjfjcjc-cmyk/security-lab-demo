@@ -3407,6 +3407,16 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
+      <button id="v20DirectCloudButton" type="button"
+        onclick="openV20CloudPanel()"
+        style="width:calc(100% - 20px);margin:0 10px 6px;min-height:34px;border:1px solid rgba(120,176,255,.10);border-radius:10px;background:rgba(255,255,255,.03);color:#8ea4bf;font-size:10px;touch-action:manipulation;">
+        ☁️ 云端频道 SQL
+      </button>
+      <button id="v21DirectManageButton" type="button"
+        onclick="openV21Admin()"
+        style="width:calc(100% - 20px);margin:6px 10px;min-height:36px;border:1px solid rgba(120,176,255,.14);border-radius:10px;background:rgba(91,140,255,.10);color:#b9cbe0;font-size:11px;touch-action:manipulation;">
+        🔐 频道管理
+      </button>
       <div class="cat">语音频道</div>
       <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
