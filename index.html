@@ -4253,10 +4253,71 @@ function renderMessages(data){
   }
 }
 
+async function getMyModeration(){
+  if(!sb || !currentUser) return null;
+  try{
+    const {data,error}=await sb.from("user_moderation")
+      .select("action,reason,expires_at,active")
+      .eq("user_id",currentUser.id)
+      .eq("active",true)
+      .order("created_at",{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(error) return null;
+    if(!data) return null;
+    if(data.expires_at && new Date(data.expires_at).getTime() <= Date.now()) return null;
+    return data;
+  }catch(e){ return null; }
+}
+
+async function enforceMyModeration(){
+  const m=await getMyModeration();
+  if(!m) return null;
+  if(m.action === "ban" || m.action === "kick"){
+    alert(m.action === "ban" ? "你已被封禁。" : "你已被踢出服务器。");
+    try{ await sb.auth.signOut(); }catch(e){}
+    location.reload();
+    return m;
+  }
+  if(m.action === "mute") return m;
+  return null;
+}
+
+async function serverModerationAction(action){
+  if(!(await checkAdmin())){ toast("当前账号不是开发者管理员"); return; }
+  const name=prompt("请输入要操作的用户名：");
+  if(!name) return;
+  const reason=prompt("原因（可选）：") || null;
+  if(!sb){ toast("云端未连接，无法执行服务端操作"); return; }
+  const map={"禁言":"mute","踢出":"kick","封禁":"ban"};
+  const rpc=map[action];
+  try{
+    const {data,error}=await sb.rpc("moderate_user",{
+      target_username:name.trim(), moderation_action:rpc, moderation_reason:reason, duration_minutes:rpc==="kick"?1:null
+    });
+    if(error) throw error;
+    toast(action+"成功："+(data?.username||name));
+  }catch(e){
+    console.error("[V31] moderation failed",e);
+    const msg=e?.message||"未知错误";
+    toast(msg.includes("not_admin")?"服务端拒绝：当前账号不是管理员":"操作失败："+msg);
+  }
+}
+
 async function sendMessage(){
   const input=$("messageInput");
   const text=input.value.trim();
   if(!text&&!attachment)return;
+
+  const moderation=await getMyModeration();
+  if(moderation?.action === "mute"){
+    toast("你已被禁言" + (moderation.reason ? "："+moderation.reason : ""));
+    return;
+  }
+  if(moderation?.action === "ban" || moderation?.action === "kick"){
+    await enforceMyModeration();
+    return;
+  }
 
   localStorage.setItem(
     "sl_sent_count",
@@ -4498,8 +4559,8 @@ async function renderPublicUserBadges(name,profile){
 function closeUser(){$("userModal").classList.remove("show")}
 function startDM(){const n=window.__selectedUser;closeUser();openDM(n)}
 function mentionUser(){$("messageInput").value+="@"+window.__selectedUser+" ";closeUser();$("messageInput").focus()}
-function adminMute(){toast("已提交禁言操作（演示）");closeUser()}
-function adminKick(){toast("已提交踢出操作（演示）");closeUser()}
+function adminMute(){serverModerationAction("禁言");closeUser()}
+function adminKick(){serverModerationAction("踢出");closeUser()}
 function openDM(name){
  dmMode=true;channel="dm-"+name;$("chatName").textContent=name;$("chatTopic").textContent="私信 · 直接聊天";renderChannels();
  $("messages").innerHTML=`<div style="text-align:center;color:#999;padding:80px 10px">与 <b>${esc(name)}</b> 的私信<br><small>私信功能界面已准备，可接入独立 DM 表</small></div>`;
@@ -7726,11 +7787,87 @@ end $$;
 
 <script id="security-lab-v28-message-manager">
 (function(){
-  const SQL = `-- Security Lab V28：消息表兼容 + 管理员删除
+  const SQL = `-- Security Lab V31：消息管理 + 服务端禁言/踢出/封禁
 -- 可以直接在 Supabase SQL Editor 执行。
 
 alter table public.messages
   add column if not exists channel text;
+
+create table if not exists public.user_moderation (
+  id bigserial primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  username text not null,
+  action text not null check (action in ('mute','kick','ban')),
+  reason text,
+  expires_at timestamptz,
+  active boolean not null default true,
+  moderator_id uuid references auth.users(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists user_moderation_user_active_idx
+  on public.user_moderation(user_id, active, expires_at);
+
+alter table public.user_moderation enable row level security;
+
+drop policy if exists "v31_moderation_select_own" on public.user_moderation;
+create policy "v31_moderation_select_own"
+on public.user_moderation for select to authenticated
+using (user_id = auth.uid());
+
+create or replace function public.moderate_user(
+  target_username text,
+  moderation_action text,
+  moderation_reason text default null,
+  duration_minutes integer default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  target public.profiles%rowtype;
+  exp_at timestamptz;
+  row_id bigint;
+begin
+  if not public.is_admin() then
+    raise exception 'not_admin';
+  end if;
+  if moderation_action not in ('mute','kick','ban') then
+    raise exception 'invalid_action';
+  end if;
+
+  select * into target
+  from public.profiles
+  where lower(username) = lower(target_username)
+  limit 1;
+
+  if target.id is null then
+    raise exception 'user_not_found';
+  end if;
+
+  if moderation_action = 'kick' then
+    exp_at := now() + make_interval(mins => greatest(coalesce(duration_minutes,1),1));
+  elsif duration_minutes is not null and duration_minutes > 0 then
+    exp_at := now() + make_interval(mins => duration_minutes);
+  else
+    exp_at := null;
+  end if;
+
+  update public.user_moderation
+  set active=false
+  where user_id=target.id and active=true;
+
+  insert into public.user_moderation(user_id,username,action,reason,expires_at,moderator_id)
+  values(target.id,target.username,moderation_action,moderation_reason,exp_at,auth.uid())
+  returning id into row_id;
+
+  return jsonb_build_object('ok',true,'id',row_id,'user_id',target.id,'username',target.username,'action',moderation_action,'expires_at',exp_at);
+end;
+$$;
+
+grant execute on function public.moderate_user(text,text,text,integer) to authenticated;
 
 update public.messages
 set channel = 'general'
@@ -7949,8 +8086,8 @@ end $$;`;
 
     const {error} = await sb.from("messages").delete().eq("id",id);
     if(error){
-      console.error("[V28] delete failed",error);
-      alert("删除失败：" + (error.message || "服务端权限未生效，请先执行 V28 SQL"));
+      console.error("[V31] delete failed",error);
+      alert("删除失败：" + (error.message || "服务端权限未生效，请先执行 V31 SQL"));
       return;
     }
 
@@ -7963,23 +8100,22 @@ end $$;`;
     await window.openV28MessageManager();
   };
 
-  // Keep the old inline action compatible.
+  // 被踢出/封禁的账号会自动被客户端发现并退出。
+  if(typeof window.__v31ModerationTimer === "undefined"){
+    window.__v31ModerationTimer=setInterval(()=>{ if(typeof currentUser !== "undefined" && currentUser) enforceMyModeration(); },10000);
+  }
+
+  // 服务端真实管理操作：禁言 / 踢出 / 封禁。
   window.adminAction = function(action){
     if(action === "删除消息"){
       window.openV28MessageManager();
       return;
     }
     if(action === "禁言" || action === "踢出" || action === "封禁"){
-      // These controls are intentionally explicit: they open a target selector
-      // instead of appearing dead, while the actual state change remains server-side.
-      const name = prompt("请输入要操作的用户名：");
-      if(!name) return;
-      if(typeof toast === "function"){
-        toast(action + "：" + name + "（需要对应服务端权限规则）");
-      }
+      serverModerationAction(action);
       return;
     }
-    if(typeof toast === "function") toast(action + "操作");
+    if(typeof toast === "function") toast(action+"操作");
   };
 })();
 </script>
