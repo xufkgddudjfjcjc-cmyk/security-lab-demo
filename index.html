@@ -4654,7 +4654,7 @@ if(localStorage.getItem("sl_dark")==="1"){
 
 
 /* ===== 第一阶段语音：WebRTC + Supabase Realtime ===== */
-let voiceRoom=null, voiceStream=null, voiceJoined=false, voiceMuted=false;
+let voiceRoom=null, voiceStream=null, voiceJoined=false, voiceJoining=false, voiceMuted=false;
 let voiceStatsTimer=null;
 let voiceReconnectTimer=null;
 let voiceAudioContext=null, voiceAnalyser=null, voiceAudioData=null, voiceLevelTimer=null;
@@ -5087,7 +5087,10 @@ async function handleVoice(event,p){
 }
 
 async function joinVoice(){
-  if(voiceJoined)return;
+  // Prevent double-taps/concurrent joins. Supabase rejects adding presence
+  // callbacks after a channel has already subscribed.
+  if(voiceJoined || voiceJoining)return;
+  voiceJoining=true;
   voiceDiag.offersSent=0;
   voiceDiag.offersReceived=0;
   voiceDiag.answersSent=0;
@@ -5099,6 +5102,7 @@ async function joinVoice(){
   if(!sb){
     voiceState("云端未连接，暂时不能加入",true);
     toast("请先连接云端");
+    voiceJoining=false;
     return;
   }
 
@@ -5229,7 +5233,10 @@ async function joinVoice(){
       voiceStream.getTracks().forEach(t=>t.stop());
       voiceStream=null;
     }
+    voiceJoining=false;
   }
+  // Successful joins also clear the in-flight guard.
+  voiceJoining=false;
 }
 
 async function leaveVoice(){
