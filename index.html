@@ -3397,6 +3397,45 @@ button:active{
   background:rgba(91,140,255,.18);color:#dceaff
 }
 </style>
+
+<style id="security-lab-v22-manager-css">
+.v22-manager{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(0,0,0,.58);z-index:7000
+}
+.v22-manager.show{display:flex}
+.v22-manager-card{
+  width:min(94vw,500px);max-height:84vh;overflow:auto;
+  background:rgba(18,24,35,.99);border:1px solid rgba(120,176,255,.16);
+  border-radius:18px;padding:15px;box-shadow:0 20px 70px rgba(0,0,0,.5)
+}
+.v22-manager-head{display:flex;align-items:center;justify-content:space-between}
+.v22-manager-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
+.v22-admin-state{margin:10px 0;color:#9fb3ca;font-size:11px}
+.v22-create-row{display:grid;grid-template-columns:1fr 105px 62px;gap:7px}
+.v22-create-row input,.v22-create-row select,.v22-create-row button{
+  min-height:38px;border-radius:10px;border:1px solid rgba(120,176,255,.13);
+  background:rgba(255,255,255,.05);color:#dceaff;padding:0 9px;font-size:11px
+}
+.v22-create-row button{background:rgba(91,140,255,.18)}
+.v22-list-title{margin:15px 0 7px;color:#72869e;font-size:10px;font-weight:800}
+.v22-row{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px;border-radius:10px;background:rgba(255,255,255,.035);margin-bottom:5px
+}
+.v22-row-name{font-size:11px;color:#dbe8f5}
+.v22-row-name small{margin-left:5px;color:#71859d;font-size:8px}
+.v22-row-actions{display:flex;gap:4px}
+.v22-row-actions button{
+  border:1px solid rgba(120,176,255,.12);background:rgba(255,255,255,.04);
+  color:#9fb3ca;border-radius:7px;padding:5px 7px;font-size:9px
+}
+.v22-empty{padding:14px;text-align:center;color:#71859d;font-size:10px}
+@media(max-width:600px){
+  .v22-create-row{grid-template-columns:1fr 1fr}
+  .v22-create-row button{grid-column:1/-1}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -7689,6 +7728,158 @@ using (public.is_admin());
     document.addEventListener("DOMContentLoaded",addAdminButton,{once:true});
   else addAdminButton();
   setTimeout(addAdminButton,700);
+})();
+</script>
+
+<div id="v22ChannelManager" class="v22-manager" aria-hidden="true">
+  <div class="v22-manager-card">
+    <div class="v22-manager-head">
+      <strong>🔐 频道管理</strong>
+      <button type="button" onclick="closeV22Manager()">✕</button>
+    </div>
+
+    <div id="v22AdminState" class="v22-admin-state">正在检查管理员权限…</div>
+
+    <div id="v22ManagerControls" style="display:none">
+      <div class="v22-create-row">
+        <input id="v22Name" maxlength="30" placeholder="频道名称">
+        <select id="v22Kind">
+          <option value="text">💬 文字</option>
+          <option value="voice">🎙️ 语音</option>
+        </select>
+        <button type="button" onclick="v22Create()">创建</button>
+      </div>
+
+      <div class="v22-list-title">云端频道</div>
+      <div id="v22List"></div>
+    </div>
+  </div>
+</div>
+
+<script id="security-lab-v22-real-channel-admin">
+(function(){
+  function el(id){return document.getElementById(id)}
+
+  window.openV22Manager=async function(){
+    const m=el("v22ChannelManager");
+    if(!m)return;
+    m.classList.add("show");
+    m.setAttribute("aria-hidden","false");
+    await v22Refresh();
+  };
+
+  window.closeV22Manager=function(){
+    const m=el("v22ChannelManager");
+    if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}
+  };
+
+  window.v22Refresh=async function(){
+    const state=el("v22AdminState");
+    const controls=el("v22ManagerControls");
+    if(!state)return;
+
+    state.textContent="正在检查管理员权限…";
+    controls.style.display="none";
+
+    if(typeof V21_isAdmin!=="function"){
+      state.textContent="管理员模块未加载";
+      return;
+    }
+
+    const admin=await V21_isAdmin();
+    if(!admin){
+      state.textContent="🔒 当前账号不是管理员";
+      return;
+    }
+
+    state.textContent="🟢 管理员已验证";
+    controls.style.display="block";
+    await v22Render();
+  };
+
+  window.v22Render=async function(){
+    const box=el("v22List");
+    if(!box || typeof V20_loadChannels!=="function")return;
+
+    const data=await V20_loadChannels();
+    if(!data){
+      box.innerHTML='<div class="v22-empty">云端频道暂时无法读取</div>';
+      return;
+    }
+
+    const rows=(data.channels||[]).map(c=>`
+      <div class="v22-row">
+        <div class="v22-row-name">${esc(c.icon||"#")} ${esc(c.name)}
+          <small>${c.kind==="voice"?"语音":"文字"}</small>
+        </div>
+        <div class="v22-row-actions">
+          <button type="button" onclick="v22Rename('${c.id}','${String(c.name).replace(/'/g,"&#39;")}')">重命名</button>
+          <button type="button" onclick="v22Delete('${c.id}','${String(c.name).replace(/'/g,"&#39;")}')">删除</button>
+        </div>
+      </div>`).join("");
+
+    box.innerHTML=rows||'<div class="v22-empty">还没有云端频道</div>';
+  };
+
+  window.v22Create=async function(){
+    const name=(el("v22Name")?.value||"").trim();
+    const kind=el("v22Kind")?.value||"text";
+    if(!name){alert("请输入频道名称");return}
+
+    try{
+      await V21_createChannel({
+        name:name.slice(0,30),
+        kind,
+        topic:kind==="voice"?"语音频道":"文字频道",
+        icon:kind==="voice"?"🎙️":"#",
+        position:Date.now()
+      });
+      el("v22Name").value="";
+      await v22Render();
+      if(typeof toast==="function")toast("频道创建成功");
+    }catch(e){
+      alert("创建失败："+(e?.message||"未知错误"));
+    }
+  };
+
+  window.v22Rename=async function(id,oldName){
+    const name=prompt("新的频道名称",oldName);
+    if(!name || !name.trim())return;
+
+    try{
+      await V21_updateChannel(id,{name:name.trim().slice(0,30)});
+      await v22Render();
+      if(typeof toast==="function")toast("频道已重命名");
+    }catch(e){
+      alert("修改失败："+(e?.message||"未知错误"));
+    }
+  };
+
+  window.v22Delete=async function(id,name){
+    if(!confirm("确定删除「"+name+"」？"))return;
+
+    try{
+      await V21_deleteChannel(id);
+      await v22Render();
+      if(typeof toast==="function")toast("频道已删除");
+    }catch(e){
+      alert("删除失败："+(e?.message||"未知错误"));
+    }
+  };
+
+  // Replace only the V21 admin entry action with the real manager.
+  function bind(){
+    const b=el("v21AdminButton");
+    if(b)b.onclick=()=>openV22Manager();
+
+    const direct=el("v21DirectManageButton");
+    if(direct)direct.onclick=()=>openV22Manager();
+  }
+
+  if(document.readyState==="loading")
+    document.addEventListener("DOMContentLoaded",bind,{once:true});
+  else bind();
+  setTimeout(bind,500);
 })();
 </script>
 </body>
