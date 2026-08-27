@@ -3341,44 +3341,35 @@ button:active{
 }
 </style>
 
-<style id="v18-channel-manager-css">
-.channel-admin-tools{padding:6px 10px 8px}
-.channel-admin-tools button{
-  width:100%;min-height:34px;border:1px solid rgba(120,176,255,.14);
-  border-radius:10px;background:rgba(255,255,255,.04);color:#9fb3ca;
-  font-size:11px;touch-action:manipulation
-}
-.channel-manager-modal{
+<style id="security-lab-v20-cloud-css">
+.v20-cloud-panel{
   position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.55);z-index:5000;padding:16px
+  padding:16px;background:rgba(0,0,0,.55);z-index:6000
 }
-.channel-manager-modal.show{display:flex}
-.channel-manager-card{
-  width:min(92vw,430px);max-height:82vh;overflow:auto;
-  border:1px solid rgba(120,176,255,.16);border-radius:18px;
-  background:rgba(18,24,35,.98);box-shadow:0 20px 60px rgba(0,0,0,.45);
-  padding:14px
+.v20-cloud-panel.show{display:flex}
+.v20-cloud-card{
+  width:min(92vw,460px);max-height:82vh;overflow:auto;
+  padding:15px;border-radius:18px;background:rgba(18,24,35,.98);
+  border:1px solid rgba(120,176,255,.16);box-shadow:0 20px 60px rgba(0,0,0,.45)
 }
-.channel-manager-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.channel-manager-head button{
+.v20-cloud-head{display:flex;justify-content:space-between;align-items:center}
+.v20-cloud-head button{
   border:0;background:transparent;color:#9fb3ca;font-size:18px
 }
-.channel-manager-form{display:grid;grid-template-columns:1fr 120px 62px;gap:7px;margin-bottom:12px}
-.channel-manager-form input,.channel-manager-form select,.channel-manager-form>button{
-  min-height:38px;border-radius:10px;border:1px solid rgba(120,176,255,.13);
-  background:rgba(255,255,255,.05);color:#dbe8f5;padding:0 9px;font-size:11px
+.v20-cloud-status{
+  margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.5
 }
-.channel-manager-form>button{background:rgba(91,140,255,.18)}
-.managed-section-title{margin:10px 2px 6px;color:#72869e;font-size:10px;font-weight:800}
-.managed-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:9px;border-radius:10px;background:rgba(255,255,255,.03);margin-bottom:5px;font-size:11px}
-.managed-actions{display:flex;gap:4px}
-.managed-actions button{border:1px solid rgba(120,176,255,.12);background:rgba(255,255,255,.04);
-  color:#9fb3ca;border-radius:7px;padding:5px 7px;font-size:9px}
-@media(max-width:600px){
-  .channel-manager-form{grid-template-columns:1fr 1fr}
-  .channel-manager-form>button{grid-column:1/-1}
+#v20CloudSql{
+  width:100%;height:260px;box-sizing:border-box;resize:none;
+  border-radius:10px;border:1px solid rgba(120,176,255,.12);
+  background:#0d131d;color:#b9cbe0;padding:10px;font-size:10px;line-height:1.45
 }
+.v20-cloud-card>button{
+  width:100%;min-height:38px;margin-top:8px;border-radius:10px;
+  border:1px solid rgba(120,176,255,.12);
+  background:rgba(91,140,255,.18);color:#dceaff
+}
+.channel-admin-tools #v20CloudButton{margin-top:5px}
 </style>
 </head>
 <body>
@@ -3390,9 +3381,6 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
-      <div class="channel-admin-tools">
-        <button type="button" onclick="openChannelManager()">＋ 管理频道</button>
-      </div>
       <div class="cat">语音频道</div>
       <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
@@ -7342,143 +7330,155 @@ html.voice-sheet-open,body.voice-sheet-open{
 <div id="v16-channel-marker" data-version="V16"></div>
 <div id="v17-channel-review-marker" data-version="V17-reviewed"></div>
 
-<div id="channelManagerModal" class="channel-manager-modal" aria-hidden="true">
-  <div class="channel-manager-card">
-    <div class="channel-manager-head">
-      <strong>频道管理</strong>
-      <button type="button" onclick="closeChannelManager()">✕</button>
+<div id="v20CloudPanel" class="v20-cloud-panel" aria-hidden="true">
+  <div class="v20-cloud-card">
+    <div class="v20-cloud-head">
+      <strong>☁️ 云端频道设置</strong>
+      <button type="button" onclick="closeV20CloudPanel()">✕</button>
     </div>
-    <div class="channel-manager-form">
-      <input id="newChannelName" maxlength="30" placeholder="频道名称">
-      <select id="newChannelType">
-        <option value="text">💬 文字频道</option>
-        <option value="voice">🎙️ 语音频道</option>
-      </select>
-      <button type="button" onclick="createManagedChannel()">创建</button>
+    <div class="v20-cloud-status" id="v20CloudStatus">
+      第一次使用前，请在 Supabase SQL Editor 执行下面 SQL。
     </div>
-    <div id="managedChannelList"></div>
+    <textarea id="v20CloudSql" readonly></textarea>
+    <button type="button" onclick="copyV20CloudSql()">复制 SQL</button>
   </div>
 </div>
 
-<script id="v18-channel-manager">
+<script id="security-lab-v20-cloud-channels">
 (function(){
-  const KEY="security_lab_v18_channels";
+  const SQL=`-- Security Lab V20: 云端频道系统
+create table if not exists public.channel_categories (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  kind text not null check (kind in ('text','voice')),
+  position integer not null default 0,
+  created_at timestamptz not null default now()
+);
 
-  function defaultData(){
-    return {
-      text:[
-        {id:"general",name:"总聊天室",icon:"#",topic:"欢迎来到 Security Lab"},
-        {id:"tech",name:"技术交流",icon:"⌘",topic:"编程、开发、技术交流"},
-        {id:"chat",name:"随便聊聊",icon:"☕",topic:"轻松聊天"},
-        {id:"security",name:"安全公告",icon:"🛡",topic:"社区安全公告"},
-        {id:"share",name:"分享区",icon:"◇",topic:"分享资源与作品"}
-      ],
-      voice:[
-        {id:"voice-lobby",name:"大厅",icon:"🎙️",topic:"大家可以在这里聊天"},
-        {id:"voice-game",name:"游戏开黑",icon:"🎮",topic:"一起开黑、游戏交流"},
-        {id:"voice-tech",name:"技术语音",icon:"💻",topic:"技术讨论与协作"}
-      ]
-    };
-  }
+create table if not exists public.app_channels (
+  id uuid primary key default gen_random_uuid(),
+  category_id uuid references public.channel_categories(id) on delete cascade,
+  name text not null,
+  kind text not null check (kind in ('text','voice')),
+  topic text not null default '',
+  icon text not null default '#',
+  position integer not null default 0,
+  created_at timestamptz not null default now()
+);
 
-  window.v18ChannelData=(()=>{
+alter table public.channel_categories enable row level security;
+alter table public.app_channels enable row level security;
+
+drop policy if exists "v20_categories_read" on public.channel_categories;
+create policy "v20_categories_read"
+on public.channel_categories for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "v20_channels_read" on public.app_channels;
+create policy "v20_channels_read"
+on public.app_channels for select
+to anon, authenticated
+using (true);
+
+-- 注意：这里故意不开放匿名 INSERT/UPDATE/DELETE。
+-- V20 前端只允许读取；管理员写入权限下一步接入你现有的管理员身份系统。
+`;
+  window.V20_CHANNEL_SQL=SQL;
+
+  window.openV20CloudPanel=function(){
+    const m=document.getElementById("v20CloudPanel");
+    const t=document.getElementById("v20CloudSql");
+    if(t)t.value=SQL;
+    if(m){m.classList.add("show");m.setAttribute("aria-hidden","false");}
+  };
+  window.closeV20CloudPanel=function(){
+    const m=document.getElementById("v20CloudPanel");
+    if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}
+  };
+  window.copyV20CloudSql=async function(){
     try{
-      const x=JSON.parse(localStorage.getItem(KEY)||"null");
-      return x&&Array.isArray(x.text)&&Array.isArray(x.voice)?x:defaultData();
-    }catch(_){return defaultData()}
-  })();
+      await navigator.clipboard.writeText(SQL);
+      if(typeof toast==="function")toast("V20 SQL 已复制");
+    }catch(_){
+      const t=document.getElementById("v20CloudSql");
+      if(t){t.focus();t.select();document.execCommand("copy");}
+      if(typeof toast==="function")toast("V20 SQL 已复制");
+    }
+  };
 
-  function save(){
-    localStorage.setItem(KEY,JSON.stringify(window.v18ChannelData));
+  // Cloud catalogue loader. It only reads; it does not replace V17's live voice state.
+  window.V20_loadChannels=async function(){
+    if(typeof sb==="undefined" || !sb) return null;
+
+    const [catRes,chRes]=await Promise.all([
+      sb.from("channel_categories").select("*").order("position",{ascending:true}),
+      sb.from("app_channels").select("*").order("position",{ascending:true})
+    ]);
+
+    if(catRes.error || chRes.error){
+      console.warn("[V20] channel catalogue read failed",catRes.error||chRes.error);
+      return null;
+    }
+
+    return {categories:catRes.data||[],channels:chRes.data||[]};
+  };
+
+  // Realtime refresh for channel catalogue.
+  window.V20_subscribeChannels=function(){
+    if(typeof sb==="undefined" || !sb || window.__v20ChannelSub) return;
+
+    window.__v20ChannelSub=sb.channel("security-lab-channel-catalogue")
+      .on("postgres_changes",
+        {event:"*",schema:"public",table:"channel_categories"},
+        ()=>window.V20_refreshChannelUI?.())
+      .on("postgres_changes",
+        {event:"*",schema:"public",table:"app_channels"},
+        ()=>window.V20_refreshChannelUI?.())
+      .subscribe();
+  };
+
+  window.V20_refreshChannelUI=async function(){
+    const data=await window.V20_loadChannels();
+    if(!data || !data.channels.length)return;
+
+    // Keep V17's voice arrays as the authoritative runtime objects if present.
+    // Cloud data is stored separately until admin/write permissions are added.
+    window.V20_cloudCatalogue=data;
+    document.documentElement.dataset.v20CloudChannels="ready";
+    console.log("[V20] cloud channel catalogue loaded:",data);
+  };
+
+  function addCloudButton(){
+    if(document.getElementById("v20CloudButton"))return;
+    const target=document.querySelector(".channel-admin-tools");
+    if(!target)return;
+
+    const b=document.createElement("button");
+    b.id="v20CloudButton";
+    b.type="button";
+    b.textContent="☁️ 云端频道";
+    b.onclick=()=>openV20CloudPanel();
+    target.appendChild(b);
   }
 
-  window.openChannelManager=function(){
-    const m=document.getElementById("channelManagerModal");
-    if(!m)return;
-    renderManager();
-    m.classList.add("show");
-    m.setAttribute("aria-hidden","false");
-  };
-
-  window.closeChannelManager=function(){
-    const m=document.getElementById("channelManagerModal");
-    if(!m)return;
-    m.classList.remove("show");
-    m.setAttribute("aria-hidden","true");
-  };
-
-  window.createManagedChannel=function(){
-    const name=(document.getElementById("newChannelName")?.value||"").trim();
-    const type=document.getElementById("newChannelType")?.value||"text";
-    if(!name){alert("请输入频道名称");return;}
-
-    const id=(type==="voice"?"voice-":"text-")+
-      Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
-
-    const item={
-      id,name,
-      icon:type==="voice"?"🎙️":"#",
-      topic:type==="voice"?"语音频道":"文字频道"
-    };
-
-    window.v18ChannelData[type==="voice"?"voice":"text"].push(item);
-    save();
-    renderManager();
-    renderManagedLists();
-    const input=document.getElementById("newChannelName");
-    if(input)input.value="";
-  };
-
-  window.deleteManagedChannel=function(type,id){
-    const list=window.v18ChannelData[type];
-    if(!list)return;
-    if(list.length<=1){alert("至少保留一个频道");return;}
-    if(!confirm("确定删除这个频道？"))return;
-
-    window.v18ChannelData[type]=list.filter(x=>x.id!==id);
-    save();
-    renderManager();
-    renderManagedLists();
-  };
-
-  window.renameManagedChannel=function(type,id){
-    const item=window.v18ChannelData[type]?.find(x=>x.id===id);
-    if(!item)return;
-    const n=prompt("输入新的频道名称",item.name);
-    if(!n||!n.trim())return;
-    item.name=n.trim().slice(0,30);
-    save();
-    renderManager();
-    renderManagedLists();
-  };
-
-  function renderManager(){
-    const box=document.getElementById("managedChannelList");
-    if(!box)return;
-    const rows=[];
-    ["text","voice"].forEach(type=>{
-      const title=type==="text"?"文字频道":"语音频道";
-      rows.push(`<div class="managed-section-title">${title}</div>`);
-      window.v18ChannelData[type].forEach(c=>{
-        rows.push(`<div class="managed-row">
-          <span>${c.icon} ${esc(c.name)}</span>
-          <span class="managed-actions">
-            <button onclick="renameManagedChannel('${type}','${c.id}')">重命名</button>
-            <button onclick="deleteManagedChannel('${type}','${c.id}')">删除</button>
-          </span>
-        </div>`);
-      });
-    });
-    box.innerHTML=rows.join("");
+  function boot(){
+    addCloudButton();
+    if(typeof sb!=="undefined" && sb){
+      window.V20_refreshChannelUI();
+      window.V20_subscribeChannels();
+    }else{
+      setTimeout(()=>{
+        window.V20_refreshChannelUI?.();
+        window.V20_subscribeChannels?.();
+      },1200);
+    }
   }
 
-  window.renderManagedLists=function(){
-    // This V18 manager is intentionally additive. It refreshes the existing
-    // V17 channel list only when the original renderer is available.
-    try{ if(typeof renderChannels==="function")renderChannels(); }catch(_){}
-  };
-
-  setTimeout(renderManager,0);
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",boot,{once:true});
+  }else boot();
+  setTimeout(addCloudButton,800);
 })();
 </script>
 </body>
