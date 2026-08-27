@@ -4725,6 +4725,8 @@ let voiceAudioContext=null, voiceAnalyser=null, voiceAudioData=null, voiceLevelT
 const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random()).toString().slice(0,36);
 const voicePeers={};
 const voicePendingIce={};
+const voiceOfferLocks=new Set();
+const voiceInitialOffers=new Set();
 
 renderVoiceChannels();
 
@@ -5031,26 +5033,58 @@ function removePeer(id){
   try{p.removeDiagnosticTimer?.()}catch(_){}
   delete voicePeers[id];
   delete voicePendingIce[id];
+  voiceInitialOffers.delete(id);
+  for(const k of [...voiceOfferLocks]){
+    if(k.startsWith(id+":"))voiceOfferLocks.delete(k);
+  }
   renderVoiceList();
 }
 
 async function sendOffer(id,name,iceRestart=false){
   const p=makePeer(id,name);
-  if(p.pc.signalingState!=="stable" && !iceRestart)return;
+  const lockKey=`${id}:${iceRestart?"restart":"initial"}`;
 
-  const offer=await p.pc.createOffer(
-    iceRestart ? {iceRestart:true,offerToReceiveAudio:true} :
-    {offerToReceiveAudio:true}
-  );
-  await p.pc.setLocalDescription(offer);
-  setDiag("offer","已生成","wait");
-  await voiceBroadcast("offer",{
-    from:voiceId,
-    to:id,
-    name:nickname||"游客",
-    description:offer,
-    iceRestart:!!iceRestart
-  });
+  // Multiple triggers can happen at the same time (hello + presence + initial
+  // presence scan). Never run two createOffer/setLocalDescription operations
+  // against the same RTCPeerConnection concurrently.
+  if(voiceOfferLocks.has(lockKey))return;
+  if(!iceRestart && voiceInitialOffers.has(id))return;
+
+  if(!iceRestart && p.pc.signalingState!=="stable")return;
+  if(iceRestart && p.pc.signalingState!=="stable")return;
+
+  voiceOfferLocks.add(lockKey);
+  if(!iceRestart)voiceInitialOffers.add(id);
+
+  try{
+    const offer=await p.pc.createOffer(
+      iceRestart ? {iceRestart:true,offerToReceiveAudio:true} :
+      {offerToReceiveAudio:true}
+    );
+
+    // The state may have changed while createOffer() was awaiting.
+    if(p.pc.signalingState!=="stable"){
+      if(!iceRestart)voiceInitialOffers.delete(id);
+      return;
+    }
+
+    await p.pc.setLocalDescription(offer);
+    setDiag("offer","已生成","wait");
+
+    await voiceBroadcast("offer",{
+      from:voiceId,
+      to:id,
+      name:nickname||"游客",
+      description:p.pc.localDescription,
+      iceRestart:!!iceRestart
+    });
+  }catch(e){
+    if(!iceRestart)voiceInitialOffers.delete(id);
+    console.warn("voice sendOffer",e);
+    voiceState("语音协商失败："+(e.message||"未知错误"),true);
+  }finally{
+    voiceOfferLocks.delete(lockKey);
+  }
 }
 
 async function restartPeerConnection(id){
@@ -5077,12 +5111,22 @@ async function handleVoice(event,p){
 
       // 处理 simultaneous offer：只有一方负责 rollback，避免 iOS/Chrome 卡在 have-local-offer。
       if(peer.pc.signalingState==="have-local-offer"){
+        // Smaller peer is the sole initial offerer. If we are the smaller
+        // peer, this is a duplicate/stale offer; do not touch the stable
+        // connection. Otherwise roll back our local offer and answer.
         if(voiceId<p.from){
           return;
         }
         try{
           await peer.pc.setLocalDescription({type:"rollback"});
-        }catch(_){}
+        }catch(e){
+          console.warn("voice rollback",e);
+          return;
+        }
+      }
+
+      if(peer.pc.signalingState!=="stable"){
+        return;
       }
 
       await peer.pc.setRemoteDescription(p.description);
@@ -5201,11 +5245,7 @@ async function joinVoice(){
     voiceRoom.__roomId=channel;
 
     voiceRoom
-      .on("broadcast",{event:"hello"},({payload})=>{
-        if(payload?.from&&voiceId<payload.from){
-          sendOffer(payload.from,payload.name).catch(e=>console.warn("hello offer",e));
-        }
-      })
+      .on("broadcast",{event:"hello"},()=>{})
       .on("broadcast",{event:"offer"},({payload})=>handleVoice("offer",payload))
       .on("broadcast",{event:"answer"},({payload})=>handleVoice("answer",payload))
       .on("broadcast",{event:"ice"},({payload})=>handleVoice("ice",payload))
@@ -5324,6 +5364,8 @@ async function leaveVoice(){
   voiceRoom=null;
   voiceJoined=false;
   voiceMuted=false;
+  voiceOfferLocks.clear();
+  voiceInitialOffers.clear();
 
   stopVoiceNetworkMonitor();
 
@@ -7222,5 +7264,6 @@ html.voice-sheet-open,body.voice-sheet-open{
 })();
 </script>
 
+<div id="v11-v15-marker" data-version="V15"></div>
 </body>
 </html>
