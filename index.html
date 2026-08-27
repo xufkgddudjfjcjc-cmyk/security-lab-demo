@@ -3436,7 +3436,7 @@ button:active{
   padding:10px;font-size:9px;line-height:1.45
 }
 .v27-card>button{width:100%;margin-top:8px;min-height:38px;border-radius:10px;border:0;background:#4f46e5;color:white}
-</style><meta name="security-lab-build" content="V27-message-manager-fixed"></head>
+</style><meta name="security-lab-build" content="V28-message-manager-schema-fixed"></head>
 <body>
 <div class="app">
   <aside class="servers" id="servers"></aside>
@@ -7698,9 +7698,18 @@ end $$;
   </div>
 </div>
 
-<script id="security-lab-v27-message-manager">
+<script id="security-lab-v28-message-manager">
 (function(){
-  const SQL = `-- Security Lab V27：服务端管理员删除消息
+  const SQL = `-- Security Lab V28：消息表兼容 + 管理员删除
+-- 可以直接在 Supabase SQL Editor 执行。
+
+alter table public.messages
+  add column if not exists channel text;
+
+update public.messages
+set channel = 'general'
+where channel is null;
+
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -7721,9 +7730,10 @@ alter table public.messages enable row level security;
 
 drop policy if exists "v24_admin_delete_messages" on public.messages;
 drop policy if exists "v25_admin_delete_messages" on public.messages;
-drop policy if exists "v27_admin_delete_messages" on public.messages;
+drop policy if exists "v28_admin_delete_messages" on public.messages;
+drop policy if exists "v28_admin_delete_messages" on public.messages;
 
-create policy "v27_admin_delete_messages"
+create policy "v28_admin_delete_messages"
 on public.messages
 for delete
 to authenticated
@@ -7759,42 +7769,42 @@ end $$;`;
       );
       return adminCache;
     }catch(e){
-      console.warn("[V27] admin check failed", e);
+      console.warn("[V28] admin check failed", e);
       return false;
     }
   }
 
-  window.openV27Sql = function(){
+  window.openV28Sql = function(){
     let p = $("v24SqlPanel");
     let t = $("v24AdminSql");
     if(!p){
-      p = $("v27SqlPanel");
+      p = $("v28SqlPanel");
       if(!p){
         p = document.createElement("div");
-        p.id = "v27SqlPanel";
-        p.className = "v27-overlay";
+        p.id = "v28SqlPanel";
+        p.className = "v28-overlay";
         p.innerHTML = `
-          <div class="v27-card">
-            <div class="v27-head"><strong>🔐 服务端权限 SQL</strong><button onclick="closeV27Sql()">✕</button></div>
+          <div class="v28-card">
+            <div class="v28-head"><strong>🔐 服务端权限 SQL</strong><button onclick="closeV28Sql()">✕</button></div>
             <p>复制后到 Supabase → SQL Editor → New query 执行一次。</p>
-            <textarea id="v27SqlText" readonly></textarea>
-            <button onclick="copyV27Sql()">复制 SQL</button>
+            <textarea id="v28SqlText" readonly></textarea>
+            <button onclick="copyV28Sql()">复制 SQL</button>
           </div>`;
         document.body.appendChild(p);
       }
-      t = $("v27SqlText");
+      t = $("v28SqlText");
     }
     if(t) t.value = SQL;
     p.classList.add("show");
   };
 
-  window.closeV27Sql = function(){
-    const p = $("v27SqlPanel") || $("v24SqlPanel");
+  window.closeV28Sql = function(){
+    const p = $("v28SqlPanel") || $("v24SqlPanel");
     if(p) p.classList.remove("show");
   };
 
-  window.copyV27Sql = async function(){
-    const t = $("v27SqlText") || $("v24AdminSql");
+  window.copyV28Sql = async function(){
+    const t = $("v28SqlText") || $("v24AdminSql");
     if(!t) return;
     try{
       await navigator.clipboard.writeText(t.value);
@@ -7820,33 +7830,45 @@ end $$;`;
       q = q.eq("channel", channel);
     }
 
-    const {data,error} = await q;
-    if(error) throw error;
-    return data || [];
+    let result = await q;
+
+    // 兼容旧 messages 表：没有 channel 列时自动降级读取旧结构。
+    if(result.error && /column .*channel.*does not exist/i.test(result.error.message || "")){
+      result = await sb.from("messages")
+        .select("id,username,message,created_at")
+        .order("created_at",{ascending:false})
+        .limit(200);
+      if(!result.error){
+        return (result.data || []).map(m => ({...m, channel:null}));
+      }
+    }
+
+    if(result.error) throw result.error;
+    return result.data || [];
   }
 
-  window.openV27MessageManager = async function(){
+  window.openV28MessageManager = async function(){
     // The manager is visible first; it never silently does nothing.
-    let p = $("v27MessageManager");
+    let p = $("v28MessageManager");
     if(!p){
       p = document.createElement("div");
-      p.id = "v27MessageManager";
-      p.className = "v27-overlay";
+      p.id = "v28MessageManager";
+      p.className = "v28-overlay";
       p.innerHTML = `
-        <div class="v27-card v27-manager">
-          <div class="v27-head">
+        <div class="v28-card v28-manager">
+          <div class="v28-head">
             <strong>🗑️ 消息管理</strong>
-            <button onclick="closeV27MessageManager()">✕</button>
+            <button onclick="closeV28MessageManager()">✕</button>
           </div>
-          <div id="v27State" class="v27-state">正在检查管理员权限…</div>
-          <div id="v27List" class="v27-list"></div>
+          <div id="v28State" class="v28-state">正在检查管理员权限…</div>
+          <div id="v28List" class="v28-list"></div>
         </div>`;
       document.body.appendChild(p);
     }
 
     p.classList.add("show");
-    const state = $("v27State");
-    const list = $("v27List");
+    const state = $("v28State");
+    const list = $("v28List");
     if(state) state.textContent = "正在检查管理员权限…";
     if(list) list.innerHTML = "";
 
@@ -7861,31 +7883,31 @@ end $$;`;
       if(state) state.textContent = "🟢 管理员已验证 · 当前频道共 " + rows.length + " 条云端消息";
 
       if(!rows.length){
-        list.innerHTML = '<div class="v27-empty">当前频道没有云端消息</div>';
+        list.innerHTML = '<div class="v28-empty">当前频道没有云端消息</div>';
         return;
       }
 
       list.innerHTML = rows.map(m => `
-        <div class="v27-row">
-          <div class="v27-copy">
-            <div class="v27-meta">${esc(m.username || "游客")} · ${esc(m.created_at || "")}</div>
-            <div class="v27-text">${esc(m.message || "")}</div>
+        <div class="v28-row">
+          <div class="v28-copy">
+            <div class="v28-meta">${esc(m.username || "游客")} · ${esc(m.created_at || "")}</div>
+            <div class="v28-text">${esc(m.message || "")}</div>
           </div>
-          <button onclick="V27_deleteMessage('${esc(m.id)}')">删除</button>
+          <button onclick="V28_deleteMessage('${esc(m.id)}')">删除</button>
         </div>
       `).join("");
     }catch(e){
-      console.error("[V27] message load failed",e);
+      console.error("[V28] message load failed",e);
       if(state) state.textContent = "❌ 读取云端消息失败：" + (e?.message || "未知错误");
     }
   };
 
-  window.closeV27MessageManager = function(){
-    const p = $("v27MessageManager");
+  window.closeV28MessageManager = function(){
+    const p = $("v28MessageManager");
     if(p) p.classList.remove("show");
   };
 
-  window.V27_deleteMessage = async function(id){
+  window.V28_deleteMessage = async function(id){
     if(!id) return;
     if(!(await checkAdmin())){
       alert("只有开发者管理员可以删除消息。");
@@ -7901,8 +7923,8 @@ end $$;`;
 
     const {error} = await sb.from("messages").delete().eq("id",id);
     if(error){
-      console.error("[V27] delete failed",error);
-      alert("删除失败：" + (error.message || "服务端权限未生效，请先执行 V27 SQL"));
+      console.error("[V28] delete failed",error);
+      alert("删除失败：" + (error.message || "服务端权限未生效，请先执行 V28 SQL"));
       return;
     }
 
@@ -7912,13 +7934,13 @@ end $$;`;
     }
     if(typeof loadMessages === "function") await loadMessages({silent:true});
     if(typeof toast === "function") toast("消息已删除");
-    await window.openV27MessageManager();
+    await window.openV28MessageManager();
   };
 
   // Keep the old inline action compatible.
   window.adminAction = function(action){
     if(action === "删除消息"){
-      window.openV27MessageManager();
+      window.openV28MessageManager();
       return;
     }
     if(typeof toast === "function") toast(action + "功能暂未接入服务端");
