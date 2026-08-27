@@ -4284,7 +4284,20 @@ async function enforceMyModeration(){
 }
 
 async function serverModerationAction(action){
-  if(!(await checkAdmin())){ toast("当前账号不是开发者管理员"); return; }
+  // 管理中心按钮在独立脚本作用域中调用，不能依赖 V28 IIFE 内部的 checkAdmin()。
+  // 直接使用全局开发者身份检查，避免点击后 ReferenceError 导致“没反应”。
+  let isAdmin = false;
+  try {
+    if(typeof isCurrentUserDeveloper === "function") {
+      isAdmin = !!isCurrentUserDeveloper();
+    } else if(typeof cloudProfile !== "undefined" && cloudProfile) {
+      isAdmin = cloudProfile.role === "developer" || cloudProfile.badge === "developer";
+    }
+  } catch(e) {
+    console.error("[V32] admin check failed", e);
+  }
+  if(!isAdmin){ toast("当前账号不是开发者管理员"); return; }
+
   const name=prompt("请输入要操作的用户名：");
   if(!name) return;
   const reason=prompt("原因（可选）：") || null;
@@ -4298,9 +4311,10 @@ async function serverModerationAction(action){
     if(error) throw error;
     toast(action+"成功："+(data?.username||name));
   }catch(e){
-    console.error("[V31] moderation failed",e);
+    console.error("[V32] moderation failed",e);
     const msg=e?.message||"未知错误";
-    toast(msg.includes("not_admin")?"服务端拒绝：当前账号不是管理员":"操作失败："+msg);
+    const text=msg.includes("not_admin")?"服务端拒绝：当前账号不是管理员":"操作失败："+msg;
+    if(typeof toast === "function") toast(text); else alert(text);
   }
 }
 
