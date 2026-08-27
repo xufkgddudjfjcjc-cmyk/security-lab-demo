@@ -3406,7 +3406,7 @@ button:active{
   color:#dceaff
 }
 </style>
-</head>
+<meta name="security-lab-build" content="V26-delete-message-fixed"></head>
 <body>
 <div class="app">
   <aside class="servers" id="servers"></aside>
@@ -4468,7 +4468,13 @@ function closeInvite(){$("inviteModal").classList.remove("show")}
 function copyInvite(){copyText($("inviteCode").value);closeInvite()}
 function openAdmin(){$("adminModal").classList.add("show");closePanels()}
 function closeAdmin(){$("adminModal").classList.remove("show")}
-function adminAction(x){toast(x+"操作已打开（需要服务端管理员权限才能真正生效）")}
+function adminAction(x){
+  if(x==="删除消息"){
+    if(typeof openV25MessageManager==="function"){ openV25MessageManager(); return; }
+    if(typeof openV24MessageManager==="function"){ openV24MessageManager(); return; }
+  }
+  toast(x+"操作已打开") 
+}
 function applyChatBackgroundStyle(){
   const box=$("messages");if(!box)return;
   const bg=localStorage.getItem("sl_chat_bg")||"";
@@ -7854,14 +7860,14 @@ end $$;
       return;
     }
     if(action==="禁言" || action==="踢出" || action==="封禁"){
-      toast(action+"：V24 将在下一阶段接入服务端权限");
+      toast(action+"：V26 尚未接入服务端权限");
       return;
     }
     toast(action+"操作");
   };
 
   // 管理中心里补一个明确的“服务端权限 SQL”入口，不替换原有功能。
-  function addV24Button(){
+  function addV26Button(){
     const box=document.querySelector(".admin-panel") || document.querySelector("#adminModal");
     if(!box || document.getElementById("v25SqlEntry"))return;
 
@@ -7875,9 +7881,9 @@ end $$;
   }
 
   if(document.readyState==="loading")
-    document.addEventListener("DOMContentLoaded",addV24Button,{once:true});
-  else addV24Button();
-  setTimeout(addV24Button,700);
+    document.addEventListener("DOMContentLoaded",addV26Button,{once:true});
+  else addV26Button();
+  setTimeout(addV26Button,700);
 
   // 消息被其他客户端删除时，现有 V17/V23 Realtime 逻辑继续工作。
 })();
