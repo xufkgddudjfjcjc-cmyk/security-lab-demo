@@ -3452,6 +3452,66 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v13-channel-ui">
+.voice-cat{margin-top:12px!important}
+.voice-channel .voice-count{
+  margin-left:auto;
+  min-width:20px;
+  height:20px;
+  padding:0 5px;
+  display:inline-grid;
+  place-items:center;
+  border-radius:8px;
+  background:rgba(53,199,89,.12);
+  color:#61d97b;
+  font-size:9px;
+  font-weight:800;
+}
+.voice-channel.voice-active{
+  background:linear-gradient(90deg,rgba(91,140,255,.15),rgba(139,92,246,.07))!important;
+  color:#eef6ff!important;
+}
+.voice-channel.voice-active .icon{filter:drop-shadow(0 0 7px rgba(91,140,255,.4))}
+.voice-room-switcher{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:9px 0 2px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.voice-room-switcher::-webkit-scrollbar{display:none}
+.voice-room-switcher button{
+  flex:none;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:10px;
+  border:1px solid rgba(120,176,255,.12);
+  background:rgba(255,255,255,.04);
+  color:#8ea4bf;
+  font-size:10px;
+}
+.voice-room-switcher button.active{
+  background:rgba(91,140,255,.16);
+  color:#dceaff;
+  border-color:rgba(91,140,255,.28);
+}
+@media(max-width:800px){
+  .voice-channel{
+    min-height:46px!important;
+  }
+  .voice-room-switcher{
+    margin-top:1px;
+  }
+  .voice-room-switcher button{
+    min-height:34px;
+    border-radius:11px;
+    font-size:10px;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3462,6 +3522,8 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
+      <div class="cat voice-cat">语音频道</div>
+      <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
       <div class="channel" onclick="openDM('好友')"><span class="icon">◉</span><span>好友</span><span class="unread" id="dmUnread" style="display:none">1</span></div>
       <div class="cat">管理</div>
@@ -3664,7 +3726,8 @@ button:active{
       <button class="close" onclick="closeVoice()">×</button>
     </div>
     <div class="voice-room">
-      <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
+      <div class="voice-room-title" id="voiceRoomTitle">🎙️ 大厅</div>
+      <div class="voice-room-switcher" id="voiceRoomSwitcher"></div>
       <div class="voice-state" id="voiceState">未加入语音</div>
       <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div>
 <div id="voiceDiagnostics" class="voice-diagnostics" aria-live="polite">
@@ -3896,6 +3959,14 @@ const channels=[
  {id:"security",name:"安全公告",icon:"🛡",topic:"社区安全公告"},
  {id:"share",name:"分享区",icon:"◇",topic:"分享资源与作品"}
 ];
+const voiceChannels=[
+ {id:"voice-lobby",name:"大厅",icon:"🎙️",topic:"大家可以在这里聊天"},
+ {id:"voice-game",name:"游戏语音",icon:"🎮",topic:"一起开黑、游戏交流"},
+ {id:"voice-tech",name:"技术语音",icon:"💻",topic:"技术讨论与协作"},
+ {id:"voice-chill",name:"休息室",icon:"☕",topic:"轻松语音聊天"}
+];
+let voiceChannel="voice-lobby";
+
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$("toast").classList.remove("show"),1800)}
@@ -3920,13 +3991,69 @@ function renderServers(){
  const add=document.createElement("button");add.className="server add";add.textContent="+";add.title="添加服务器";add.onclick=()=>toast("服务器邀请/创建功能可接入后端");$("servers").appendChild(add);
 }
 function renderChannels(){
- $("textChannels").innerHTML=channels.map(c=>`<div class="channel ${channel===c.id&&!dmMode?"active":""}" onclick="switchChannel('${c.id}')"><span class="icon">${c.icon}</span><span>${c.name}</span>${c.id==="general"&&unread?`<span class="unread">${unread}</span>`:""}</div>`).join("");
+  const textBox=$("textChannels");
+  if(textBox){
+    textBox.innerHTML=channels.map(c=>`
+      <div class="channel ${channel===c.id&&!dmMode?"active":""}"
+           onclick="switchChannel('${c.id}')">
+        <span class="icon">${c.icon}</span>
+        <span>${esc(c.name)}</span>
+        ${c.id==="general"&&unread?`<span class="unread">${unread}</span>`:""}
+      </div>`).join("");
+  }
+
+  const voiceBox=$("voiceChannels");
+  if(voiceBox){
+    voiceBox.innerHTML=voiceChannels.map(c=>{
+      const isActive=voiceChannel===c.id;
+      const count=getVoiceChannelCount(c.id);
+      return `<div class="channel voice-channel ${isActive?"voice-active":""}"
+          onclick="openVoiceChannel('${c.id}')">
+          <span class="icon">${c.icon}</span>
+          <span>${esc(c.name)}</span>
+          ${count?`<span class="voice-count">${count}</span>`:""}
+        </div>`;
+    }).join("");
+  }
 }
+
+function getVoiceChannelCount(id){
+  // Only the currently connected room can expose live Presence locally.
+  if(id!==voiceChannel || !voiceRoom)return 0;
+  try{
+    return Object.values(voiceRoom.presenceState()||{}).flat().length;
+  }catch(_){return 0}
+}
+
+function openVoiceChannel(id){
+  const c=voiceChannels.find(x=>x.id===id);
+  if(!c)return;
+  voiceChannel=id;
+  renderChannels();
+try{renderVoiceRoomSwitcher()}catch(_){}
+  renderVoiceRoomSwitcher();
+  $("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
+  $("voiceModal").classList.add("show");
+  if(typeof resetVoiceDiagnostics==="function")resetVoiceDiagnostics();
+  if(typeof renderVoiceList==="function")renderVoiceList();
+  if(typeof updateVoiceNetworkStatus==="function")updateVoiceNetworkStatus();
+}
+
 let unread=0;
 function switchChannel(id){
- dmMode=false;channel=id;const c=channels.find(x=>x.id===id);$("chatName").textContent=c.name;$("chatTopic").textContent=c.topic;
- unread=0;renderChannels();closePanels();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));loadMessages();
+  const c=channels.find(x=>x.id===id);
+  if(!c)return;
+  dmMode=false;
+  channel=id;
+  $("chatName").textContent=c.name;
+  $("chatTopic").textContent=c.topic;
+  unread=0;
+  renderChannels();
+  closePanels();
+  renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+  loadMessages();
 }
+
 function toggleChannels(){$("channels").classList.toggle("open");$("overlay").classList.toggle("show",$("channels").classList.contains("open"))}
 function closePanels(){$("channels").classList.remove("open");$("overlay").classList.remove("show")}
 function toggleMembers(){$("members").style.display=$("members").style.display==="none"?"block":""}
@@ -4848,12 +4975,23 @@ function countVoicePeers(){
 }
 
 function voiceTopic(){
-  return "voice-"+String(channel).replace(/[^a-zA-Z0-9_-]/g,"_");
+  return "voice-"+String(voiceChannel||"voice-lobby").replace(/[^a-zA-Z0-9_-]/g,"_");
 }
+function renderVoiceRoomSwitcher(){
+  const box=$("voiceRoomSwitcher");
+  if(!box)return;
+  box.innerHTML=voiceChannels.map(c=>`
+    <button type="button" class="${c.id===voiceChannel?"active":""}"
+      onclick="switchVoiceChannel('${c.id}')">${c.icon} ${esc(c.name)}</button>
+  `).join("");
+}
+
 function openVoice(){
+  renderVoiceRoomSwitcher();
   resetVoiceDiagnostics();
   $("voiceModal").classList.add("show");
-  $("voiceRoomTitle").textContent="# "+($("chatName").textContent||"总聊天室");
+  const vc=voiceChannels.find(x=>x.id===voiceChannel);
+  $("voiceRoomTitle").textContent=vc?`${vc.icon} ${vc.name}`:`🎙️ ${$("chatName").textContent||"大厅"}`;
   $("voiceState").textContent=voiceJoined?"已加入语音":"未加入语音";
   updateVoiceNetworkStatus();
 }
@@ -5375,6 +5513,18 @@ async function leaveVoice(){
 async function toggleVoice(){
   if(voiceJoined)await leaveVoice();
   else await joinVoice();
+}
+
+async function switchVoiceChannel(id){
+  const c=voiceChannels.find(x=>x.id===id);
+  if(!c)return;
+  const wasJoined=voiceJoined;
+  if(wasJoined)await leaveVoice();
+  voiceChannel=id;
+  renderChannels();
+  renderVoiceRoomSwitcher();
+  $("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
+  if(wasJoined)await joinVoice();
 }
 
 async function toggleVoiceMute(){
