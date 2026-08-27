@@ -3294,6 +3294,49 @@ button:active{
 }
 </style>
 
+
+<style id="security-lab-v13-safe-channel-ui">
+.voice-cat{margin-top:12px!important}
+.voice-channel .voice-live{
+  margin-left:auto;
+  color:#35c759;
+  font-size:12px;
+  text-shadow:0 0 8px rgba(53,199,89,.7);
+}
+.voice-channel.active{
+  background:linear-gradient(90deg,rgba(91,140,255,.15),rgba(139,92,246,.07))!important;
+}
+.voice-channel-picker{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  padding:7px 0 2px;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.voice-channel-picker::-webkit-scrollbar{display:none}
+.voice-channel-picker button{
+  flex:none;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:10px;
+  border:1px solid rgba(120,176,255,.12);
+  background:rgba(255,255,255,.04);
+  color:#8ea4bf;
+  font-size:10px;
+  touch-action:manipulation;
+}
+.voice-channel-picker button.active{
+  background:rgba(91,140,255,.16);
+  color:#dceaff;
+  border-color:rgba(91,140,255,.28);
+}
+@media(max-width:800px){
+  .voice-channel{min-height:46px!important}
+  .voice-channel-picker button{min-height:34px;border-radius:11px}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -3304,6 +3347,8 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
+      <div class="cat voice-cat">语音频道</div>
+      <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
       <div class="channel" onclick="openDM('好友')"><span class="icon">◉</span><span>好友</span><span class="unread" id="dmUnread" style="display:none">1</span></div>
       <div class="cat">管理</div>
@@ -3507,6 +3552,7 @@ button:active{
     </div>
     <div class="voice-room">
       <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
+      <div id="voiceChannelPicker" class="voice-channel-picker"></div>
       <div class="voice-state" id="voiceState">未加入语音</div>
       <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div>
 <div id="voiceDiagnostics" class="voice-diagnostics" aria-live="polite">
@@ -3738,6 +3784,14 @@ const channels=[
  {id:"security",name:"安全公告",icon:"🛡",topic:"社区安全公告"},
  {id:"share",name:"分享区",icon:"◇",topic:"分享资源与作品"}
 ];
+const voiceChannels=[
+ {id:"voice-lobby",name:"大厅",icon:"🎙️",topic:"大家可以在这里聊天"},
+ {id:"voice-game",name:"游戏语音",icon:"🎮",topic:"一起开黑、游戏交流"},
+ {id:"voice-tech",name:"技术语音",icon:"💻",topic:"技术讨论与协作"},
+ {id:"voice-chill",name:"休息室",icon:"☕",topic:"轻松语音聊天"}
+];
+let selectedVoiceChannel="voice-lobby";
+
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$("toast").classList.remove("show"),1800)}
@@ -3762,8 +3816,46 @@ function renderServers(){
  const add=document.createElement("button");add.className="server add";add.textContent="+";add.title="添加服务器";add.onclick=()=>toast("服务器邀请/创建功能可接入后端");$("servers").appendChild(add);
 }
 function renderChannels(){
- $("textChannels").innerHTML=channels.map(c=>`<div class="channel ${channel===c.id&&!dmMode?"active":""}" onclick="switchChannel('${c.id}')"><span class="icon">${c.icon}</span><span>${c.name}</span>${c.id==="general"&&unread?`<span class="unread">${unread}</span>`:""}</div>`).join("");
+  const textBox=$("textChannels");
+  if(textBox){
+    textBox.innerHTML=channels.map(c=>`
+      <div class="channel ${channel===c.id&&!dmMode?"active":""}" onclick="switchChannel('${c.id}')">
+        <span class="icon">${c.icon}</span>
+        <span>${esc(c.name)}</span>
+        ${c.id==="general"&&unread?`<span class="unread">${unread}</span>`:""}
+      </div>`).join("");
+  }
+
+  const voiceBox=$("voiceChannels");
+  if(voiceBox){
+    voiceBox.innerHTML=voiceChannels.map(c=>`
+      <div class="channel voice-channel ${selectedVoiceChannel===c.id?"active":""}"
+           onclick="selectVoiceChannel('${c.id}')">
+        <span class="icon">${c.icon}</span>
+        <span>${esc(c.name)}</span>
+        ${selectedVoiceChannel===c.id&&voiceJoined?'<span class="voice-live">●</span>':""}
+      </div>`).join("");
+  }
 }
+
+function selectVoiceChannel(id){
+  const c=voiceChannels.find(x=>x.id===id);
+  if(!c)return;
+
+  // Important: selecting a room NEVER calls joinVoice().
+  // The V11 Join button remains the only place that starts WebRTC.
+  selectedVoiceChannel=id;
+  renderChannels();
+try{renderVoiceChannelPicker()}catch(_){}
+  closePanels();
+
+  const title=$("voiceRoomTitle");
+  if(title)title.textContent="# "+c.name;
+
+  // Open the original V11 voice modal only.
+  openVoice();
+}
+
 let unread=0;
 function switchChannel(id){
  dmMode=false;channel=id;const c=channels.find(x=>x.id===id);$("chatName").textContent=c.name;$("chatTopic").textContent=c.topic;
@@ -4692,6 +4784,16 @@ function countVoicePeers(){
 function voiceTopic(){
   return "voice-"+String(channel).replace(/[^a-zA-Z0-9_-]/g,"_");
 }
+function renderVoiceChannelPicker(){
+  const box=$("voiceChannelPicker");
+  if(!box)return;
+  box.innerHTML=voiceChannels.map(c=>`
+    <button type="button" class="${c.id===selectedVoiceChannel?"active":""}"
+      onclick="event.stopPropagation();selectVoiceChannel('${c.id}')">
+      ${c.icon} ${esc(c.name)}
+    </button>`).join("");
+}
+
 function openVoice(){
   resetVoiceDiagnostics();
   $("voiceModal").classList.add("show");
