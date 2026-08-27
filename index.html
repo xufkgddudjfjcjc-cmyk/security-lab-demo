@@ -3340,6 +3340,46 @@ button:active{
   .voice-channel{min-height:44px}
 }
 </style>
+
+<style id="v18-channel-manager-css">
+.channel-admin-tools{padding:6px 10px 8px}
+.channel-admin-tools button{
+  width:100%;min-height:34px;border:1px solid rgba(120,176,255,.14);
+  border-radius:10px;background:rgba(255,255,255,.04);color:#9fb3ca;
+  font-size:11px;touch-action:manipulation
+}
+.channel-manager-modal{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.55);z-index:5000;padding:16px
+}
+.channel-manager-modal.show{display:flex}
+.channel-manager-card{
+  width:min(92vw,430px);max-height:82vh;overflow:auto;
+  border:1px solid rgba(120,176,255,.16);border-radius:18px;
+  background:rgba(18,24,35,.98);box-shadow:0 20px 60px rgba(0,0,0,.45);
+  padding:14px
+}
+.channel-manager-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.channel-manager-head button{
+  border:0;background:transparent;color:#9fb3ca;font-size:18px
+}
+.channel-manager-form{display:grid;grid-template-columns:1fr 120px 62px;gap:7px;margin-bottom:12px}
+.channel-manager-form input,.channel-manager-form select,.channel-manager-form>button{
+  min-height:38px;border-radius:10px;border:1px solid rgba(120,176,255,.13);
+  background:rgba(255,255,255,.05);color:#dbe8f5;padding:0 9px;font-size:11px
+}
+.channel-manager-form>button{background:rgba(91,140,255,.18)}
+.managed-section-title{margin:10px 2px 6px;color:#72869e;font-size:10px;font-weight:800}
+.managed-row{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px;border-radius:10px;background:rgba(255,255,255,.03);margin-bottom:5px;font-size:11px}
+.managed-actions{display:flex;gap:4px}
+.managed-actions button{border:1px solid rgba(120,176,255,.12);background:rgba(255,255,255,.04);
+  color:#9fb3ca;border-radius:7px;padding:5px 7px;font-size:9px}
+@media(max-width:600px){
+  .channel-manager-form{grid-template-columns:1fr 1fr}
+  .channel-manager-form>button{grid-column:1/-1}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -3350,6 +3390,9 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
+      <div class="channel-admin-tools">
+        <button type="button" onclick="openChannelManager()">＋ 管理频道</button>
+      </div>
       <div class="cat">语音频道</div>
       <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
@@ -7298,5 +7341,145 @@ html.voice-sheet-open,body.voice-sheet-open{
 
 <div id="v16-channel-marker" data-version="V16"></div>
 <div id="v17-channel-review-marker" data-version="V17-reviewed"></div>
+
+<div id="channelManagerModal" class="channel-manager-modal" aria-hidden="true">
+  <div class="channel-manager-card">
+    <div class="channel-manager-head">
+      <strong>频道管理</strong>
+      <button type="button" onclick="closeChannelManager()">✕</button>
+    </div>
+    <div class="channel-manager-form">
+      <input id="newChannelName" maxlength="30" placeholder="频道名称">
+      <select id="newChannelType">
+        <option value="text">💬 文字频道</option>
+        <option value="voice">🎙️ 语音频道</option>
+      </select>
+      <button type="button" onclick="createManagedChannel()">创建</button>
+    </div>
+    <div id="managedChannelList"></div>
+  </div>
+</div>
+
+<script id="v18-channel-manager">
+(function(){
+  const KEY="security_lab_v18_channels";
+
+  function defaultData(){
+    return {
+      text:[
+        {id:"general",name:"总聊天室",icon:"#",topic:"欢迎来到 Security Lab"},
+        {id:"tech",name:"技术交流",icon:"⌘",topic:"编程、开发、技术交流"},
+        {id:"chat",name:"随便聊聊",icon:"☕",topic:"轻松聊天"},
+        {id:"security",name:"安全公告",icon:"🛡",topic:"社区安全公告"},
+        {id:"share",name:"分享区",icon:"◇",topic:"分享资源与作品"}
+      ],
+      voice:[
+        {id:"voice-lobby",name:"大厅",icon:"🎙️",topic:"大家可以在这里聊天"},
+        {id:"voice-game",name:"游戏开黑",icon:"🎮",topic:"一起开黑、游戏交流"},
+        {id:"voice-tech",name:"技术语音",icon:"💻",topic:"技术讨论与协作"}
+      ]
+    };
+  }
+
+  window.v18ChannelData=(()=>{
+    try{
+      const x=JSON.parse(localStorage.getItem(KEY)||"null");
+      return x&&Array.isArray(x.text)&&Array.isArray(x.voice)?x:defaultData();
+    }catch(_){return defaultData()}
+  })();
+
+  function save(){
+    localStorage.setItem(KEY,JSON.stringify(window.v18ChannelData));
+  }
+
+  window.openChannelManager=function(){
+    const m=document.getElementById("channelManagerModal");
+    if(!m)return;
+    renderManager();
+    m.classList.add("show");
+    m.setAttribute("aria-hidden","false");
+  };
+
+  window.closeChannelManager=function(){
+    const m=document.getElementById("channelManagerModal");
+    if(!m)return;
+    m.classList.remove("show");
+    m.setAttribute("aria-hidden","true");
+  };
+
+  window.createManagedChannel=function(){
+    const name=(document.getElementById("newChannelName")?.value||"").trim();
+    const type=document.getElementById("newChannelType")?.value||"text";
+    if(!name){alert("请输入频道名称");return;}
+
+    const id=(type==="voice"?"voice-":"text-")+
+      Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);
+
+    const item={
+      id,name,
+      icon:type==="voice"?"🎙️":"#",
+      topic:type==="voice"?"语音频道":"文字频道"
+    };
+
+    window.v18ChannelData[type==="voice"?"voice":"text"].push(item);
+    save();
+    renderManager();
+    renderManagedLists();
+    const input=document.getElementById("newChannelName");
+    if(input)input.value="";
+  };
+
+  window.deleteManagedChannel=function(type,id){
+    const list=window.v18ChannelData[type];
+    if(!list)return;
+    if(list.length<=1){alert("至少保留一个频道");return;}
+    if(!confirm("确定删除这个频道？"))return;
+
+    window.v18ChannelData[type]=list.filter(x=>x.id!==id);
+    save();
+    renderManager();
+    renderManagedLists();
+  };
+
+  window.renameManagedChannel=function(type,id){
+    const item=window.v18ChannelData[type]?.find(x=>x.id===id);
+    if(!item)return;
+    const n=prompt("输入新的频道名称",item.name);
+    if(!n||!n.trim())return;
+    item.name=n.trim().slice(0,30);
+    save();
+    renderManager();
+    renderManagedLists();
+  };
+
+  function renderManager(){
+    const box=document.getElementById("managedChannelList");
+    if(!box)return;
+    const rows=[];
+    ["text","voice"].forEach(type=>{
+      const title=type==="text"?"文字频道":"语音频道";
+      rows.push(`<div class="managed-section-title">${title}</div>`);
+      window.v18ChannelData[type].forEach(c=>{
+        rows.push(`<div class="managed-row">
+          <span>${c.icon} ${esc(c.name)}</span>
+          <span class="managed-actions">
+            <button onclick="renameManagedChannel('${type}','${c.id}')">重命名</button>
+            <button onclick="deleteManagedChannel('${type}','${c.id}')">删除</button>
+          </span>
+        </div>`);
+      });
+    });
+    box.innerHTML=rows.join("");
+  }
+
+  window.renderManagedLists=function(){
+    // This V18 manager is intentionally additive. It refreshes the existing
+    // V17 channel list only when the original renderer is available.
+    try{ if(typeof renderChannels==="function")renderChannels(); }catch(_){}
+  };
+
+  setTimeout(renderManager,0);
+})();
+</script>
 </body>
 </html>
