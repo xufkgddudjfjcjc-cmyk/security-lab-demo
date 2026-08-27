@@ -3601,9 +3601,9 @@ button:active{
 <div class="modal" id="adminModal" onclick="if(event.target===this)closeAdmin()">
  <div class="modal-card"><div class="modal-head"><span>🛡 管理中心</span><button class="close" onclick="closeAdmin()">×</button></div>
  <p style="font-size:11px;color:#777">服务器管理功能。删除消息已接入云端权限；禁言/踢出/封禁将在服务端权限开启后生效。</p>
- <div class="channel" onclick="adminAction('禁言')">🔇 禁言用户</div>
- <div class="channel" onclick="adminAction('踢出')">🚪 踢出用户</div>
- <div class="channel" onclick="adminAction('封禁')">⛔ 封禁用户</div>
+ <div class="channel" onclick="serverModerationAction('禁言')">🔇 禁言用户</div>
+ <div class="channel" onclick="serverModerationAction('踢出')">🚪 踢出用户</div>
+ <div class="channel" onclick="serverModerationAction('封禁')">⛔ 封禁用户</div>
  <div class="channel" onclick="window.openV28MessageManager(); return false;">🗑️ 消息管理</div>
  <div class="channel" onclick="window.openV28Sql(); return false;">🔐 服务端权限 SQL</div>
  </div>
