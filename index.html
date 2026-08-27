@@ -3320,6 +3320,29 @@ button:active{
 }
 </style>
 
+
+<script id="v11-turn-config">
+/*
+ V11 语音 TURN 配置：
+ 1. 在 Metered/OpenRelay 创建免费的 TURN 凭据。
+ 2. 把他们提供的 iceServers 数组粘贴到这里。
+ 3. 不要把长期密码公开到 GitHub；正式版应由后端短期下发。
+
+ 示例结构：
+ window.V11_TURN_SERVERS = [
+   {
+     urls: [
+       "turn:global.relay.metered.ca:80",
+       "turn:global.relay.metered.ca:443",
+       "turns:global.relay.metered.ca:443?transport=tcp"
+     ],
+     username: "你的用户名",
+     credential: "你的密码"
+   }
+ ];
+*/
+window.V11_TURN_SERVERS = window.V11_TURN_SERVERS || [];
+</script>
 </head>
 <body>
 <div class="app">
@@ -4787,11 +4810,19 @@ function makePeer(id,name){
 
   const pc=new RTCPeerConnection({
     iceServers:[
+      // V11 原有 STUN：保留，不改变 UI / 信令。
       {urls:"stun:stun.l.google.com:19302"},
       {urls:"stun:stun1.l.google.com:19302"},
-      {urls:"stun:stun.cloudflare.com:3478"}
+      {urls:"stun:stun.cloudflare.com:3478"},
+
+      // TURN：用于两台手机无法直接建立 P2P 时中继语音。
+      // 在下方填写你自己的 TURN 账号后即可启用。
+      // 不建议把长期 TURN 密码公开在 GitHub。
+      ...(window.V11_TURN_SERVERS || [])
     ],
-    iceCandidatePoolSize:10
+    iceCandidatePoolSize:10,
+    bundlePolicy:"max-bundle",
+    rtcpMuxPolicy:"require"
   });
 
   voicePendingIce[id]=voicePendingIce[id]||[];
@@ -7054,5 +7085,31 @@ html.voice-sheet-open,body.voice-sheet-open{
 })();
 </script>
 
+
+<script id="v11-webrtc-diagnostics">
+(function(){
+  window.v11WebRTCStats=function(pc){
+    if(!pc||!pc.getStats)return Promise.resolve(null);
+    return pc.getStats().then(stats=>{
+      let pair=null;
+      stats.forEach(r=>{
+        if(r.type==="candidate-pair" && r.state==="succeeded" && (r.nominated||r.selected)){
+          pair=r;
+        }
+      });
+      if(pair){
+        console.log("[V11 WebRTC] selected candidate pair:",{
+          localId:pair.localCandidateId,
+          remoteId:pair.remoteCandidateId,
+          state:pair.state
+        });
+      }else{
+        console.log("[V11 WebRTC] no selected candidate pair yet");
+      }
+      return pair;
+    }).catch(()=>null);
+  };
+})();
+</script>
 </body>
 </html>
