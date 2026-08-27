@@ -1497,7 +1497,8 @@ button:active,.send:active,.primary:active,.auth-guest:active,.voice-actions but
 @media(max-width:760px){
   .servers{width:58px !important}
   .channels{width:220px !important}
-  .members{display:none !important}
+  /* Do not force-hide members: V11 toggleMembers() controls this panel. */
+  .members{display:none}
   .chat-head{height:58px !important}
   .profile-badges-list{gap:6px}
   .profile-badge{font-size:9px;padding:4px 7px}
@@ -3315,6 +3316,59 @@ button:active{
   .chat-head{
     position:relative!important;
     z-index:1003!important;
+    pointer-events:auto!important;
+  }
+}
+</style>
+
+
+<style id="v11-ui-root-cause-fix-v2">
+@media(max-width:800px){
+  .chat-head{
+    position:relative!important;
+    z-index:120!important;
+  }
+  .head-actions{
+    position:relative!important;
+    z-index:121!important;
+    pointer-events:auto!important;
+  }
+  .head-actions .head-btn{
+    position:relative!important;
+    z-index:122!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+
+  .channels .channel-scroll{
+    position:relative!important;
+    z-index:62!important;
+    pointer-events:auto!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  .channels .channel{
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
+
+  #members{
+    position:fixed!important;
+    top:calc(58px + env(safe-area-inset-top))!important;
+    right:0!important;
+    bottom:0!important;
+    width:min(86vw,320px)!important;
+    z-index:300!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  #settingsModal,#profileModal,#noticeModal,#inviteModal,#adminModal,#voiceModal{
+    z-index:1000!important;
+  }
+  #settingsModal .modal-card,#profileModal .modal-card{
+    position:relative!important;
+    z-index:1001!important;
     pointer-events:auto!important;
   }
 }
@@ -7052,5 +7106,6 @@ html.voice-sheet-open,body.voice-sheet-open{
   document.addEventListener("DOMContentLoaded",bindVoiceHeader,{once:true});
 })();
 </script>
+
 </body>
 </html>
