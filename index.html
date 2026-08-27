@@ -3468,6 +3468,7 @@ button:active{
   font-size:9px;
   font-weight:800;
 }
+.voice-channel .voice-count.voice-unknown{opacity:.45;background:rgba(255,255,255,.04);color:#71849b}
 .voice-channel.voice-active{
   background:linear-gradient(90deg,rgba(91,140,255,.15),rgba(139,92,246,.07))!important;
   color:#eef6ff!important;
@@ -3509,6 +3510,29 @@ button:active{
     border-radius:11px;
     font-size:10px;
   }
+}
+</style>
+
+
+<style id="security-lab-v13-1-fixes">
+.voice-channel .voice-count.voice-unknown{
+  opacity:.45;
+  background:rgba(255,255,255,.04)!important;
+  color:#71849b!important;
+}
+.voice-channel.voice-active{
+  position:relative;
+}
+.voice-channel.voice-active:after{
+  content:"";
+  width:5px;height:5px;border-radius:50%;
+  position:absolute;right:7px;top:50%;
+  transform:translateY(-50%);
+  background:#6ea2ff;
+  box-shadow:0 0 8px rgba(110,162,255,.7);
+}
+@media(max-width:800px){
+  .voice-channel.voice-active:after{right:8px}
 }
 </style>
 
@@ -4025,12 +4049,22 @@ function getVoiceChannelCount(id){
   }catch(_){return 0}
 }
 
-function openVoiceChannel(id){
+async function openVoiceChannel(id){
   const c=voiceChannels.find(x=>x.id===id);
   if(!c)return;
+
+  // Close the channel drawer first so it cannot sit above the voice sheet on mobile.
+  if(typeof closePanels==="function")closePanels();
+
+  // If already connected to a voice room, perform a real room switch.
+  if(voiceJoined){
+    await switchVoiceChannel(id);
+    $("voiceModal").classList.add("show");
+    return;
+  }
+
   voiceChannel=id;
   renderChannels();
-try{renderVoiceRoomSwitcher()}catch(_){}
   renderVoiceRoomSwitcher();
   $("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
   $("voiceModal").classList.add("show");
@@ -4050,6 +4084,9 @@ function switchChannel(id){
   unread=0;
   renderChannels();
   closePanels();
+  const search=$("search");
+  if(search)search.value="";
+  document.querySelectorAll(".message").forEach(x=>x.style.display="flex");
   renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
   loadMessages();
 }
@@ -4982,11 +5019,12 @@ function renderVoiceRoomSwitcher(){
   if(!box)return;
   box.innerHTML=voiceChannels.map(c=>`
     <button type="button" class="${c.id===voiceChannel?"active":""}"
-      onclick="switchVoiceChannel('${c.id}')">${c.icon} ${esc(c.name)}</button>
+      onclick="event.stopPropagation();switchVoiceChannel('${c.id}')">${c.icon} ${esc(c.name)}</button>
   `).join("");
 }
 
 function openVoice(){
+  if(typeof closePanels==="function")closePanels();
   renderVoiceRoomSwitcher();
   resetVoiceDiagnostics();
   $("voiceModal").classList.add("show");
@@ -5493,6 +5531,7 @@ async function leaveVoice(){
   voiceRoom=null;
   voiceJoined=false;
   voiceMuted=false;
+  renderVoiceList();
 
   stopVoiceNetworkMonitor();
 
@@ -5518,13 +5557,21 @@ async function toggleVoice(){
 async function switchVoiceChannel(id){
   const c=voiceChannels.find(x=>x.id===id);
   if(!c)return;
+
   const wasJoined=voiceJoined;
   if(wasJoined)await leaveVoice();
+
   voiceChannel=id;
   renderChannels();
   renderVoiceRoomSwitcher();
   $("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
-  if(wasJoined)await joinVoice();
+
+  if(wasJoined){
+    await joinVoice();
+  }else{
+    if(typeof resetVoiceDiagnostics==="function")resetVoiceDiagnostics();
+    if(typeof updateVoiceNetworkStatus==="function")updateVoiceNetworkStatus();
+  }
 }
 
 async function toggleVoiceMute(){
