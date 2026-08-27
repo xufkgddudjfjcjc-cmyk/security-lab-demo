@@ -3319,22 +3319,6 @@ button:active{
   }
 }
 </style>
-
-
-<style id="v11-mobile-clicks-fixed">
-@media(max-width:800px){
-  .chat-head,.chat-head *{pointer-events:auto}
-  .head-actions,.head-actions .head-btn{
-    position:relative!important;
-    z-index:5000!important;
-    pointer-events:auto!important;
-    touch-action:manipulation!important;
-  }
-  #textChannels,.channel,.drawer,.drawer-content,.drawer-body{
-    pointer-events:auto!important;
-  }
-}
-</style>
 </head>
 <body>
 <div class="app">
@@ -7066,33 +7050,6 @@ html.voice-sheet-open,body.voice-sheet-open{
   }
   bindVoiceHeader();
   document.addEventListener("DOMContentLoaded",bindVoiceHeader,{once:true});
-})();
-</script>
-
-
-<script id="v11-mobile-clicks-fallback">
-(function(){
-  function call(name){
-    if(typeof window[name]==="function"){
-      try{window[name]();}catch(e){console.error("mobile click",name,e);}
-    }
-  }
-  function bind(){
-    document.querySelectorAll(".head-btn").forEach(function(el){
-      if(el.dataset.mobileFallback==="1") return;
-      el.dataset.mobileFallback="1";
-      el.addEventListener("pointerup",function(e){
-        if(e.pointerType!=="touch") return;
-        var t=(el.getAttribute("title")||"").trim();
-        if(t==="成员") call("toggleMembers");
-        else if(t==="设置") call("openSettings");
-        else if(t==="我的资料") call("openProfile");
-      },{capture:true,passive:true});
-    });
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",bind,{once:true});
-  else bind();
-  setTimeout(bind,300);
 })();
 </script>
 </body>
