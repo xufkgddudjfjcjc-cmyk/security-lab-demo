@@ -3341,99 +3341,29 @@ button:active{
 }
 </style>
 
-<style id="security-lab-v20-cloud-css">
-.v20-cloud-panel{
+<style id="security-lab-v23-cloud-css">
+.v23-cloud-setup{
   position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  padding:16px;background:rgba(0,0,0,.55);z-index:6000
+  padding:16px;background:rgba(0,0,0,.58);z-index:8000
 }
-.v20-cloud-panel.show{display:flex}
-.v20-cloud-card{
-  width:min(92vw,460px);max-height:82vh;overflow:auto;
-  padding:15px;border-radius:18px;background:rgba(18,24,35,.98);
-  border:1px solid rgba(120,176,255,.16);box-shadow:0 20px 60px rgba(0,0,0,.45)
-}
-.v20-cloud-head{display:flex;justify-content:space-between;align-items:center}
-.v20-cloud-head button{
-  border:0;background:transparent;color:#9fb3ca;font-size:18px
-}
-.v20-cloud-status{
-  margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.5
-}
-#v20CloudSql{
-  width:100%;height:260px;box-sizing:border-box;resize:none;
-  border-radius:10px;border:1px solid rgba(120,176,255,.12);
-  background:#0d131d;color:#b9cbe0;padding:10px;font-size:10px;line-height:1.45
-}
-.v20-cloud-card>button{
-  width:100%;min-height:38px;margin-top:8px;border-radius:10px;
-  border:1px solid rgba(120,176,255,.12);
-  background:rgba(91,140,255,.18);color:#dceaff
-}
-.channel-admin-tools #v20CloudButton{margin-top:5px}
-</style>
-
-<style id="security-lab-v21-admin-css">
-.v21-admin-panel{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  padding:16px;background:rgba(0,0,0,.55);z-index:6500
-}
-.v21-admin-panel.show{display:flex}
-.v21-admin-card{
-  width:min(92vw,480px);max-height:84vh;overflow:auto;padding:15px;
+.v23-cloud-setup.show{display:flex}
+.v23-cloud-card{
+  width:min(94vw,520px);max-height:84vh;overflow:auto;padding:15px;
   border-radius:18px;background:rgba(18,24,35,.99);
-  border:1px solid rgba(120,176,255,.16);box-shadow:0 20px 60px rgba(0,0,0,.5)
+  border:1px solid rgba(120,176,255,.16);box-shadow:0 20px 70px rgba(0,0,0,.5)
 }
-.v21-admin-head{display:flex;align-items:center;justify-content:space-between}
-.v21-admin-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
-.v21-admin-note{margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.55}
-#v21AdminSql{
-  width:100%;height:300px;box-sizing:border-box;resize:none;
+.v23-cloud-head{display:flex;align-items:center;justify-content:space-between}
+.v23-cloud-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
+.v23-cloud-note{margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.55}
+#v23CloudSql{
+  width:100%;height:360px;box-sizing:border-box;resize:none;
   border-radius:10px;border:1px solid rgba(120,176,255,.12);
   background:#0d131d;color:#b9cbe0;padding:10px;font-size:9px;line-height:1.45
 }
-.v21-admin-card>button{
+.v23-cloud-card>button{
   width:100%;min-height:38px;margin-top:8px;border-radius:10px;
-  border:1px solid rgba(120,176,255,.12);
-  background:rgba(91,140,255,.18);color:#dceaff
-}
-</style>
-
-<style id="security-lab-v22-manager-css">
-.v22-manager{
-  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
-  padding:16px;background:rgba(0,0,0,.58);z-index:7000
-}
-.v22-manager.show{display:flex}
-.v22-manager-card{
-  width:min(94vw,500px);max-height:84vh;overflow:auto;
-  background:rgba(18,24,35,.99);border:1px solid rgba(120,176,255,.16);
-  border-radius:18px;padding:15px;box-shadow:0 20px 70px rgba(0,0,0,.5)
-}
-.v22-manager-head{display:flex;align-items:center;justify-content:space-between}
-.v22-manager-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
-.v22-admin-state{margin:10px 0;color:#9fb3ca;font-size:11px}
-.v22-create-row{display:grid;grid-template-columns:1fr 105px 62px;gap:7px}
-.v22-create-row input,.v22-create-row select,.v22-create-row button{
-  min-height:38px;border-radius:10px;border:1px solid rgba(120,176,255,.13);
-  background:rgba(255,255,255,.05);color:#dceaff;padding:0 9px;font-size:11px
-}
-.v22-create-row button{background:rgba(91,140,255,.18)}
-.v22-list-title{margin:15px 0 7px;color:#72869e;font-size:10px;font-weight:800}
-.v22-row{
-  display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:9px;border-radius:10px;background:rgba(255,255,255,.035);margin-bottom:5px
-}
-.v22-row-name{font-size:11px;color:#dbe8f5}
-.v22-row-name small{margin-left:5px;color:#71859d;font-size:8px}
-.v22-row-actions{display:flex;gap:4px}
-.v22-row-actions button{
-  border:1px solid rgba(120,176,255,.12);background:rgba(255,255,255,.04);
-  color:#9fb3ca;border-radius:7px;padding:5px 7px;font-size:9px
-}
-.v22-empty{padding:14px;text-align:center;color:#71859d;font-size:10px}
-@media(max-width:600px){
-  .v22-create-row{grid-template-columns:1fr 1fr}
-  .v22-create-row button{grid-column:1/-1}
+  border:1px solid rgba(120,176,255,.12);background:rgba(91,140,255,.18);
+  color:#dceaff
 }
 </style>
 </head>
@@ -3446,16 +3376,6 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
-      <button id="v20DirectCloudButton" type="button"
-        onclick="openV20CloudPanel()"
-        style="width:calc(100% - 20px);margin:0 10px 6px;min-height:34px;border:1px solid rgba(120,176,255,.10);border-radius:10px;background:rgba(255,255,255,.03);color:#8ea4bf;font-size:10px;touch-action:manipulation;">
-        ☁️ 云端频道 SQL
-      </button>
-      <button id="v21DirectManageButton" type="button"
-        onclick="openV21Admin()"
-        style="width:calc(100% - 20px);margin:6px 10px;min-height:36px;border:1px solid rgba(120,176,255,.14);border-radius:10px;background:rgba(91,140,255,.10);color:#b9cbe0;font-size:11px;touch-action:manipulation;">
-        🔐 频道管理
-      </button>
       <div class="cat">语音频道</div>
       <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
@@ -7405,23 +7325,24 @@ html.voice-sheet-open,body.voice-sheet-open{
 <div id="v16-channel-marker" data-version="V16"></div>
 <div id="v17-channel-review-marker" data-version="V17-reviewed"></div>
 
-<div id="v20CloudPanel" class="v20-cloud-panel" aria-hidden="true">
-  <div class="v20-cloud-card">
-    <div class="v20-cloud-head">
-      <strong>☁️ 云端频道设置</strong>
-      <button type="button" onclick="closeV20CloudPanel()">✕</button>
+<div id="v23CloudSetup" class="v23-cloud-setup" aria-hidden="true">
+  <div class="v23-cloud-card">
+    <div class="v23-cloud-head">
+      <strong>☁️ V23 云端频道初始化</strong>
+      <button type="button" onclick="closeV23Setup()">✕</button>
     </div>
-    <div class="v20-cloud-status" id="v20CloudStatus">
-      第一次使用前，请在 Supabase SQL Editor 执行下面 SQL。
+    <div class="v23-cloud-note">
+      第一次启用 V23：复制下面完整 SQL，在 Supabase → SQL Editor → New query 中执行一次。
+      它会创建表、权限、默认频道，并开启频道 Realtime。
     </div>
-    <textarea id="v20CloudSql" readonly></textarea>
-    <button type="button" onclick="copyV20CloudSql()">复制 SQL</button>
+    <textarea id="v23CloudSql" readonly></textarea>
+    <button type="button" onclick="copyV23Sql()">复制完整 SQL</button>
   </div>
 </div>
 
-<script id="security-lab-v20-cloud-channels">
+<script id="security-lab-v23-cloud-renderer">
 (function(){
-  const SQL=`-- Security Lab V20: 云端频道系统
+  const SQL=`-- Security Lab V23：云端频道完整初始化
 create table if not exists public.channel_categories (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -7444,442 +7365,253 @@ create table if not exists public.app_channels (
 alter table public.channel_categories enable row level security;
 alter table public.app_channels enable row level security;
 
-drop policy if exists "v20_categories_read" on public.channel_categories;
-create policy "v20_categories_read"
+drop policy if exists "v23_categories_read" on public.channel_categories;
+create policy "v23_categories_read"
 on public.channel_categories for select
 to anon, authenticated
 using (true);
 
-drop policy if exists "v20_channels_read" on public.app_channels;
-create policy "v20_channels_read"
+drop policy if exists "v23_channels_read" on public.app_channels;
+create policy "v23_channels_read"
 on public.app_channels for select
 to anon, authenticated
 using (true);
 
--- 注意：这里故意不开放匿名 INSERT/UPDATE/DELETE。
--- V20 前端只允许读取；管理员写入权限下一步接入你现有的管理员身份系统。
-`;
-  window.V20_CHANNEL_SQL=SQL;
-
-  window.openV20CloudPanel=function(){
-    const m=document.getElementById("v20CloudPanel");
-    const t=document.getElementById("v20CloudSql");
-    if(t)t.value=SQL;
-    if(m){m.classList.add("show");m.setAttribute("aria-hidden","false");}
-  };
-  window.closeV20CloudPanel=function(){
-    const m=document.getElementById("v20CloudPanel");
-    if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}
-  };
-  window.copyV20CloudSql=async function(){
-    try{
-      await navigator.clipboard.writeText(SQL);
-      if(typeof toast==="function")toast("V20 SQL 已复制");
-    }catch(_){
-      const t=document.getElementById("v20CloudSql");
-      if(t){t.focus();t.select();document.execCommand("copy");}
-      if(typeof toast==="function")toast("V20 SQL 已复制");
-    }
-  };
-
-  // Cloud catalogue loader. It only reads; it does not replace V17's live voice state.
-  window.V20_loadChannels=async function(){
-    if(typeof sb==="undefined" || !sb) return null;
-
-    const [catRes,chRes]=await Promise.all([
-      sb.from("channel_categories").select("*").order("position",{ascending:true}),
-      sb.from("app_channels").select("*").order("position",{ascending:true})
-    ]);
-
-    if(catRes.error || chRes.error){
-      console.warn("[V20] channel catalogue read failed",catRes.error||chRes.error);
-      return null;
-    }
-
-    return {categories:catRes.data||[],channels:chRes.data||[]};
-  };
-
-  // Realtime refresh for channel catalogue.
-  window.V20_subscribeChannels=function(){
-    if(typeof sb==="undefined" || !sb || window.__v20ChannelSub) return;
-
-    window.__v20ChannelSub=sb.channel("security-lab-channel-catalogue")
-      .on("postgres_changes",
-        {event:"*",schema:"public",table:"channel_categories"},
-        ()=>window.V20_refreshChannelUI?.())
-      .on("postgres_changes",
-        {event:"*",schema:"public",table:"app_channels"},
-        ()=>window.V20_refreshChannelUI?.())
-      .subscribe();
-  };
-
-  window.V20_refreshChannelUI=async function(){
-    const data=await window.V20_loadChannels();
-    if(!data || !data.channels.length)return;
-
-    // Keep V17's voice arrays as the authoritative runtime objects if present.
-    // Cloud data is stored separately until admin/write permissions are added.
-    window.V20_cloudCatalogue=data;
-    document.documentElement.dataset.v20CloudChannels="ready";
-    console.log("[V20] cloud channel catalogue loaded:",data);
-  };
-
-  function addCloudButton(){
-    if(document.getElementById("v20CloudButton"))return;
-    const target=document.querySelector(".channel-admin-tools");
-    if(!target)return;
-
-    const b=document.createElement("button");
-    b.id="v20CloudButton";
-    b.type="button";
-    b.textContent="☁️ 云端频道";
-    b.onclick=()=>openV20CloudPanel();
-    target.appendChild(b);
-  }
-
-  function boot(){
-    addCloudButton();
-    if(typeof sb!=="undefined" && sb){
-      window.V20_refreshChannelUI();
-      window.V20_subscribeChannels();
-    }else{
-      setTimeout(()=>{
-        window.V20_refreshChannelUI?.();
-        window.V20_subscribeChannels?.();
-      },1200);
-    }
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",boot,{once:true});
-  }else boot();
-  setTimeout(addCloudButton,800);
-})();
-</script>
-
-<div id="v21AdminPanel" class="v21-admin-panel" aria-hidden="true">
-  <div class="v21-admin-card">
-    <div class="v21-admin-head">
-      <strong>⚙️ V21 管理员频道</strong>
-      <button type="button" onclick="closeV21Admin()">✕</button>
-    </div>
-    <div class="v21-admin-note">
-      先执行一次管理员 SQL，然后把你的 Supabase 用户 UID 设置为 admin。
-    </div>
-    <textarea id="v21AdminSql" readonly></textarea>
-    <button type="button" onclick="copyV21AdminSql()">复制管理员 SQL</button>
-  </div>
-</div>
-
-<script id="security-lab-v21-admin">
-(function(){
-  const SQL=`-- Security Lab V21 管理员频道权限
--- 依赖你现有的 auth.users 登录体系。
--- 这里使用 user_roles 表保存管理员身份。
-
-create table if not exists public.user_roles (
-  user_id uuid primary key references auth.users(id) on delete cascade,
-  role text not null default 'user' check (role in ('user','admin')),
-  created_at timestamptz not null default now()
-);
-
-alter table public.user_roles enable row level security;
-
-drop policy if exists "v21_roles_self_read" on public.user_roles;
-create policy "v21_roles_self_read"
-on public.user_roles for select
-to authenticated
-using (auth.uid() = user_id);
-
--- 管理员判断函数
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists(
-    select 1
-    from public.user_roles
-    where user_id = auth.uid()
-      and role = 'admin'
-  );
-$$;
-
--- 只有管理员能新增/修改/删除频道。
-drop policy if exists "v21_categories_admin_insert" on public.channel_categories;
-create policy "v21_categories_admin_insert"
+-- 管理员写权限：依赖你之前已经成功设置的 public.is_admin()
+drop policy if exists "v23_categories_insert" on public.channel_categories;
+create policy "v23_categories_insert"
 on public.channel_categories for insert
 to authenticated
 with check (public.is_admin());
 
-drop policy if exists "v21_categories_admin_update" on public.channel_categories;
-create policy "v21_categories_admin_update"
+drop policy if exists "v23_categories_update" on public.channel_categories;
+create policy "v23_categories_update"
 on public.channel_categories for update
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
-drop policy if exists "v21_categories_admin_delete" on public.channel_categories;
-create policy "v21_categories_admin_delete"
+drop policy if exists "v23_categories_delete" on public.channel_categories;
+create policy "v23_categories_delete"
 on public.channel_categories for delete
 to authenticated
 using (public.is_admin());
 
-drop policy if exists "v21_channels_admin_insert" on public.app_channels;
-create policy "v21_channels_admin_insert"
+drop policy if exists "v23_channels_insert" on public.app_channels;
+create policy "v23_channels_insert"
 on public.app_channels for insert
 to authenticated
 with check (public.is_admin());
 
-drop policy if exists "v21_channels_admin_update" on public.app_channels;
-create policy "v21_channels_admin_update"
+drop policy if exists "v23_channels_update" on public.app_channels;
+create policy "v23_channels_update"
 on public.app_channels for update
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
-drop policy if exists "v21_channels_admin_delete" on public.app_channels;
-create policy "v21_channels_admin_delete"
+drop policy if exists "v23_channels_delete" on public.app_channels;
+create policy "v23_channels_delete"
 on public.app_channels for delete
 to authenticated
 using (public.is_admin());
 
--- 把你的 Supabase 登录用户设置为管理员：
--- 先从 Authentication -> Users 复制你的 User UID，
--- 再只执行下面这一行（把 UUID 换成你的）：
---
--- insert into public.user_roles(user_id, role)
--- values ('你的-用户-UUID', 'admin')
--- on conflict (user_id)
--- do update set role='admin';
-`;
-  window.V21_ADMIN_SQL=SQL;
+-- 初始化两个分类
+insert into public.channel_categories (name,kind,position)
+select '文字频道','text',0
+where not exists (
+  select 1 from public.channel_categories where kind='text'
+);
 
-  window.openV21Admin=function(){
-    const m=document.getElementById("v21AdminPanel");
-    const t=document.getElementById("v21AdminSql");
+insert into public.channel_categories (name,kind,position)
+select '语音频道','voice',1
+where not exists (
+  select 1 from public.channel_categories where kind='voice'
+);
+
+-- 初始化默认文字频道
+insert into public.app_channels (category_id,name,kind,topic,icon,position)
+select c.id,x.name,'text',x.topic,x.icon,x.position
+from public.channel_categories c
+cross join (values
+  ('总聊天室','欢迎来到 Security Lab','#',0),
+  ('技术交流','编程、开发、技术交流','⌘',1),
+  ('随便聊聊','轻松聊天','☕',2),
+  ('安全公告','社区安全公告','🛡',3),
+  ('分享区','分享资源与作品','◇',4)
+) as x(name,topic,icon,position)
+where c.kind='text'
+and not exists (
+  select 1 from public.app_channels a
+  where a.kind='text' and a.name=x.name
+);
+
+-- 初始化默认语音频道
+insert into public.app_channels (category_id,name,kind,topic,icon,position)
+select c.id,x.name,'voice',x.topic,x.icon,x.position
+from public.channel_categories c
+cross join (values
+  ('大厅','大家可以在这里聊天','🎙️',0),
+  ('游戏开黑','一起开黑、游戏交流','🎮',1),
+  ('技术语音','技术讨论与协作','💻',2)
+) as x(name,topic,icon,position)
+where c.kind='voice'
+and not exists (
+  select 1 from public.app_channels a
+  where a.kind='voice' and a.name=x.name
+);
+
+-- 让 Supabase Realtime 可以监听频道表
+do $$
+begin
+  begin
+    alter publication supabase_realtime add table public.channel_categories;
+  exception when duplicate_object then
+    null;
+  end;
+  begin
+    alter publication supabase_realtime add table public.app_channels;
+  exception when duplicate_object then
+    null;
+  end;
+end $$;
+`;
+  window.V23_CHANNEL_SQL=SQL;
+
+  function $(id){return document.getElementById(id)}
+
+  window.openV23Setup=function(){
+    const m=$("v23CloudSetup"), t=$("v23CloudSql");
     if(t)t.value=SQL;
     if(m){m.classList.add("show");m.setAttribute("aria-hidden","false");}
   };
-
-  window.closeV21Admin=function(){
-    const m=document.getElementById("v21AdminPanel");
+  window.closeV23Setup=function(){
+    const m=$("v23CloudSetup");
     if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}
   };
-
-  window.copyV21AdminSql=async function(){
+  window.copyV23Sql=async function(){
     try{
       await navigator.clipboard.writeText(SQL);
-      if(typeof toast==="function")toast("管理员 SQL 已复制");
+      if(typeof toast==="function")toast("V23 SQL 已复制");
     }catch(_){
-      const t=document.getElementById("v21AdminSql");
+      const t=$("v23CloudSql");
       if(t){t.focus();t.select();document.execCommand("copy");}
-      if(typeof toast==="function")toast("管理员 SQL 已复制");
+      if(typeof toast==="function")toast("V23 SQL 已复制");
     }
   };
 
-  window.V21_isAdmin=async function(){
-    try{
-      if(typeof sb==="undefined" || !sb)return false;
-      const {data,error}=await sb.rpc("is_admin");
-      if(error){console.warn("[V21] is_admin failed",error);return false;}
-      return data===true;
-    }catch(_){return false}
+  async function load(){
+    if(typeof sb==="undefined" || !sb)return null;
+    const [catRes,chRes]=await Promise.all([
+      sb.from("channel_categories").select("*").order("position",{ascending:true}),
+      sb.from("app_channels").select("*").order("position",{ascending:true})
+    ]);
+    if(catRes.error||chRes.error){
+      console.warn("[V23] cloud channel read failed",catRes.error||chRes.error);
+      return null;
+    }
+    return {categories:catRes.data||[],channels:chRes.data||[]};
+  }
+  window.V23_loadChannels=load;
+
+  // Render only the catalogue entries that have a matching V17/V23 runtime
+  // channel. We never overwrite V17 WebRTC state.
+  async function refresh(){
+    const data=await load();
+    if(!data)return;
+
+    window.V23_cloudCatalogue=data;
+
+    const textBox=$("textChannels");
+    const voiceBox=$("voiceChannels");
+
+    if(textBox){
+      const texts=data.channels.filter(c=>c.kind==="text");
+      textBox.innerHTML=texts.map(c=>`
+        <div class="channel" data-v23-channel="${esc(c.id)}"
+             onclick="V23_selectText('${esc(c.id)}')">
+          <span class="icon">${esc(c.icon||"#")}</span>
+          <span>${esc(c.name)}</span>
+        </div>`).join("");
+    }
+
+    if(voiceBox){
+      const voices=data.channels.filter(c=>c.kind==="voice");
+      voiceBox.innerHTML=voices.map(c=>`
+        <div class="channel" data-v23-channel="${esc(c.id)}"
+             onclick="V23_selectVoice('${esc(c.id)}')">
+          <span class="icon">${esc(c.icon||"🎙️")}</span>
+          <span>${esc(c.name)}</span>
+        </div>`).join("");
+    }
+
+    try{if(typeof renderChannels==="function")renderChannels()}catch(_){}
+  }
+
+  window.V23_selectText=function(id){
+    const c=window.V23_cloudCatalogue?.channels?.find(x=>x.id===id);
+    if(!c)return;
+    // Keep V17 message routing by using a stable, cloud-derived channel key.
+    if(typeof switchChannel==="function")switchChannel(c.id);
   };
 
-  window.V21_createChannel=async function(payload){
-    if(!(await window.V21_isAdmin()))throw new Error("只有管理员可以创建频道");
-    const {data,error}=await sb.from("app_channels").insert(payload).select().single();
-    if(error)throw error;
-    return data;
+  window.V23_selectVoice=function(id){
+    const c=window.V23_cloudCatalogue?.channels?.find(x=>x.id===id);
+    if(!c)return;
+
+    // IMPORTANT: selecting a voice channel does not auto-join.
+    // The existing V17/V17-V15 voice join button remains responsible for WebRTC.
+    window.V23_selectedVoiceId=id;
+
+    const title=$("voiceRoomTitle");
+    if(title)title.textContent="# "+c.name;
+
+    if(typeof openVoice==="function")openVoice();
   };
 
-  window.V21_updateChannel=async function(id,patch){
-    if(!(await window.V21_isAdmin()))throw new Error("只有管理员可以修改频道");
-    const {data,error}=await sb.from("app_channels").update(patch).eq("id",id).select().single();
-    if(error)throw error;
-    return data;
-  };
+  function subscribe(){
+    if(typeof sb==="undefined" || !sb || window.__v23ChannelRealtime)return;
+    window.__v23ChannelRealtime=sb.channel("security-lab-v23-channel-catalogue")
+      .on("postgres_changes",
+        {event:"*",schema:"public",table:"channel_categories"},
+        refresh)
+      .on("postgres_changes",
+        {event:"*",schema:"public",table:"app_channels"},
+        refresh)
+      .subscribe();
+  }
 
-  window.V21_deleteChannel=async function(id){
-    if(!(await window.V21_isAdmin()))throw new Error("只有管理员可以删除频道");
-    const {error}=await sb.from("app_channels").delete().eq("id",id);
-    if(error)throw error;
-    return true;
-  };
+  window.V23_refreshChannels=refresh;
 
-  // Add the admin SQL entry to the existing channel management area.
-  function addAdminButton(){
-    if(document.getElementById("v21AdminButton"))return;
-    const target=document.querySelector(".channel-admin-tools");
-    if(!target)return;
-    const b=document.createElement("button");
-    b.id="v21AdminButton";
-    b.type="button";
-    b.textContent="🔐 管理员权限";
-    b.onclick=()=>window.openV21Admin();
-    b.style.cssText="width:100%;min-height:34px;margin-top:5px;border:1px solid rgba(120,176,255,.14);border-radius:10px;background:rgba(255,255,255,.03);color:#9fb3ca;font-size:11px";
-    target.appendChild(b);
+  function boot(){
+    // Wait for V17 Supabase initialization if needed.
+    if(typeof sb!=="undefined" && sb){
+      refresh();
+      subscribe();
+    }else{
+      setTimeout(()=>{
+        refresh();
+        subscribe();
+      },1500);
+    }
   }
 
   if(document.readyState==="loading")
-    document.addEventListener("DOMContentLoaded",addAdminButton,{once:true});
-  else addAdminButton();
-  setTimeout(addAdminButton,700);
-})();
-</script>
+    document.addEventListener("DOMContentLoaded",boot,{once:true});
+  else boot();
 
-<div id="v22ChannelManager" class="v22-manager" aria-hidden="true">
-  <div class="v22-manager-card">
-    <div class="v22-manager-head">
-      <strong>🔐 频道管理</strong>
-      <button type="button" onclick="closeV22Manager()">✕</button>
-    </div>
-
-    <div id="v22AdminState" class="v22-admin-state">正在检查管理员权限…</div>
-
-    <div id="v22ManagerControls" style="display:none">
-      <div class="v22-create-row">
-        <input id="v22Name" maxlength="30" placeholder="频道名称">
-        <select id="v22Kind">
-          <option value="text">💬 文字</option>
-          <option value="voice">🎙️ 语音</option>
-        </select>
-        <button type="button" onclick="v22Create()">创建</button>
-      </div>
-
-      <div class="v22-list-title">云端频道</div>
-      <div id="v22List"></div>
-    </div>
-  </div>
-</div>
-
-<script id="security-lab-v22-real-channel-admin">
-(function(){
-  function el(id){return document.getElementById(id)}
-
-  window.openV22Manager=async function(){
-    const m=el("v22ChannelManager");
-    if(!m)return;
-    m.classList.add("show");
-    m.setAttribute("aria-hidden","false");
-    await v22Refresh();
-  };
-
-  window.closeV22Manager=function(){
-    const m=el("v22ChannelManager");
-    if(m){m.classList.remove("show");m.setAttribute("aria-hidden","true");}
-  };
-
-  window.v22Refresh=async function(){
-    const state=el("v22AdminState");
-    const controls=el("v22ManagerControls");
-    if(!state)return;
-
-    state.textContent="正在检查管理员权限…";
-    controls.style.display="none";
-
-    if(typeof V21_isAdmin!=="function"){
-      state.textContent="管理员模块未加载";
-      return;
+  setTimeout(()=>{
+    const target=document.querySelector(".channel-scroll");
+    if(target && !document.getElementById("v23CloudButton")){
+      const b=document.createElement("button");
+      b.id="v23CloudButton";
+      b.type="button";
+      b.textContent="☁️ 云端频道设置";
+      b.onclick=()=>openV23Setup();
+      b.style.cssText="width:calc(100% - 20px);margin:6px 10px;min-height:34px;border:1px solid rgba(120,176,255,.12);border-radius:10px;background:rgba(255,255,255,.03);color:#8ea4bf;font-size:10px;touch-action:manipulation";
+      target.appendChild(b);
     }
-
-    const admin=await V21_isAdmin();
-    if(!admin){
-      state.textContent="🔒 当前账号不是管理员";
-      return;
-    }
-
-    state.textContent="🟢 管理员已验证";
-    controls.style.display="block";
-    await v22Render();
-  };
-
-  window.v22Render=async function(){
-    const box=el("v22List");
-    if(!box || typeof V20_loadChannels!=="function")return;
-
-    const data=await V20_loadChannels();
-    if(!data){
-      box.innerHTML='<div class="v22-empty">云端频道暂时无法读取</div>';
-      return;
-    }
-
-    const rows=(data.channels||[]).map(c=>`
-      <div class="v22-row">
-        <div class="v22-row-name">${esc(c.icon||"#")} ${esc(c.name)}
-          <small>${c.kind==="voice"?"语音":"文字"}</small>
-        </div>
-        <div class="v22-row-actions">
-          <button type="button" onclick="v22Rename('${c.id}','${String(c.name).replace(/'/g,"&#39;")}')">重命名</button>
-          <button type="button" onclick="v22Delete('${c.id}','${String(c.name).replace(/'/g,"&#39;")}')">删除</button>
-        </div>
-      </div>`).join("");
-
-    box.innerHTML=rows||'<div class="v22-empty">还没有云端频道</div>';
-  };
-
-  window.v22Create=async function(){
-    const name=(el("v22Name")?.value||"").trim();
-    const kind=el("v22Kind")?.value||"text";
-    if(!name){alert("请输入频道名称");return}
-
-    try{
-      await V21_createChannel({
-        name:name.slice(0,30),
-        kind,
-        topic:kind==="voice"?"语音频道":"文字频道",
-        icon:kind==="voice"?"🎙️":"#",
-        position:Date.now()
-      });
-      el("v22Name").value="";
-      await v22Render();
-      if(typeof toast==="function")toast("频道创建成功");
-    }catch(e){
-      alert("创建失败："+(e?.message||"未知错误"));
-    }
-  };
-
-  window.v22Rename=async function(id,oldName){
-    const name=prompt("新的频道名称",oldName);
-    if(!name || !name.trim())return;
-
-    try{
-      await V21_updateChannel(id,{name:name.trim().slice(0,30)});
-      await v22Render();
-      if(typeof toast==="function")toast("频道已重命名");
-    }catch(e){
-      alert("修改失败："+(e?.message||"未知错误"));
-    }
-  };
-
-  window.v22Delete=async function(id,name){
-    if(!confirm("确定删除「"+name+"」？"))return;
-
-    try{
-      await V21_deleteChannel(id);
-      await v22Render();
-      if(typeof toast==="function")toast("频道已删除");
-    }catch(e){
-      alert("删除失败："+(e?.message||"未知错误"));
-    }
-  };
-
-  // Replace only the V21 admin entry action with the real manager.
-  function bind(){
-    const b=el("v21AdminButton");
-    if(b)b.onclick=()=>openV22Manager();
-
-    const direct=el("v21DirectManageButton");
-    if(direct)direct.onclick=()=>openV22Manager();
-  }
-
-  if(document.readyState==="loading")
-    document.addEventListener("DOMContentLoaded",bind,{once:true});
-  else bind();
-  setTimeout(bind,500);
+  },1000);
 })();
 </script>
 </body>
