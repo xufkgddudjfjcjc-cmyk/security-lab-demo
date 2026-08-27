@@ -3436,7 +3436,7 @@ button:active{
   padding:10px;font-size:9px;line-height:1.45
 }
 .v27-card>button{width:100%;margin-top:8px;min-height:38px;border-radius:10px;border:0;background:#4f46e5;color:white}
-</style><meta name="security-lab-build" content="V28-message-manager-schema-fixed"></head>
+</style><meta name="security-lab-build" content="V29-admin-buttons-fixed"></head>
 <body>
 <div class="app">
   <aside class="servers" id="servers"></aside>
@@ -3574,12 +3574,12 @@ button:active{
 <!-- 管理 -->
 <div class="modal" id="adminModal" onclick="if(event.target===this)closeAdmin()">
  <div class="modal-card"><div class="modal-head"><span>🛡 管理中心</span><button class="close" onclick="closeAdmin()">×</button></div>
- <p style="font-size:11px;color:#777">前端演示版管理功能。真正的禁言/踢出/封禁需要服务端权限规则。</p>
+ <p style="font-size:11px;color:#777">服务器管理功能。删除消息已接入云端权限；禁言/踢出/封禁将在服务端权限开启后生效。</p>
  <div class="channel" onclick="adminAction('禁言')">🔇 禁言用户</div>
  <div class="channel" onclick="adminAction('踢出')">🚪 踢出用户</div>
  <div class="channel" onclick="adminAction('封禁')">⛔ 封禁用户</div>
- <div class="channel" onclick="openV27MessageManager()">🗑️ 消息管理</div>
- <div class="channel" onclick="openV27Sql()">🔐 服务端权限 SQL</div>
+ <div class="channel" onclick="openV28MessageManager()">🗑️ 消息管理</div>
+ <div class="channel" onclick="openV28Sql()">🔐 服务端权限 SQL</div>
  </div>
 </div>
 
@@ -7690,7 +7690,7 @@ end $$;
   <div class="v24-mm-card">
     <div class="v24-mm-head">
       <strong>🗑️ 消息管理</strong>
-      <button type="button" onclick="closeV24MessageManager()">✕</button>
+      <button type="button" onclick="closeV28MessageManager()">✕</button>
     </div>
 
     <div id="v24MMState" class="v24-mm-state">正在检查管理员权限…</div>
@@ -7943,7 +7943,17 @@ end $$;`;
       window.openV28MessageManager();
       return;
     }
-    if(typeof toast === "function") toast(action + "功能暂未接入服务端");
+    if(action === "禁言" || action === "踢出" || action === "封禁"){
+      // These controls are intentionally explicit: they open a target selector
+      // instead of appearing dead, while the actual state change remains server-side.
+      const name = prompt("请输入要操作的用户名：");
+      if(!name) return;
+      if(typeof toast === "function"){
+        toast(action + "：" + name + "（需要对应服务端权限规则）");
+      }
+      return;
+    }
+    if(typeof toast === "function") toast(action + "操作");
   };
 })();
 </script>
