@@ -3320,6 +3320,26 @@ button:active{
 }
 </style>
 
+<style id="v14-multi-voice-channel-css">
+.voice-channel{position:relative}
+.voice-channel-count{
+  margin-left:auto;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  opacity:.9;
+  background:rgba(88,101,242,.16);
+}
+.voice-channel.active .voice-channel-count{background:rgba(53,199,89,.16)}
+@media(max-width:800px){
+  .voice-channel{min-height:44px}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -3330,6 +3350,8 @@ button:active{
     <div class="channel-scroll">
       <div class="cat">文字频道 <button class="channel-add" onclick="addChannel()">＋</button></div>
       <div id="textChannels"></div>
+      <div class="cat">语音频道</div>
+      <div id="voiceChannels"></div>
       <div class="cat">私聊</div>
       <div class="channel" onclick="openDM('好友')"><span class="icon">◉</span><span>好友</span><span class="unread" id="dmUnread" style="display:none">1</span></div>
       <div class="cat">管理</div>
@@ -3764,6 +3786,12 @@ const channels=[
  {id:"security",name:"安全公告",icon:"🛡",topic:"社区安全公告"},
  {id:"share",name:"分享区",icon:"◇",topic:"分享资源与作品"}
 ];
+
+const voiceChannels=[
+ {id:"voice-general",name:"总语音",icon:"🎙️",topic:"Security Lab 总语音"},
+ {id:"voice-gaming",name:"游戏开黑",icon:"🎮",topic:"一起开黑"},
+ {id:"voice-tech",name:"技术语音",icon:"💻",topic:"实时技术交流"}
+];
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>$("toast").classList.remove("show"),1800)}
@@ -3793,7 +3821,8 @@ function renderChannels(){
 let unread=0;
 function switchChannel(id){
  dmMode=false;channel=id;const c=channels.find(x=>x.id===id);$("chatName").textContent=c.name;$("chatTopic").textContent=c.topic;
- unread=0;renderChannels();closePanels();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));loadMessages();
+ unread=0;renderChannels();
+renderVoiceChannels();closePanels();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));loadMessages();
 }
 function toggleChannels(){$("channels").classList.toggle("open");$("overlay").classList.toggle("show",$("channels").classList.contains("open"))}
 function closePanels(){$("channels").classList.remove("open");$("overlay").classList.remove("show")}
@@ -3801,6 +3830,41 @@ function toggleMembers(){$("members").style.display=$("members").style.display==
 function mobileHome(){closePanels();switchChannel("general")}
 function openServerMenu(){toast("服务器菜单：邀请、设置、创建频道")}
 function addChannel(){const n=prompt("新频道名称");if(n){channels.push({id:"c"+Date.now(),name:n,icon:"#",topic:"新建频道"});renderChannels();toast("频道已创建")}}
+function renderVoiceChannels(){
+  const box=$("voiceChannels");
+  if(!box)return;
+  box.innerHTML=voiceChannels.map(c=>{
+    const active=voiceRoom && voiceRoom.__roomId===c.id;
+    const count=active ? Object.values(voiceRoom.presenceState()||{}).flat().length : 0;
+    return `<div class="channel voice-channel ${active?"active":""}" onclick="switchVoiceChannel('${c.id}')">
+      <span class="icon">${c.icon}</span><span>${esc(c.name)}</span>
+      ${count?`<span class="voice-channel-count">${count}</span>`:""}
+    </div>`;
+  }).join("");
+}
+
+async function switchVoiceChannel(id){
+  const vc=voiceChannels.find(x=>x.id===id);
+  if(!vc)return;
+
+  // A voice room is an independent Realtime room. Do not silently move an
+  // active WebRTC session; ask the user to leave first.
+  if(voiceJoined){
+    toast("请先离开当前语音，再切换语音频道");
+    return;
+  }
+
+  channel=id;
+  dmMode=false;
+  $("chatName").textContent=vc.name;
+  $("chatTopic").textContent=vc.topic;
+  closePanels();
+  renderChannels();
+  renderVoiceChannels();
+  renderMessages([]);
+  openVoice();
+}
+
 function renderMembers(){
   const names=["游客",nickname==="游客"?"":nickname,"Hotdog","SecurityBot","开发者"].filter(Boolean);
   const unique=[...new Set(names)];$("memberCount").textContent=unique.length;
@@ -4662,6 +4726,7 @@ const voiceId=(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random(
 const voicePeers={};
 const voicePendingIce={};
 
+renderVoiceChannels();
 
 const voiceDiagState={cloud:"wait",presence:"wait",broadcast:"wait",offer:"wait",answer:"wait",ice:"wait",webrtc:"wait"};
 const voiceDiag={offersSent:0,offersReceived:0,answersSent:0,answersReceived:0,iceSent:0,iceReceived:0,iceCompleted:0};
@@ -5133,6 +5198,7 @@ async function joinVoice(){
         presence:{key:voiceId}
       }
     });
+    voiceRoom.__roomId=channel;
 
     voiceRoom
       .on("broadcast",{event:"hello"},({payload})=>{
@@ -5150,12 +5216,14 @@ async function joinVoice(){
         const count=Object.values(voiceRoom.presenceState()||{}).flat().length;
         setDiag("presence",`${count} 人`,"ok");
         renderVoiceList();
+        renderVoiceChannels();
         updateVoiceNetworkStatus();
       })
       .on("presence",{event:"join"},({newPresences})=>{
         const count=Object.values(voiceRoom.presenceState()||{}).flat().length;
         setDiag("presence",`${count} 人`,"ok");
         renderVoiceList();
+        renderVoiceChannels();
         updateVoiceNetworkStatus();
         (newPresences||[]).forEach(u=>{
           if(u?.peerId&&u.peerId!==voiceId&&voiceId<u.peerId){
@@ -5168,6 +5236,7 @@ async function joinVoice(){
         const count=Object.values(voiceRoom.presenceState()||{}).flat().length;
         setDiag("presence",`${count} 人`,"ok");
         renderVoiceList();
+        renderVoiceChannels();
         updateVoiceNetworkStatus();
       });
 
@@ -5200,6 +5269,7 @@ async function joinVoice(){
     });
 
     renderVoiceList();
+    renderVoiceChannels();
     const initialPresenceCount=Object.values(voiceRoom.presenceState()||{}).flat().length;
     setDiag("presence",`${initialPresenceCount} 人`,"ok");
     startVoiceLevelMonitor();
@@ -5269,6 +5339,7 @@ async function leaveVoice(){
   $("voiceMute").textContent="🎤 静音";
   voiceState("已离开语音");
   renderVoiceList();
+  renderVoiceChannels();
 }
 
 async function toggleVoice(){
