@@ -3453,32 +3453,23 @@ button:active{
 </style>
 
 
-<style id="security-lab-v13-channel-ui">
+<style id="security-lab-v13-v12-base">
 .voice-cat{margin-top:12px!important}
-.voice-channel .voice-count{
+.voice-channel .voice-live{
   margin-left:auto;
-  min-width:20px;
-  height:20px;
-  padding:0 5px;
-  display:inline-grid;
-  place-items:center;
-  border-radius:8px;
-  background:rgba(53,199,89,.12);
-  color:#61d97b;
-  font-size:9px;
-  font-weight:800;
+  color:#35c759;
+  font-size:12px;
+  text-shadow:0 0 8px rgba(53,199,89,.7);
 }
-.voice-channel .voice-count.voice-unknown{opacity:.45;background:rgba(255,255,255,.04);color:#71849b}
 .voice-channel.voice-active{
   background:linear-gradient(90deg,rgba(91,140,255,.15),rgba(139,92,246,.07))!important;
   color:#eef6ff!important;
 }
-.voice-channel.voice-active .icon{filter:drop-shadow(0 0 7px rgba(91,140,255,.4))}
 .voice-room-switcher{
   display:flex;
   gap:6px;
   overflow-x:auto;
-  padding:9px 0 2px;
+  padding:8px 0 2px;
   scrollbar-width:none;
   -webkit-overflow-scrolling:touch;
 }
@@ -3499,40 +3490,8 @@ button:active{
   border-color:rgba(91,140,255,.28);
 }
 @media(max-width:800px){
-  .voice-channel{
-    min-height:46px!important;
-  }
-  .voice-room-switcher{
-    margin-top:1px;
-  }
-  .voice-room-switcher button{
-    min-height:34px;
-    border-radius:11px;
-    font-size:10px;
-  }
-}
-</style>
-
-
-<style id="security-lab-v13-1-fixes">
-.voice-channel .voice-count.voice-unknown{
-  opacity:.45;
-  background:rgba(255,255,255,.04)!important;
-  color:#71849b!important;
-}
-.voice-channel.voice-active{
-  position:relative;
-}
-.voice-channel.voice-active:after{
-  content:"";
-  width:5px;height:5px;border-radius:50%;
-  position:absolute;right:7px;top:50%;
-  transform:translateY(-50%);
-  background:#6ea2ff;
-  box-shadow:0 0 8px rgba(110,162,255,.7);
-}
-@media(max-width:800px){
-  .voice-channel.voice-active:after{right:8px}
+  .voice-channel{min-height:46px!important}
+  .voice-room-switcher button{min-height:34px;border-radius:11px}
 }
 </style>
 
@@ -3750,8 +3709,8 @@ button:active{
       <button class="close" onclick="closeVoice()">×</button>
     </div>
     <div class="voice-room">
-      <div class="voice-room-title" id="voiceRoomTitle">🎙️ 大厅</div>
-      <div class="voice-room-switcher" id="voiceRoomSwitcher"></div>
+      <div class="voice-room-title" id="voiceRoomTitle"># 总聊天室</div>
+      <div id="voiceRoomSwitcher" class="voice-room-switcher"></div>
       <div class="voice-state" id="voiceState">未加入语音</div>
       <div id="voiceNetwork" style="font-size:9px;color:#999;margin-top:6px">网络：未检测</div>
 <div id="voiceDiagnostics" class="voice-diagnostics" aria-live="polite">
@@ -4028,69 +3987,69 @@ function renderChannels(){
 
   const voiceBox=$("voiceChannels");
   if(voiceBox){
-    voiceBox.innerHTML=voiceChannels.map(c=>{
-      const isActive=voiceChannel===c.id;
-      const count=getVoiceChannelCount(c.id);
-      return `<div class="channel voice-channel ${isActive?"voice-active":""}"
-          onclick="openVoiceChannel('${c.id}')">
-          <span class="icon">${c.icon}</span>
-          <span>${esc(c.name)}</span>
-          ${count?`<span class="voice-count">${count}</span>`:""}
-        </div>`;
-    }).join("");
+    voiceBox.innerHTML=voiceChannels.map(c=>`
+      <div class="channel voice-channel ${voiceChannel===c.id?"voice-active":""}"
+           onclick="openVoiceChannel('${c.id}')">
+        <span class="icon">${c.icon}</span>
+        <span>${esc(c.name)}</span>
+        ${voiceChannel===c.id && voiceJoined ? `<span class="voice-live">●</span>` : ""}
+      </div>`).join("");
   }
-}
-
-function getVoiceChannelCount(id){
-  // Only the currently connected room can expose live Presence locally.
-  if(id!==voiceChannel || !voiceRoom)return 0;
-  try{
-    return Object.values(voiceRoom.presenceState()||{}).flat().length;
-  }catch(_){return 0}
 }
 
 async function openVoiceChannel(id){
   const c=voiceChannels.find(x=>x.id===id);
   if(!c)return;
 
-  // Close the channel drawer first so it cannot sit above the voice sheet on mobile.
   if(typeof closePanels==="function")closePanels();
 
-  // If already connected to a voice room, perform a real room switch.
-  if(voiceJoined){
-    await switchVoiceChannel(id);
-    $("voiceModal").classList.add("show");
-    return;
+  // V12 voice core stays unchanged; only select the room topic before opening.
+  if(voiceJoined && voiceChannel!==id){
+    await leaveVoice();
   }
 
   voiceChannel=id;
   renderChannels();
-  renderVoiceRoomSwitcher();
-  $("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
+try{renderVoiceRoomSwitcher()}catch(_){}
+
+  if(typeof renderVoiceRoomSwitcher==="function")renderVoiceRoomSwitcher();
+  if($("voiceRoomTitle"))$("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
+
   $("voiceModal").classList.add("show");
+
   if(typeof resetVoiceDiagnostics==="function")resetVoiceDiagnostics();
   if(typeof renderVoiceList==="function")renderVoiceList();
   if(typeof updateVoiceNetworkStatus==="function")updateVoiceNetworkStatus();
+
+  // Do not auto-join: keep V12's safe behavior and let the user explicitly join.
 }
 
-let unread=0;
 function switchChannel(id){
   const c=channels.find(x=>x.id===id);
   if(!c)return;
+
   dmMode=false;
   channel=id;
   $("chatName").textContent=c.name;
   $("chatTopic").textContent=c.topic;
   unread=0;
+
   renderChannels();
   closePanels();
+
   const search=$("search");
   if(search)search.value="";
   document.querySelectorAll(".message").forEach(x=>x.style.display="flex");
+
   renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
   loadMessages();
 }
 
+let unread=0;
+function switchChannel(id){
+ dmMode=false;channel=id;const c=channels.find(x=>x.id===id);$("chatName").textContent=c.name;$("chatTopic").textContent=c.topic;
+ unread=0;renderChannels();closePanels();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));loadMessages();
+}
 function toggleChannels(){$("channels").classList.toggle("open");$("overlay").classList.toggle("show",$("channels").classList.contains("open"))}
 function closePanels(){$("channels").classList.remove("open");$("overlay").classList.remove("show")}
 function toggleMembers(){$("members").style.display=$("members").style.display==="none"?"block":""}
@@ -5019,13 +4978,12 @@ function renderVoiceRoomSwitcher(){
   if(!box)return;
   box.innerHTML=voiceChannels.map(c=>`
     <button type="button" class="${c.id===voiceChannel?"active":""}"
-      onclick="event.stopPropagation();switchVoiceChannel('${c.id}')">${c.icon} ${esc(c.name)}</button>
-  `).join("");
+      onclick="event.stopPropagation();openVoiceChannel('${c.id}')">
+      ${c.icon} ${esc(c.name)}
+    </button>`).join("");
 }
 
 function openVoice(){
-  if(typeof closePanels==="function")closePanels();
-  renderVoiceRoomSwitcher();
   resetVoiceDiagnostics();
   $("voiceModal").classList.add("show");
   const vc=voiceChannels.find(x=>x.id===voiceChannel);
@@ -5531,7 +5489,6 @@ async function leaveVoice(){
   voiceRoom=null;
   voiceJoined=false;
   voiceMuted=false;
-  renderVoiceList();
 
   stopVoiceNetworkMonitor();
 
@@ -5552,26 +5509,6 @@ async function leaveVoice(){
 async function toggleVoice(){
   if(voiceJoined)await leaveVoice();
   else await joinVoice();
-}
-
-async function switchVoiceChannel(id){
-  const c=voiceChannels.find(x=>x.id===id);
-  if(!c)return;
-
-  const wasJoined=voiceJoined;
-  if(wasJoined)await leaveVoice();
-
-  voiceChannel=id;
-  renderChannels();
-  renderVoiceRoomSwitcher();
-  $("voiceRoomTitle").textContent=`${c.icon} ${c.name}`;
-
-  if(wasJoined){
-    await joinVoice();
-  }else{
-    if(typeof resetVoiceDiagnostics==="function")resetVoiceDiagnostics();
-    if(typeof updateVoiceNetworkStatus==="function")updateVoiceNetworkStatus();
-  }
 }
 
 async function toggleVoiceMute(){
