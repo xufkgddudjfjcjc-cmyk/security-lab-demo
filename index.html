@@ -3367,46 +3367,76 @@ button:active{
 }
 </style>
 
-<style id="security-lab-v25-server-admin-css">
-.v25-mm{
+<style id="security-lab-v24-server-admin-css">
+.v24-mm{
   position:fixed;inset:0;display:none;align-items:center;justify-content:center;
   padding:16px;background:rgba(0,0,0,.58);z-index:9000
 }
-.v25-mm.show{display:flex}
-.v25-mm-card{
+.v24-mm.show{display:flex}
+.v24-mm-card{
   width:min(94vw,540px);max-height:84vh;overflow:auto;padding:15px;
   border-radius:18px;background:rgba(18,24,35,.99);
   border:1px solid rgba(120,176,255,.16);box-shadow:0 20px 70px rgba(0,0,0,.5)
 }
-.v25-mm-head{display:flex;align-items:center;justify-content:space-between}
-.v25-mm-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
-.v25-mm-state{margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.55}
-.v25-mm-list{display:flex;flex-direction:column;gap:6px}
-.v25-msg-row{
+.v24-mm-head{display:flex;align-items:center;justify-content:space-between}
+.v24-mm-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
+.v24-mm-state{margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.55}
+.v24-mm-list{display:flex;flex-direction:column;gap:6px}
+.v24-msg-row{
   display:flex;align-items:center;gap:8px;padding:9px;
   border-radius:10px;background:rgba(255,255,255,.035)
 }
-.v25-msg-copy{min-width:0;flex:1}
-.v25-msg-meta{font-size:9px;color:#72869e;margin-bottom:4px}
-.v25-msg-text{font-size:11px;color:#dbe8f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.v25-msg-row button{
+.v24-msg-copy{min-width:0;flex:1}
+.v24-msg-meta{font-size:9px;color:#72869e;margin-bottom:4px}
+.v24-msg-text{font-size:11px;color:#dbe8f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v24-msg-row button{
   flex:0 0 auto;border:1px solid rgba(255,100,100,.16);
   background:rgba(255,80,80,.08);color:#ffb0b0;border-radius:8px;
   padding:6px 9px;font-size:10px
 }
-.v25-empty{text-align:center;padding:20px;color:#71859d;font-size:10px}
-#v25AdminSql{
+.v24-empty{text-align:center;padding:20px;color:#71859d;font-size:10px}
+#v24AdminSql{
   width:100%;height:260px;box-sizing:border-box;resize:none;
   border-radius:10px;border:1px solid rgba(120,176,255,.12);
   background:#0d131d;color:#b9cbe0;padding:10px;font-size:9px;line-height:1.45
 }
-.v25-copy{
+.v24-copy{
   width:100%;min-height:38px;margin-top:8px;border-radius:10px;
   border:1px solid rgba(120,176,255,.12);background:rgba(91,140,255,.18);
   color:#dceaff
 }
 </style>
-<meta name="security-lab-build" content="V26-delete-message-fixed"></head>
+<style id="security-lab-v27-css">
+.v27-overlay{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(0,0,0,.58);z-index:10000;
+}
+.v27-overlay.show{display:flex}
+.v27-card{
+  width:min(94vw,560px);max-height:84vh;overflow:auto;padding:16px;
+  border-radius:18px;background:#121823;color:#dce8f5;
+  border:1px solid rgba(120,176,255,.18);box-shadow:0 20px 70px rgba(0,0,0,.55)
+}
+.v27-head{display:flex;align-items:center;justify-content:space-between;font-size:15px}
+.v27-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
+.v27-state{margin:12px 0;color:#91a6bd;font-size:11px;line-height:1.5}
+.v27-list{display:flex;flex-direction:column;gap:7px}
+.v27-row{display:flex;gap:8px;align-items:center;padding:9px;border-radius:11px;background:rgba(255,255,255,.035)}
+.v27-copy{min-width:0;flex:1}
+.v27-meta{font-size:9px;color:#71869e;margin-bottom:4px}
+.v27-text{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v27-row button{
+  flex:none;border:1px solid rgba(255,90,90,.2);background:rgba(255,70,70,.1);
+  color:#ffb1b1;border-radius:8px;padding:7px 10px;font-size:10px
+}
+.v27-empty{text-align:center;padding:24px;color:#71869e;font-size:11px}
+.v27-card textarea{
+  width:100%;height:300px;box-sizing:border-box;border-radius:10px;
+  border:1px solid rgba(120,176,255,.14);background:#0b111a;color:#c4d4e5;
+  padding:10px;font-size:9px;line-height:1.45
+}
+.v27-card>button{width:100%;margin-top:8px;min-height:38px;border-radius:10px;border:0;background:#4f46e5;color:white}
+</style><meta name="security-lab-build" content="V27-message-manager-fixed"></head>
 <body>
 <div class="app">
   <aside class="servers" id="servers"></aside>
@@ -3548,7 +3578,8 @@ button:active{
  <div class="channel" onclick="adminAction('禁言')">🔇 禁言用户</div>
  <div class="channel" onclick="adminAction('踢出')">🚪 踢出用户</div>
  <div class="channel" onclick="adminAction('封禁')">⛔ 封禁用户</div>
- <div class="channel" onclick="adminAction('删除消息')">🗑 删除消息</div>
+ <div class="channel" onclick="openV27MessageManager()">🗑️ 消息管理</div>
+ <div class="channel" onclick="openV27Sql()">🔐 服务端权限 SQL</div>
  </div>
 </div>
 
@@ -4349,23 +4380,8 @@ async function editMessage(m){
 }
 async function deleteMessage(m){
  if(!confirm("删除这条消息？"))return;
- if(sb&&m.id&&!String(m.id).startsWith("local-")){
-   try{
-     const {error}=await sb.from("messages").delete().eq("id",m.id);
-     if(error)throw error;
-     await loadMessages();
-     toast("已删除");
-     return;
-   }catch(e){
-     console.warn("云端删除失败:",e);
-     toast("删除失败：需要管理员权限");
-     return;
-   }
- }
- messages=messages.filter(x=>x.id!==m.id);
- localStorage.setItem("sl_local_messages",JSON.stringify(messages));
- renderMessages(messages.filter(x=>!x.channel||x.channel===channel));
- toast("已删除")
+ if(sb&&m.id&&!String(m.id).startsWith("local-")){try{const {error}=await sb.from("messages").delete().eq("id",m.id);if(error)throw error;await loadMessages();toast("已删除");return}catch(e){}}
+ messages=messages.filter(x=>x.id!==m.id);localStorage.setItem("sl_local_messages",JSON.stringify(messages));renderMessages(messages.filter(x=>!x.channel||x.channel===channel));toast("已删除")
 }
 
 $("fileInput").addEventListener("change",e=>{
@@ -4468,13 +4484,7 @@ function closeInvite(){$("inviteModal").classList.remove("show")}
 function copyInvite(){copyText($("inviteCode").value);closeInvite()}
 function openAdmin(){$("adminModal").classList.add("show");closePanels()}
 function closeAdmin(){$("adminModal").classList.remove("show")}
-function adminAction(x){
-  if(x==="删除消息"){
-    if(typeof openV25MessageManager==="function"){ openV25MessageManager(); return; }
-    if(typeof openV24MessageManager==="function"){ openV24MessageManager(); return; }
-  }
-  toast(x+"操作已打开") 
-}
+function adminAction(x){toast(x+"操作已打开（需要服务端管理员权限才能真正生效）")}
 function applyChatBackgroundStyle(){
   const box=$("messages");if(!box)return;
   const bg=localStorage.getItem("sl_chat_bg")||"";
@@ -7676,38 +7686,21 @@ end $$;
 })();
 </script>
 
-<div id="v25MessageManager" class="v25-mm" aria-hidden="true">
-  <div class="v25-mm-card">
-    <div class="v25-mm-head">
+<div id="v24MessageManager" class="v24-mm" aria-hidden="true">
+  <div class="v24-mm-card">
+    <div class="v24-mm-head">
       <strong>🗑️ 消息管理</strong>
-      <button type="button" onclick="closeV25MessageManager()">✕</button>
+      <button type="button" onclick="closeV24MessageManager()">✕</button>
     </div>
 
-    <div id="v25MMState" class="v25-mm-state">正在检查管理员权限…</div>
-    <div id="v25MMList" class="v25-mm-list"></div>
+    <div id="v24MMState" class="v24-mm-state">正在检查管理员权限…</div>
+    <div id="v24MMList" class="v24-mm-list"></div>
   </div>
 </div>
 
-<div id="v25SqlPanel" class="v25-mm" aria-hidden="true">
-  <div class="v25-mm-card">
-    <div class="v25-mm-head">
-      <strong>🔐 V25 服务端权限</strong>
-      <button type="button" onclick="closeV25Sql()">✕</button>
-    </div>
-    <div class="v25-mm-state">
-      只需要执行一次。执行后，“删除消息”会通过 Supabase RLS 在服务器端验证管理员身份。
-    </div>
-    <textarea id="v25AdminSql" readonly></textarea>
-    <button class="v25-copy" type="button" onclick="copyV25AdminSql()">复制 SQL</button>
-  </div>
-</div>
-
-<script id="security-lab-v25-server-admin">
+<script id="security-lab-v27-message-manager">
 (function(){
-  const SQL=`-- Security Lab V25：修复管理员身份 + 真正删除消息
--- 你的前端“开发者”身份已经来自 profiles.role / profiles.badge。
--- 下面把同一规则放到 Supabase 服务端，RLS 才能真正识别管理员。
-
+  const SQL = `-- Security Lab V27：服务端管理员删除消息
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -7716,8 +7709,7 @@ security definer
 set search_path = public
 as $$
   select exists (
-    select 1
-    from public.profiles
+    select 1 from public.profiles
     where id = auth.uid()
       and (role = 'developer' or badge = 'developer')
   );
@@ -7727,10 +7719,11 @@ grant execute on function public.is_admin() to authenticated;
 
 alter table public.messages enable row level security;
 
+drop policy if exists "v24_admin_delete_messages" on public.messages;
 drop policy if exists "v25_admin_delete_messages" on public.messages;
-drop policy if exists "v25_admin_delete_messages" on public.messages;
+drop policy if exists "v27_admin_delete_messages" on public.messages;
 
-create policy "v25_admin_delete_messages"
+create policy "v27_admin_delete_messages"
 on public.messages
 for delete
 to authenticated
@@ -7743,149 +7736,193 @@ begin
   exception when duplicate_object then
     null;
   end;
-end $$;
+end $$;`;
 
+  const $ = id => document.getElementById(id);
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, s => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[s]));
 
-  function $(id){return document.getElementById(id)}
-  function escLocal(v){
-    return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]))
-  }
+  let adminCache = null;
 
-  window.openV25Sql=function(){
-    const p=$("v25SqlPanel"), t=$("v25AdminSql");
-    if(t)t.value=SQL;
-    if(p){p.classList.add("show");p.setAttribute("aria-hidden","false");}
-  };
-  window.closeV25Sql=function(){
-    const p=$("v25SqlPanel");
-    if(p){p.classList.remove("show");p.setAttribute("aria-hidden","true");}
-  };
-  window.copyV25AdminSql=async function(){
+  async function checkAdmin(){
+    if(adminCache !== null) return adminCache;
     try{
-      await navigator.clipboard.writeText(SQL);
-      if(typeof toast==="function")toast("V25 管理员 SQL 已复制");
-    }catch(_){
-      const t=$("v25AdminSql");
-      if(t){t.focus();t.select();document.execCommand("copy");}
-      if(typeof toast==="function")toast("V25 管理员 SQL 已复制");
-    }
-  };
-
-  let v25AdminCache=null;
-
-  async function isAdmin(){
-    if(v25AdminCache!==null)return v25AdminCache;
-    try{
-      if(typeof isCurrentUserDeveloper==="function"){
-        v25AdminCache=!!isCurrentUserDeveloper();
-        return v25AdminCache;
+      if(typeof isCurrentUserDeveloper === "function"){
+        adminCache = !!isCurrentUserDeveloper();
+        return adminCache;
       }
-      if(typeof currentUser!=="undefined" && currentUser && typeof cloudProfile!=="undefined"){
-        v25AdminCache=!!(cloudProfile?.role==="developer" || cloudProfile?.badge==="developer");
-        return v25AdminCache;
-      }
-      return false;
-    }catch(_){return false}
-  }
-
-  window.V25_deleteMessage=async function(id){
-    if(!id || String(id).startsWith("local-"))throw new Error("这条消息还没有同步到云端");
-    if(!(await isAdmin()))throw new Error("只有管理员可以删除消息");
-
-    const {error}=await sb.from("messages").delete().eq("id",id);
-    if(error)throw error;
-
-    // Realtime DELETE 会让所有在线客户端自动刷新；当前端也立即刷新。
-    messages=messages.filter(m=>String(m.id)!==String(id));
-    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
-    renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
-  };
-
-  window.openV25MessageManager=async function(){
-    const p=$("v25MessageManager");
-    if(!p)return;
-    p.classList.add("show");
-    p.setAttribute("aria-hidden","false");
-
-    const state=$("v25MMState"), list=$("v25MMList");
-    state.textContent="正在检查管理员权限…";
-    list.innerHTML="";
-
-    if(!(await isAdmin())){
-      state.textContent="🔒 当前账号不是管理员";
-      return;
-    }
-
-    state.textContent="🟢 管理员已验证 · 当前频道消息";
-    const rows=messages.filter(m=>!m.channel||m.channel===channel).slice().reverse();
-
-    if(!rows.length){
-      list.innerHTML='<div class="v25-empty">当前频道没有消息</div>';
-      return;
-    }
-
-    list.innerHTML=rows.map(m=>`
-      <div class="v25-msg-row" data-v25-id="${escLocal(m.id)}">
-        <div class="v25-msg-copy">
-          <div class="v25-msg-meta">${escLocal(m.username||"游客")} · ${escLocal(time(m.created_at||Date.now()))}</div>
-          <div class="v25-msg-text">${escLocal((m.message||"").slice(0,180))}</div>
-        </div>
-        <button type="button" onclick="V25_adminDelete('${escLocal(m.id)}')">删除</button>
-      </div>`).join("");
-  };
-
-  window.closeV25MessageManager=function(){
-    const p=$("v25MessageManager");
-    if(p){p.classList.remove("show");p.setAttribute("aria-hidden","true");}
-  };
-
-  window.V25_adminDelete=async function(id){
-    const m=messages.find(x=>String(x.id)===String(id));
-    if(!m)return;
-    if(!confirm("确定删除这条消息？\\n\\n"+(m.message||"").slice(0,120)))return;
-
-    try{
-      await V25_deleteMessage(id);
-      if(typeof toast==="function")toast("消息已删除");
-      await openV25MessageManager();
+      adminCache = !!(
+        typeof cloudProfile !== "undefined" &&
+        cloudProfile &&
+        (cloudProfile.role === "developer" || cloudProfile.badge === "developer")
+      );
+      return adminCache;
     }catch(e){
-      alert("删除失败："+(e?.message||"未知错误"));
+      console.warn("[V27] admin check failed", e);
+      return false;
     }
-  };
-
-  // 覆盖旧的演示 adminAction：删除消息现在进入真正的服务端管理界面。
-  window.adminAction=function(action){
-    if(action==="删除消息"){
-      openV25MessageManager();
-      return;
-    }
-    if(action==="禁言" || action==="踢出" || action==="封禁"){
-      toast(action+"：V26 尚未接入服务端权限");
-      return;
-    }
-    toast(action+"操作");
-  };
-
-  // 管理中心里补一个明确的“服务端权限 SQL”入口，不替换原有功能。
-  function addV26Button(){
-    const box=document.querySelector(".admin-panel") || document.querySelector("#adminModal");
-    if(!box || document.getElementById("v25SqlEntry"))return;
-
-    const b=document.createElement("button");
-    b.id="v25SqlEntry";
-    b.type="button";
-    b.textContent="🔐 服务端权限 SQL";
-    b.onclick=()=>openV25Sql();
-    b.style.cssText="width:100%;min-height:36px;margin-top:8px;border-radius:10px;border:1px solid rgba(120,176,255,.14);background:rgba(255,255,255,.04);color:#9fb3ca;font-size:11px";
-    box.appendChild(b);
   }
 
-  if(document.readyState==="loading")
-    document.addEventListener("DOMContentLoaded",addV26Button,{once:true});
-  else addV26Button();
-  setTimeout(addV26Button,700);
+  window.openV27Sql = function(){
+    let p = $("v24SqlPanel");
+    let t = $("v24AdminSql");
+    if(!p){
+      p = $("v27SqlPanel");
+      if(!p){
+        p = document.createElement("div");
+        p.id = "v27SqlPanel";
+        p.className = "v27-overlay";
+        p.innerHTML = `
+          <div class="v27-card">
+            <div class="v27-head"><strong>🔐 服务端权限 SQL</strong><button onclick="closeV27Sql()">✕</button></div>
+            <p>复制后到 Supabase → SQL Editor → New query 执行一次。</p>
+            <textarea id="v27SqlText" readonly></textarea>
+            <button onclick="copyV27Sql()">复制 SQL</button>
+          </div>`;
+        document.body.appendChild(p);
+      }
+      t = $("v27SqlText");
+    }
+    if(t) t.value = SQL;
+    p.classList.add("show");
+  };
 
-  // 消息被其他客户端删除时，现有 V17/V23 Realtime 逻辑继续工作。
+  window.closeV27Sql = function(){
+    const p = $("v27SqlPanel") || $("v24SqlPanel");
+    if(p) p.classList.remove("show");
+  };
+
+  window.copyV27Sql = async function(){
+    const t = $("v27SqlText") || $("v24AdminSql");
+    if(!t) return;
+    try{
+      await navigator.clipboard.writeText(t.value);
+      if(typeof toast === "function") toast("SQL 已复制");
+    }catch(e){
+      t.focus(); t.select(); document.execCommand("copy");
+      if(typeof toast === "function") toast("SQL 已复制");
+    }
+  };
+
+  async function getCurrentChannelMessages(){
+    if(typeof sb === "undefined" || !sb){
+      return (typeof messages !== "undefined" ? messages : [])
+        .filter(m => !m.channel || m.channel === channel);
+    }
+
+    let q = sb.from("messages")
+      .select("id,username,message,created_at,channel")
+      .order("created_at",{ascending:false})
+      .limit(200);
+
+    if(typeof dmMode === "undefined" || !dmMode){
+      q = q.eq("channel", channel);
+    }
+
+    const {data,error} = await q;
+    if(error) throw error;
+    return data || [];
+  }
+
+  window.openV27MessageManager = async function(){
+    // The manager is visible first; it never silently does nothing.
+    let p = $("v27MessageManager");
+    if(!p){
+      p = document.createElement("div");
+      p.id = "v27MessageManager";
+      p.className = "v27-overlay";
+      p.innerHTML = `
+        <div class="v27-card v27-manager">
+          <div class="v27-head">
+            <strong>🗑️ 消息管理</strong>
+            <button onclick="closeV27MessageManager()">✕</button>
+          </div>
+          <div id="v27State" class="v27-state">正在检查管理员权限…</div>
+          <div id="v27List" class="v27-list"></div>
+        </div>`;
+      document.body.appendChild(p);
+    }
+
+    p.classList.add("show");
+    const state = $("v27State");
+    const list = $("v27List");
+    if(state) state.textContent = "正在检查管理员权限…";
+    if(list) list.innerHTML = "";
+
+    const ok = await checkAdmin();
+    if(!ok){
+      if(state) state.innerHTML = "🔒 当前账号不是开发者管理员。<br><small>请确认 Supabase profiles 表中该账号 role 或 badge 为 developer。</small>";
+      return;
+    }
+
+    try{
+      const rows = await getCurrentChannelMessages();
+      if(state) state.textContent = "🟢 管理员已验证 · 当前频道共 " + rows.length + " 条云端消息";
+
+      if(!rows.length){
+        list.innerHTML = '<div class="v27-empty">当前频道没有云端消息</div>';
+        return;
+      }
+
+      list.innerHTML = rows.map(m => `
+        <div class="v27-row">
+          <div class="v27-copy">
+            <div class="v27-meta">${esc(m.username || "游客")} · ${esc(m.created_at || "")}</div>
+            <div class="v27-text">${esc(m.message || "")}</div>
+          </div>
+          <button onclick="V27_deleteMessage('${esc(m.id)}')">删除</button>
+        </div>
+      `).join("");
+    }catch(e){
+      console.error("[V27] message load failed",e);
+      if(state) state.textContent = "❌ 读取云端消息失败：" + (e?.message || "未知错误");
+    }
+  };
+
+  window.closeV27MessageManager = function(){
+    const p = $("v27MessageManager");
+    if(p) p.classList.remove("show");
+  };
+
+  window.V27_deleteMessage = async function(id){
+    if(!id) return;
+    if(!(await checkAdmin())){
+      alert("只有开发者管理员可以删除消息。");
+      return;
+    }
+
+    if(typeof sb === "undefined" || !sb){
+      alert("云端未连接，不能删除云端消息。");
+      return;
+    }
+
+    if(!confirm("确定删除这条云端消息？")) return;
+
+    const {error} = await sb.from("messages").delete().eq("id",id);
+    if(error){
+      console.error("[V27] delete failed",error);
+      alert("删除失败：" + (error.message || "服务端权限未生效，请先执行 V27 SQL"));
+      return;
+    }
+
+    if(typeof messages !== "undefined"){
+      messages = messages.filter(m => String(m.id) !== String(id));
+      localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    }
+    if(typeof loadMessages === "function") await loadMessages({silent:true});
+    if(typeof toast === "function") toast("消息已删除");
+    await window.openV27MessageManager();
+  };
+
+  // Keep the old inline action compatible.
+  window.adminAction = function(action){
+    if(action === "删除消息"){
+      window.openV27MessageManager();
+      return;
+    }
+    if(typeof toast === "function") toast(action + "功能暂未接入服务端");
+  };
 })();
 </script>
 </body>
