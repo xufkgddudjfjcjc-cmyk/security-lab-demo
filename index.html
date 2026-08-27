@@ -3366,6 +3366,46 @@ button:active{
   color:#dceaff
 }
 </style>
+
+<style id="security-lab-v24-server-admin-css">
+.v24-mm{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+  padding:16px;background:rgba(0,0,0,.58);z-index:9000
+}
+.v24-mm.show{display:flex}
+.v24-mm-card{
+  width:min(94vw,540px);max-height:84vh;overflow:auto;padding:15px;
+  border-radius:18px;background:rgba(18,24,35,.99);
+  border:1px solid rgba(120,176,255,.16);box-shadow:0 20px 70px rgba(0,0,0,.5)
+}
+.v24-mm-head{display:flex;align-items:center;justify-content:space-between}
+.v24-mm-head button{border:0;background:transparent;color:#9fb3ca;font-size:18px}
+.v24-mm-state{margin:10px 0;color:#8ea4bf;font-size:11px;line-height:1.55}
+.v24-mm-list{display:flex;flex-direction:column;gap:6px}
+.v24-msg-row{
+  display:flex;align-items:center;gap:8px;padding:9px;
+  border-radius:10px;background:rgba(255,255,255,.035)
+}
+.v24-msg-copy{min-width:0;flex:1}
+.v24-msg-meta{font-size:9px;color:#72869e;margin-bottom:4px}
+.v24-msg-text{font-size:11px;color:#dbe8f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v24-msg-row button{
+  flex:0 0 auto;border:1px solid rgba(255,100,100,.16);
+  background:rgba(255,80,80,.08);color:#ffb0b0;border-radius:8px;
+  padding:6px 9px;font-size:10px
+}
+.v24-empty{text-align:center;padding:20px;color:#71859d;font-size:10px}
+#v24AdminSql{
+  width:100%;height:260px;box-sizing:border-box;resize:none;
+  border-radius:10px;border:1px solid rgba(120,176,255,.12);
+  background:#0d131d;color:#b9cbe0;padding:10px;font-size:9px;line-height:1.45
+}
+.v24-copy{
+  width:100%;min-height:38px;margin-top:8px;border-radius:10px;
+  border:1px solid rgba(120,176,255,.12);background:rgba(91,140,255,.18);
+  color:#dceaff
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -7612,6 +7652,196 @@ end $$;
       target.appendChild(b);
     }
   },1000);
+})();
+</script>
+
+<div id="v24MessageManager" class="v24-mm" aria-hidden="true">
+  <div class="v24-mm-card">
+    <div class="v24-mm-head">
+      <strong>🗑️ 消息管理</strong>
+      <button type="button" onclick="closeV24MessageManager()">✕</button>
+    </div>
+
+    <div id="v24MMState" class="v24-mm-state">正在检查管理员权限…</div>
+    <div id="v24MMList" class="v24-mm-list"></div>
+  </div>
+</div>
+
+<div id="v24SqlPanel" class="v24-mm" aria-hidden="true">
+  <div class="v24-mm-card">
+    <div class="v24-mm-head">
+      <strong>🔐 V24 服务端权限</strong>
+      <button type="button" onclick="closeV24Sql()">✕</button>
+    </div>
+    <div class="v24-mm-state">
+      只需要执行一次。执行后，“删除消息”会通过 Supabase RLS 在服务器端验证管理员身份。
+    </div>
+    <textarea id="v24AdminSql" readonly></textarea>
+    <button class="v24-copy" type="button" onclick="copyV24AdminSql()">复制 SQL</button>
+  </div>
+</div>
+
+<script id="security-lab-v24-server-admin">
+(function(){
+  const SQL=`-- Security Lab V24：真正的服务端管理员消息删除权限
+-- 依赖你之前已经成功建立的 public.user_roles + public.is_admin()
+
+alter table public.messages enable row level security;
+
+-- 管理员可以删除任何云端消息。
+drop policy if exists "v24_admin_delete_messages" on public.messages;
+
+create policy "v24_admin_delete_messages"
+on public.messages
+for delete
+to authenticated
+using (public.is_admin());
+
+-- 确保 Supabase Realtime 能把 DELETE 事件推送给在线用户。
+do $$
+begin
+  begin
+    alter publication supabase_realtime add table public.messages;
+  exception when duplicate_object then
+    null;
+  end;
+end $$;
+`;
+
+  function $(id){return document.getElementById(id)}
+  function escLocal(v){
+    return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]))
+  }
+
+  window.openV24Sql=function(){
+    const p=$("v24SqlPanel"), t=$("v24AdminSql");
+    if(t)t.value=SQL;
+    if(p){p.classList.add("show");p.setAttribute("aria-hidden","false");}
+  };
+  window.closeV24Sql=function(){
+    const p=$("v24SqlPanel");
+    if(p){p.classList.remove("show");p.setAttribute("aria-hidden","true");}
+  };
+  window.copyV24AdminSql=async function(){
+    try{
+      await navigator.clipboard.writeText(SQL);
+      if(typeof toast==="function")toast("V24 管理员 SQL 已复制");
+    }catch(_){
+      const t=$("v24AdminSql");
+      if(t){t.focus();t.select();document.execCommand("copy");}
+      if(typeof toast==="function")toast("V24 管理员 SQL 已复制");
+    }
+  };
+
+  let v24AdminCache=null;
+
+  async function isAdmin(){
+    if(v24AdminCache!==null)return v24AdminCache;
+    try{
+      if(typeof V21_isAdmin!=="function")return false;
+      v24AdminCache=await V21_isAdmin();
+      return v24AdminCache;
+    }catch(_){return false}
+  }
+
+  window.V24_deleteMessage=async function(id){
+    if(!id || String(id).startsWith("local-"))throw new Error("这条消息还没有同步到云端");
+    if(!(await isAdmin()))throw new Error("只有管理员可以删除消息");
+
+    const {error}=await sb.from("messages").delete().eq("id",id);
+    if(error)throw error;
+
+    // Realtime DELETE 会让所有在线客户端自动刷新；当前端也立即刷新。
+    messages=messages.filter(m=>String(m.id)!==String(id));
+    localStorage.setItem("sl_local_messages",JSON.stringify(messages));
+    renderMessages(messages.filter(m=>!m.channel||m.channel===channel));
+  };
+
+  window.openV24MessageManager=async function(){
+    const p=$("v24MessageManager");
+    if(!p)return;
+    p.classList.add("show");
+    p.setAttribute("aria-hidden","false");
+
+    const state=$("v24MMState"), list=$("v24MMList");
+    state.textContent="正在检查管理员权限…";
+    list.innerHTML="";
+
+    if(!(await isAdmin())){
+      state.textContent="🔒 当前账号不是管理员";
+      return;
+    }
+
+    state.textContent="🟢 管理员已验证 · 当前频道消息";
+    const rows=messages.filter(m=>!m.channel||m.channel===channel).slice().reverse();
+
+    if(!rows.length){
+      list.innerHTML='<div class="v24-empty">当前频道没有消息</div>';
+      return;
+    }
+
+    list.innerHTML=rows.map(m=>`
+      <div class="v24-msg-row" data-v24-id="${escLocal(m.id)}">
+        <div class="v24-msg-copy">
+          <div class="v24-msg-meta">${escLocal(m.username||"游客")} · ${escLocal(time(m.created_at||Date.now()))}</div>
+          <div class="v24-msg-text">${escLocal((m.message||"").slice(0,180))}</div>
+        </div>
+        <button type="button" onclick="V24_adminDelete('${escLocal(m.id)}')">删除</button>
+      </div>`).join("");
+  };
+
+  window.closeV24MessageManager=function(){
+    const p=$("v24MessageManager");
+    if(p){p.classList.remove("show");p.setAttribute("aria-hidden","true");}
+  };
+
+  window.V24_adminDelete=async function(id){
+    const m=messages.find(x=>String(x.id)===String(id));
+    if(!m)return;
+    if(!confirm("确定删除这条消息？\\n\\n"+(m.message||"").slice(0,120)))return;
+
+    try{
+      await V24_deleteMessage(id);
+      if(typeof toast==="function")toast("消息已删除");
+      await openV24MessageManager();
+    }catch(e){
+      alert("删除失败："+(e?.message||"未知错误"));
+    }
+  };
+
+  // 覆盖旧的演示 adminAction：删除消息现在进入真正的服务端管理界面。
+  window.adminAction=function(action){
+    if(action==="删除消息"){
+      openV24MessageManager();
+      return;
+    }
+    if(action==="禁言" || action==="踢出" || action==="封禁"){
+      toast(action+"：V24 将在下一阶段接入服务端权限");
+      return;
+    }
+    toast(action+"操作");
+  };
+
+  // 管理中心里补一个明确的“服务端权限 SQL”入口，不替换原有功能。
+  function addV24Button(){
+    const box=document.querySelector(".admin-panel") || document.querySelector("#adminModal");
+    if(!box || document.getElementById("v24SqlEntry"))return;
+
+    const b=document.createElement("button");
+    b.id="v24SqlEntry";
+    b.type="button";
+    b.textContent="🔐 服务端权限 SQL";
+    b.onclick=()=>openV24Sql();
+    b.style.cssText="width:100%;min-height:36px;margin-top:8px;border-radius:10px;border:1px solid rgba(120,176,255,.14);background:rgba(255,255,255,.04);color:#9fb3ca;font-size:11px";
+    box.appendChild(b);
+  }
+
+  if(document.readyState==="loading")
+    document.addEventListener("DOMContentLoaded",addV24Button,{once:true});
+  else addV24Button();
+  setTimeout(addV24Button,700);
+
+  // 消息被其他客户端删除时，现有 V17/V23 Realtime 逻辑继续工作。
 })();
 </script>
 </body>
