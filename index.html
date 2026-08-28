@@ -3940,14 +3940,33 @@ function renderServers(){
  const sep=document.createElement("div");sep.className="server-sep";$("servers").appendChild(sep);
  const add=document.createElement("button");add.className="server add";add.textContent="+";add.title="添加服务器";add.onclick=()=>toast("服务器邀请/创建功能可接入后端");$("servers").appendChild(add);
 }
+function getCloudTextChannels(){
+  return (window.V23_cloudCatalogue?.channels||[]).filter(c=>c.kind==="text");
+}
+function getCloudVoiceChannels(){
+  return (window.V23_cloudCatalogue?.channels||[]).filter(c=>c.kind==="voice");
+}
 function renderChannels(){
- $("textChannels").innerHTML=channels.map(c=>`<div class="channel ${channel===c.id&&!dmMode?"active":""}" onclick="switchChannel('${c.id}')"><span class="icon">${c.icon}</span><span>${c.name}</span>${c.id==="general"&&unread?`<span class="unread">${unread}</span>`:""}</div>`).join("");
+  const box=$("textChannels");
+  if(!box)return;
+  const cloud=getCloudTextChannels();
+  const list=cloud.length?cloud:channels;
+  box.innerHTML=list.map(c=>{
+    const id=String(c.id);
+    const active=String(channel)===id&&!dmMode;
+    return `<div class="channel ${active?"active":""}" onclick="switchChannel('${esc(id)}')"><span class="icon">${esc(c.icon||"#")}</span><span>${esc(c.name||"未命名频道")}</span>${id==="general"&&unread?`<span class="unread">${unread}</span>`:""}</div>`;
+  }).join("");
 }
 let unread=0;
 function switchChannel(id){
- dmMode=false;channel=id;const c=channels.find(x=>x.id===id);$("chatName").textContent=c.name;$("chatTopic").textContent=c.topic;
- unread=0;renderChannels();
-renderVoiceChannels();closePanels();renderMessages(messages.filter(m=>!m.channel||m.channel===channel));loadMessages();
+ dmMode=false;channel=id;
+ const c=(getCloudTextChannels().find(x=>String(x.id)===String(id))||channels.find(x=>String(x.id)===String(id)));
+ if(!c)return;
+ $("chatName").textContent=c.name;$("chatTopic").textContent=c.topic||"";
+ unread=0;renderChannels();renderVoiceChannels();closePanels();
+ renderMessages(messages.filter(m=>!m.channel||String(m.channel)===String(channel)));
+ loadMessages();
+ syncTextPresence();
 }
 function toggleChannels(){$("channels").classList.toggle("open");$("overlay").classList.toggle("show",$("channels").classList.contains("open"))}
 function closePanels(){$("channels").classList.remove("open");$("overlay").classList.remove("show")}
@@ -3958,18 +3977,21 @@ function addChannel(){const n=prompt("新频道名称");if(n){channels.push({id:
 function renderVoiceChannels(){
   const box=$("voiceChannels");
   if(!box)return;
-  box.innerHTML=voiceChannels.map(c=>{
-    const active=activeVoiceChannelId===c.id;
+  const cloud=getCloudVoiceChannels();
+  const list=cloud.length?cloud:voiceChannels;
+  box.innerHTML=list.map(c=>{
+    const id=String(c.id);
+    const active=String(activeVoiceChannelId)===id;
     const count=active && voiceRoom ? Object.values(voiceRoom.presenceState()||{}).flat().length : 0;
-    return `<div class="channel voice-channel ${active?"active":""}" onclick="switchVoiceChannel('${c.id}')">
-      <span class="icon">${c.icon}</span><span>${esc(c.name)}</span>
+    return `<div class="channel voice-channel ${active?"active":""}" onclick="switchVoiceChannel('${esc(id)}')">
+      <span class="icon">${esc(c.icon||"🎙️")}</span><span>${esc(c.name||"未命名语音")}</span>
       ${count?`<span class="voice-channel-count">${count}</span>`:""}
     </div>`;
   }).join("");
 }
 
 async function switchVoiceChannel(id){
-  const vc=voiceChannels.find(x=>x.id===id);
+  const vc=getCloudVoiceChannels().find(x=>String(x.id)===String(id))||voiceChannels.find(x=>String(x.id)===String(id));
   if(!vc)return;
   if(voiceJoined){
     if(activeVoiceChannelId===id) openVoice();
@@ -3986,15 +4008,65 @@ async function switchVoiceChannel(id){
   openVoice();
 }
 
+let textPresenceRoom=null;
+let textPresenceJoining=false;
+function textPresenceKey(){
+  if(currentUser?.id)return "user_"+currentUser.id;
+  let key=localStorage.getItem("sl_guest_presence_id");
+  if(!key){key="guest_"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2));localStorage.setItem("sl_guest_presence_id",key)}
+  return key;
+}
 function renderMembers(){
-  const names=["游客",nickname==="游客"?"":nickname,"Hotdog","SecurityBot","开发者"].filter(Boolean);
-  const unique=[...new Set(names)];$("memberCount").textContent=unique.length;
-  $("memberList").innerHTML=unique.map((n,i)=>{
-    const p=getPublicProfile(n);
+  const box=$("memberList");
+  if(!box)return;
+  const users=[];
+  if(textPresenceRoom){
+    Object.values(textPresenceRoom.presenceState()||{}).forEach(arr=>(arr||[]).forEach(u=>users.push(u)));
+  }
+  if(!users.length){
+    const fallback=currentUser?{peerId:textPresenceKey(),userId:currentUser.id,name:nickname||"用户",avatar_url:avatarURL||""}:{peerId:textPresenceKey(),name:nickname||"游客",avatar_url:avatarURL||""};
+    users.push(fallback);
+  }
+  const seen=new Set();
+  const unique=users.filter(u=>{const k=u.peerId||u.userId||u.name;if(seen.has(k))return false;seen.add(k);return true});
+  $("memberCount").textContent=unique.length;
+  box.innerHTML=unique.map((u,i)=>{
+    const n=u.name||"游客";
+    const p=getPublicProfile(n)||publicProfilesById[u.userId];
     const badge=profileBadgeHtml(p);
-    const av=p?.avatar_url ? `<img src="${esc(p.avatar_url)}" alt="">` : esc(n[0]||"U");
-    return `<div class="member" onclick="openFullProfile('${esc(n)}')"><div style="position:relative"><div class="avatar">${av}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)} ${badge}</div><div class="member-status">${i===0?"你 · 在线":"在线"}</div></div></div>`;
+    const av=(u.avatar_url||p?.avatar_url) ? `<img src="${esc(u.avatar_url||p.avatar_url)}" alt="">` : esc(n[0]||"U");
+    const mine=(u.peerId===textPresenceKey()||u.userId===currentUser?.id);
+    return `<div class="member" onclick="openFullProfile('${esc(n)}')"><div style="position:relative"><div class="avatar">${av}</div></div><div><div class="member-name"><span class="role-dot"></span>${esc(n)} ${badge}</div><div class="member-status">${mine?"你 · 在线":"在线"}</div></div></div>`;
   }).join("");
+}
+async function syncTextPresence(){
+  if(!sb||dmMode||!channel)return;
+  if(textPresenceJoining)return;
+  textPresenceJoining=true;
+  try{
+    if(textPresenceRoom){try{await sb.removeChannel(textPresenceRoom)}catch(_){} textPresenceRoom=null;}
+    const topic="text-presence-"+String(channel).replace(/[^a-zA-Z0-9_-]/g,"_");
+    textPresenceRoom=sb.channel(topic,{config:{presence:{key:textPresenceKey()}}});
+    textPresenceRoom
+      .on("presence",{event:"sync"},renderMembers)
+      .on("presence",{event:"join"},renderMembers)
+      .on("presence",{event:"leave"},renderMembers);
+    await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>reject(new Error("文字频道成员同步超时")),8000);
+      textPresenceRoom.subscribe(async status=>{
+        if(status==="SUBSCRIBED"){
+          clearTimeout(timer);
+          await textPresenceRoom.track({peerId:textPresenceKey(),userId:currentUser?.id||null,name:nickname||"游客",avatar_url:avatarURL||"",online_at:new Date().toISOString()});
+          resolve();
+        }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){clearTimeout(timer);reject(new Error("文字频道成员同步失败"));}
+      });
+    });
+    renderMembers();
+  }catch(e){
+    console.warn("文字频道成员同步失败",e);
+    if(textPresenceRoom){try{await sb.removeChannel(textPresenceRoom)}catch(_){} textPresenceRoom=null;}
+    renderMembers();
+  }finally{textPresenceJoining=false;}
 }
 function setCloudStatus(text,color){
   const el=$("cloudStatus");
@@ -4050,6 +4122,7 @@ function setCloudStatus(text,color){
     updateIdentity();
     subscribe();
     await loadMessages();
+    await syncTextPresence();
   }catch(e){
     console.warn("Supabase 连接失败:",e);
     setCloudStatus("连接异常","#d9534f");
@@ -4885,7 +4958,7 @@ function contextEdit(){if(contextItem&&contextItem.username===nickname)editMessa
 function contextDelete(){if(contextItem&&contextItem.username===nickname)deleteMessage(contextItem);else toast("只能删除自己的消息");$("contextMenu").classList.remove("show")}
 
 function closePanelsAll(){closePanels();closeEmoji();closeProfile();closeSettings();closeBackgroundSettings();closeLottery();closeBadges();closeUser();closeInvite();closeAdmin();closeNotifications()}
-function updateIdentity(){ $("miniName").textContent=nickname;setAvatar($("miniAvatar"),avatarURL,nickname);renderMembers() }
+function updateIdentity(){ $("miniName").textContent=nickname;setAvatar($("miniAvatar"),avatarURL,nickname);renderMembers(); syncTextPresence(); }
 
 renderServers();renderChannels();updateIdentity();applyChatBackgroundStyle();
 if(localStorage.getItem("sl_dark")==="1"){document.body.classList.add("dark");$("darkState").textContent="开启"}
@@ -7694,6 +7767,18 @@ end $$;
 
     window.V23_cloudCatalogue=data;
 
+    // The cloud catalogue uses UUID channel ids. If the local default id is
+    // still active, switch to the first cloud text channel so message queries
+    // and the highlighted channel stay in sync with Supabase.
+    const cloudTexts=data.channels.filter(c=>c.kind==="text");
+    if(cloudTexts.length && !cloudTexts.some(c=>String(c.id)===String(channel))){
+      const preferred=cloudTexts.find(c=>c.name==="总聊天室")||cloudTexts[0];
+      channel=preferred.id;
+      dmMode=false;
+      $("chatName").textContent=preferred.name;
+      $("chatTopic").textContent=preferred.topic||"";
+    }
+
     const textBox=$("textChannels");
     const voiceBox=$("voiceChannels");
 
@@ -7717,7 +7802,7 @@ end $$;
         </div>`).join("");
     }
 
-    try{if(typeof renderChannels==="function")renderChannels()}catch(_){}
+    try{if(typeof renderChannels==="function")renderChannels(); if(typeof renderVoiceChannels==="function")renderVoiceChannels()}catch(_){}
   }
 
   window.V23_selectText=function(id){
@@ -7728,16 +7813,15 @@ end $$;
   };
 
   window.V23_selectVoice=function(id){
-    const c=window.V23_cloudCatalogue?.channels?.find(x=>x.id===id);
+    const c=window.V23_cloudCatalogue?.channels?.find(x=>String(x.id)===String(id));
     if(!c)return;
 
-    // IMPORTANT: selecting a voice channel does not auto-join.
-    // The existing V17/V17-V15 voice join button remains responsible for WebRTC.
-    window.V23_selectedVoiceId=id;
-
-    const title=$("voiceRoomTitle");
-    if(title)title.textContent="# "+c.name;
-
+    // Selecting a voice channel changes the active WebRTC room but does not auto-join.
+    activeVoiceChannelId=c.id;
+    window.V23_selectedVoiceId=c.id;
+    $("chatName").textContent=c.name;
+    $("chatTopic").textContent=c.topic||"";
+    if(typeof renderVoiceChannels==="function")renderVoiceChannels();
     if(typeof openVoice==="function")openVoice();
   };
 
@@ -7886,6 +7970,29 @@ grant execute on function public.moderate_user(text,text,text,integer) to authen
 update public.messages
 set channel = 'general'
 where channel is null;
+
+-- 将旧版 general/tech/chat/security/share 频道标识迁移到 V23 云端频道 UUID。
+-- 兼容尚未执行 V23 SQL 的项目：不存在 app_channels 时直接跳过。
+do $$
+begin
+  if to_regclass('public.app_channels') is not null then
+    update public.messages m
+    set channel = a.id::text
+    from public.app_channels a
+    where a.kind = 'text'
+      and (
+        lower(m.channel) = lower(a.name)
+        or lower(m.channel) = case a.name
+          when '总聊天室' then 'general'
+          when '技术交流' then 'tech'
+          when '随便聊聊' then 'chat'
+          when '安全公告' then 'security'
+          when '分享区' then 'share'
+          else '__no_match__'
+        end
+      );
+  end if;
+end $$;
 
 create or replace function public.is_admin()
 returns boolean
