@@ -3436,7 +3436,7 @@ button:active{
   padding:10px;font-size:9px;line-height:1.45
 }
 .v27-card>button{width:100%;margin-top:8px;min-height:38px;border-radius:10px;border:0;background:#4f46e5;color:white}
-</style><meta name="security-lab-build" content="V30-admin-center-ui-fixed">
+</style><meta name="security-lab-build" content="V34-moderation-stable">
 <style id="security-lab-v28-admin-ui-css">
 .v28-overlay{
   position:fixed;inset:0;display:none;align-items:center;justify-content:center;
@@ -3600,7 +3600,7 @@ button:active{
 <!-- 管理 -->
 <div class="modal" id="adminModal" onclick="if(event.target===this)closeAdmin()">
  <div class="modal-card"><div class="modal-head"><span>🛡 管理中心</span><button class="close" onclick="closeAdmin()">×</button></div>
- <p style="font-size:11px;color:#777">服务器管理功能。删除消息已接入云端权限；禁言/踢出/封禁将在服务端权限开启后生效。</p>
+ <p style="font-size:11px;color:#777">服务器管理功能。删除消息、禁言、踢出、封禁均通过服务端权限执行。</p>
  <div class="channel" onclick="serverModerationAction('禁言')">🔇 禁言用户</div>
  <div class="channel" onclick="serverModerationAction('踢出')">🚪 踢出用户</div>
  <div class="channel" onclick="serverModerationAction('封禁')">⛔ 封禁用户</div>
@@ -8133,5 +8133,61 @@ end $$;`;
   };
 })();
 </script>
-</body>
+
+<script id="security-lab-v34-moderation-stable">
+(function(){
+  const map={"禁言":"mute","踢出":"kick","封禁":"ban"};
+  function notify(msg){ if(typeof toast==="function") toast(msg); else alert(msg); }
+  function isAdmin(){
+    try{
+      if(typeof isCurrentUserDeveloper==="function") return !!isCurrentUserDeveloper();
+      if(typeof cloudProfile!=="undefined" && cloudProfile)
+        return cloudProfile.role==="developer" || cloudProfile.badge==="developer";
+    }catch(e){console.error("[V34] admin check",e)}
+    return false;
+  }
+  async function run(action){
+    if(!map[action]) return;
+    if(!isAdmin()){notify("当前账号不是开发者管理员");return}
+    if(typeof sb==="undefined" || !sb){notify("云端未连接，无法执行："+action);return}
+    const name=prompt("请输入要操作的用户名：");
+    if(!name || !name.trim()) return;
+    const reason=prompt("原因（可选）：")||null;
+    try{
+      const res=await sb.rpc("moderate_user",{
+        target_username:name.trim(),
+        moderation_action:map[action],
+        moderation_reason:reason,
+        duration_minutes:map[action]==="kick"?1:null
+      });
+      if(res.error){
+        const m=res.error.message||"未知错误";
+        console.error("[V34] moderation rpc failed",res.error);
+        notify(m.includes("not_admin")?"服务端拒绝：管理员权限未生效":
+               m.includes("user_not_found")?"找不到用户："+name.trim():"操作失败："+m);
+        return;
+      }
+      notify(action+"成功："+(res.data?.username||name.trim()));
+    }catch(e){console.error("[V34] moderation exception",e);notify("操作失败："+(e?.message||"未知错误"))}
+  }
+  window.V34_moderateUser=run;
+  window.serverModerationAction=run;
+  window.adminAction=function(action){
+    if(action==="删除消息" && typeof openV28MessageManager==="function"){openV28MessageManager();return}
+    if(map[action]){run(action);return}
+    notify(action+"操作");
+  };
+  function bind(){
+    const modal=document.getElementById("adminModal"); if(!modal)return;
+    modal.querySelectorAll(".channel").forEach(n=>{
+      const t=(n.textContent||"").trim();
+      if(t.includes("禁言用户")) n.onclick=()=>run("禁言");
+      else if(t.includes("踢出用户")) n.onclick=()=>run("踢出");
+      else if(t.includes("封禁用户")) n.onclick=()=>run("封禁");
+    });
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});else bind();
+  setTimeout(bind,500);
+})();
+</script></body>
 </html>
