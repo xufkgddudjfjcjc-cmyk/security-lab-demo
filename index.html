@@ -4011,9 +4011,17 @@ async function switchVoiceChannel(id){
 let textPresenceRoom=null;
 let textPresenceJoining=false;
 function textPresenceKey(){
-  if(currentUser?.id)return "user_"+currentUser.id;
-  let key=localStorage.getItem("sl_guest_presence_id");
-  if(!key){key="guest_"+(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2));localStorage.setItem("sl_guest_presence_id",key)}
+  // Presence key 必须是“浏览器会话唯一”，不能直接使用 user.id。
+  // 否则同一账号在另一台电脑/手机登录时会被 Presence 合并成一个成员。
+  const storageKey=currentUser?.id
+    ? "sl_text_presence_session_"+currentUser.id
+    : "sl_guest_presence_id";
+  let key=localStorage.getItem(storageKey);
+  if(!key){
+    const rnd=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now());
+    key=(currentUser?.id?"user_":"guest_")+rnd;
+    localStorage.setItem(storageKey,key);
+  }
   return key;
 }
 function renderMembers(){
@@ -8268,12 +8276,14 @@ end $$;`;
         duration_minutes:map[action]==="kick"?1:null
       });
       if(res.error){
-        const m=res.error.message||"未知错误";
-        console.error("[V34] moderation rpc failed",res.error);
-        notify(m.includes("not_admin")?"服务端拒绝：管理员权限未生效":
-               m.includes("user_not_found")?"找不到用户："+name.trim():"操作失败："+m);
-        return;
-      }
+         const m=res.error.message||"未知错误";
+         console.error("[V34] moderation rpc failed",res.error);
+         notify(/Could not find the function|schema cache|PGRST202/i.test(m)
+           ? "服务端函数未部署：请先执行【服务端权限 SQL】，再刷新网页"
+           : m.includes("not_admin")?"服务端拒绝：管理员权限未生效":
+             m.includes("user_not_found")?"找不到用户："+name.trim():"操作失败："+m);
+         return;
+       }
       notify(action+"成功："+(res.data?.username||name.trim()));
     }catch(e){console.error("[V34] moderation exception",e);notify("操作失败："+(e?.message||"未知错误"))}
   }
