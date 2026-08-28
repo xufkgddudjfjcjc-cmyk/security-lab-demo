@@ -3601,6 +3601,13 @@ button:active{
 <div class="modal" id="adminModal" onclick="if(event.target===this)closeAdmin()">
  <div class="modal-card"><div class="modal-head"><span>🛡 管理中心</span><button class="close" onclick="closeAdmin()">×</button></div>
  <p style="font-size:11px;color:#777">服务器管理功能。删除消息、禁言、踢出、封禁均通过服务端权限执行。</p>
+ <div style="margin:10px 0 12px;padding:10px;border:1px solid rgba(120,180,255,.25);border-radius:12px;background:rgba(20,60,120,.12)">
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+     <b style="font-size:12px">👥 当前在线成员 <span id="adminOnlineCount">0</span></b>
+     <button class="primary" style="padding:6px 10px;font-size:11px" onclick="window.V35_refreshAdminMembers()">刷新</button>
+   </div>
+   <div id="adminOnlineMembers" style="max-height:190px;overflow:auto;font-size:11px">暂无在线成员</div>
+ </div>
  <div class="channel" onclick="serverModerationAction('禁言')">🔇 禁言用户</div>
  <div class="channel" onclick="serverModerationAction('踢出')">🚪 踢出用户</div>
  <div class="channel" onclick="serverModerationAction('封禁')">⛔ 封禁用户</div>
@@ -3759,6 +3766,20 @@ let authMode="login";
 let currentUser=null;
 let guestMode=localStorage.getItem("sl_guest")==="1";
 
+// 每个游客浏览器拥有一个稳定、唯一的游客 ID。
+// 它用于管理员识别游客，并让游客也能收到禁言/踢出/封禁结果。
+function getGuestId(){
+  let id=localStorage.getItem("sl_guest_id");
+  if(!id){
+    id=crypto.randomUUID?crypto.randomUUID():("g_"+Date.now()+"_"+Math.random().toString(36).slice(2));
+    localStorage.setItem("sl_guest_id",id);
+  }
+  return id;
+}
+function guestDisplayName(){
+  return "游客-"+getGuestId().replace(/-/g,"").slice(0,6).toUpperCase();
+}
+
 function showAuthGate(show=true){
   const gate=$("authGate");
   if(gate)gate.classList.toggle("show",show);
@@ -3836,17 +3857,24 @@ async function submitAuth(){
     setAuthBusy(false);
   }
 }
-function enterAsGuest(){
+async function enterAsGuest(){
+  const guestId=getGuestId();
   guestMode=true;
   currentUser=null;
   localStorage.setItem("sl_guest","1");
+
+  // 游客不再共用“游客”这个名字，管理员可以准确区分每台设备。
   if(!localStorage.getItem("sl_name")||localStorage.getItem("sl_name")==="游客"){
-    nickname="游客";
-    localStorage.setItem("sl_name","游客");
+    nickname=guestDisplayName();
+    localStorage.setItem("sl_name",nickname);
   }
+
   updateIdentity();
   showAuthGate(false);
   toast("已进入游客模式");
+
+  // 如果这个游客 ID 已被封禁，立即拦截重新进入。
+  setTimeout(()=>{ if(typeof enforceGuestModeration==="function") enforceGuestModeration(true); },0);
 }
 async function logoutAccount(){
   try{if(sb)await sb.auth.signOut()}catch(e){console.warn(e)}
@@ -4015,7 +4043,7 @@ function textPresenceKey(){
   // 否则同一账号在另一台电脑/手机登录时会被 Presence 合并成一个成员。
   const storageKey=currentUser?.id
     ? "sl_text_presence_session_"+currentUser.id
-    : "sl_guest_presence_id";
+    : "sl_guest_id";
   let key=localStorage.getItem(storageKey);
   if(!key){
     const rnd=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now());
@@ -4064,7 +4092,7 @@ async function syncTextPresence(){
       textPresenceRoom.subscribe(async status=>{
         if(status==="SUBSCRIBED"){
           clearTimeout(timer);
-          await textPresenceRoom.track({peerId:textPresenceKey(),userId:currentUser?.id||null,name:nickname||"游客",avatar_url:avatarURL||"",online_at:new Date().toISOString()});
+          await textPresenceRoom.track({peerId:textPresenceKey(),userId:currentUser?.id||null,guestId:(!currentUser&&typeof getGuestId==="function")?getGuestId():null,name:nickname||"游客",avatar_url:avatarURL||"",online_at:new Date().toISOString()});
           resolve();
         }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){clearTimeout(timer);reject(new Error("文字频道成员同步失败"));}
       });
@@ -4131,6 +4159,7 @@ function setCloudStatus(text,color){
     subscribe();
     await loadMessages();
     await syncTextPresence();
+    startGuestModerationWatch();
   }catch(e){
     console.warn("Supabase 连接失败:",e);
     setCloudStatus("连接异常","#d9534f");
@@ -4364,6 +4393,69 @@ async function enforceMyModeration(){
   return null;
 }
 
+// ===== 游客管理：游客没有 auth.uid，所以不能复用上面的 user_id 查询 =====
+let guestModerationTimer=null;
+let guestModerationBusy=false;
+window.__slGuestMuted=false;
+
+async function getMyGuestModeration(){
+  if(!sb || !guestMode) return null;
+  const guestId=getGuestId();
+  try{
+    const {data,error}=await sb.rpc("get_guest_moderation",{p_guest_id:guestId});
+    if(error){
+      console.warn("[GuestModeration] 查询失败:",error);
+      return null;
+    }
+    if(!data) return null;
+    if(data.expires_at && new Date(data.expires_at).getTime() <= Date.now()) return null;
+    return data;
+  }catch(e){
+    console.warn("[GuestModeration] 查询异常:",e);
+    return null;
+  }
+}
+
+async function enforceGuestModeration(fromEntry=false){
+  if(!sb || !guestMode || guestModerationBusy) return null;
+  guestModerationBusy=true;
+  try{
+    const m=await getMyGuestModeration();
+    if(!m){
+      window.__slGuestMuted=false;
+      return null;
+    }
+
+    if(m.action==="mute"){
+      window.__slGuestMuted=true;
+      return m;
+    }
+
+    if(m.action==="kick" || m.action==="ban"){
+      // kick/ban 都退出当前游客会话；保留 sl_guest_id，
+      // 这样 ban 后再次点击“游客访问”仍会被服务端识别。
+      guestMode=false;
+      localStorage.removeItem("sl_guest");
+      if(m.action==="ban") localStorage.setItem("sl_guest_banned","1");
+      alert(m.action==="ban" ? "你已被封禁。" : "你已被管理员踢出。");
+      showAuthGate(true);
+      updateIdentity();
+      return m;
+    }
+    return null;
+  }finally{
+    guestModerationBusy=false;
+  }
+}
+
+function startGuestModerationWatch(){
+  if(guestModerationTimer) clearInterval(guestModerationTimer);
+  guestModerationTimer=setInterval(()=>{
+    if(document.visibilityState==="visible" && guestMode) enforceGuestModeration();
+  },2000);
+  if(guestMode) enforceGuestModeration();
+}
+
 async function serverModerationAction(action){
   // 管理中心按钮在独立脚本作用域中调用，不能依赖 V28 IIFE 内部的 checkAdmin()。
   // 直接使用全局开发者身份检查，避免点击后 ReferenceError 导致“没反应”。
@@ -4379,7 +4471,7 @@ async function serverModerationAction(action){
   }
   if(!isAdmin){ toast("当前账号不是开发者管理员"); return; }
 
-  const name=prompt("请输入要操作的用户名：");
+  const name=prompt("请输入用户名或游客ID：");
   if(!name) return;
   const reason=prompt("原因（可选）：") || null;
   if(!sb){ toast("云端未连接，无法执行服务端操作"); return; }
@@ -4418,6 +4510,17 @@ async function sendMessage(){
     "sl_sent_count",
     String(parseInt(localStorage.getItem("sl_sent_count")||"0")+1)
   );
+
+  if(guestMode){
+    const gm=await getMyGuestModeration();
+    if(gm?.action==="mute"){ window.__slGuestMuted=true; toast("你已被禁言"+(gm.reason?"："+gm.reason:"")); return; }
+    if(gm?.action==="ban" || gm?.action==="kick"){ await enforceGuestModeration(true); return; }
+    window.__slGuestMuted=false;
+  }
+  if(window.__slGuestMuted && guestMode){
+    toast("你已被禁言，暂时不能发送消息");
+    return;
+  }
 
   const now=new Date().toISOString();
   const local={
@@ -8265,7 +8368,7 @@ end $$;`;
     if(!map[action]) return;
     if(!isAdmin()){notify("当前账号不是开发者管理员");return}
     if(typeof sb==="undefined" || !sb){notify("云端未连接，无法执行："+action);return}
-    const name=prompt("请输入要操作的用户名：");
+    const name=prompt("请输入用户名或游客ID：");
     if(!name || !name.trim()) return;
     const reason=prompt("原因（可选）：")||null;
     try{
@@ -8306,5 +8409,75 @@ end $$;`;
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});else bind();
   setTimeout(bind,500);
 })();
-</script></body>
+</script>
+<script id="security-lab-v35-live-moderation">
+(function(){
+  const ACTIONS={"禁言":"mute","踢出":"kick","封禁":"ban"};
+  function notify(m){ if(typeof toast==="function") toast(m); else alert(m); }
+  function escHtml(v){return String(v??"").replace(/[&<>"']/g,s=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));}
+  function getOnline(){
+    const room=typeof textPresenceRoom!=="undefined"?textPresenceRoom:null;
+    const out=[];
+    if(room){
+      Object.values(room.presenceState()||{}).forEach(arr=>(arr||[]).forEach(u=>out.push(u)));
+    }
+    const seen=new Set();
+    return out.filter(u=>{const k=u.peerId||u.userId||u.name;if(seen.has(k))return false;seen.add(k);return true;});
+  }
+  function renderAdminMembers(){
+    const box=document.getElementById("adminOnlineMembers");
+    const count=document.getElementById("adminOnlineCount");
+    if(!box)return;
+    const users=getOnline();
+    if(count)count.textContent=String(users.length);
+    if(!users.length){box.innerHTML='<span style="opacity:.65">当前频道暂无在线成员</span>';return;}
+    box.innerHTML=users.map(u=>{
+      const name=u.name||"游客";
+      const guest=!u.userId;
+      const id=guest?(typeof getGuestId==="function"?getGuestId():""):u.userId;
+      const label=guest?(u.guestId||("游客ID: "+(id||"未知"))):(u.userId||"");
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)">`+
+        `<div style="min-width:0"><b>${escHtml(name)}</b><div style="opacity:.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(label)}</div></div>`+
+        `<button style="padding:5px 8px;border-radius:8px" onclick="window.V35_manageMember(${JSON.stringify(name)},${JSON.stringify(guest?id:name)})">管理</button>`+
+      `</div>`;
+    }).join("");
+  }
+  async function manageMember(name,target){
+    const choice=prompt(`管理 ${name}：输入 mute=禁言、kick=踢出、ban=封禁\n或直接取消。`,"");
+    if(!choice)return;
+    const action=choice.trim().toLowerCase();
+    const map={mute:"mute",kick:"kick",ban:"ban",禁言:"mute",踢出:"kick",封禁:"ban"};
+    if(!map[action]){notify("无效操作，请输入 mute / kick / ban");return;}
+    const reason=prompt("原因（可选）：")||null;
+    try{
+      if(typeof sb==="undefined"||!sb)throw new Error("云端未连接");
+      const {data,error}=await sb.rpc("moderate_user",{duration_minutes:map[action]==="kick"?1:null,moderation_action:map[action],moderation_reason:reason,target_username:target||name});
+      if(error)throw error;
+      notify(`${action} 成功：${data?.username||name}`);
+      renderAdminMembers();
+    }catch(e){notify("操作失败："+(e?.message||e));}
+  }
+  window.V35_refreshAdminMembers=renderAdminMembers;
+  window.V35_manageMember=manageMember;
+  const oldOpen=window.openAdmin;
+  window.openAdmin=function(){if(typeof oldOpen==="function")oldOpen();setTimeout(renderAdminMembers,50);};
+  // 管理员打开窗口期间自动刷新在线成员。
+  setInterval(()=>{const m=document.getElementById("adminModal");if(m&&m.classList.contains("show"))renderAdminMembers();},2000);
+
+  // 统一游客/正式用户管理状态轮询，避免只检查游客而漏掉正式账号。
+  let timer=null;
+  function watch(){
+    if(timer)clearInterval(timer);
+    timer=setInterval(async()=>{
+      try{
+        if(document.visibilityState!=="visible"||typeof sb==="undefined"||!sb)return;
+        if(typeof guestMode!=="undefined"&&guestMode){await enforceGuestModeration();}
+        else if(typeof currentUser!=="undefined"&&currentUser){await enforceMyModeration();}
+      }catch(e){console.warn("[V35 moderation watch]",e);}
+    },1500);
+  }
+  watch();
+})();
+</script>
+</body>
 </html>
